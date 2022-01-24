@@ -26,7 +26,7 @@ def main(cfg: DictConfig) -> None:
         h.execute()
 
 
-def set_processor(h: StaticSitePostsHandler, cfg: DictConfig) -> StaticSitePostsHandler:
+def set_processor(h: StaticSitePostsHandler, cfg: DictConfig) -> None:
     if cfg.type == "recommender":
         set_recommender(h, cfg)
     else:
@@ -37,9 +37,7 @@ TokenizerCallableType = Callable[[str], list[str]]
 TfIdfValueType = Union[int, float, str, TokenizerCallableType]
 
 
-def set_recommender(
-    h: StaticSitePostsHandler, cfg: DictConfig
-) -> StaticSitePostsHandler:
+def set_recommender(h: StaticSitePostsHandler, cfg: DictConfig) -> None:
     tfidf_opts = cast(
         dict[str, TfIdfValueType],
         OmegaConf.to_container(cfg.tfidf_options),
@@ -59,7 +57,6 @@ def set_recommender(
             raise NotImplementedError("Unknown lang/type for tokenizer")
 
     h.register_processor(Recommender(permalink_base=cfg.permalink_base, **tfidf_opts))
-    return h
 
 
 if __name__ == "__main__":
