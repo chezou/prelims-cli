@@ -20,7 +20,7 @@ def main(cfg: DictConfig) -> None:
             tokenizer_opt = prc.tokenizer
             if tokenizer_opt:
                 if tokenizer_opt.lang == "ja" and tokenizer_opt.type == "sudachi":
-                    from ja.tokenizer import Tokenizer
+                    from .ja.tokenizer import Tokenizer
 
                     tokenizer = Tokenizer(
                         mode=tokenizer_opt.mode, dict=tokenizer_opt.dict
