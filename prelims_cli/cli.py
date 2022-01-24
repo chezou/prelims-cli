@@ -1,10 +1,10 @@
-from typing import Callable, Union
+from typing import Callable, Union, cast
 
 import hydra
 from hydra.utils import to_absolute_path
 from omegaconf import DictConfig, OmegaConf, open_dict
-from prelims import StaticSitePostsHandler
-from prelims.processor import Recommender
+from prelims import StaticSitePostsHandler  # type: ignore
+from prelims.processor import Recommender  # type: ignore
 
 
 @hydra.main(config_path="config", config_name="config")
@@ -26,12 +26,17 @@ def set_processor(h: StaticSitePostsHandler, cfg: DictConfig) -> StaticSitePosts
         raise NotImplementedError("Unknown Processor")
 
 
+TokenizerCallableType = Callable[[str], list[str]]
+TfIdfValueType = Union[int, float, str, TokenizerCallableType]
+
+
 def set_recommender(
     h: StaticSitePostsHandler, cfg: DictConfig
 ) -> StaticSitePostsHandler:
-    tfidf_opts: dict[
-        str, Union[int, str, Callable[[str], list[str]]]
-    ] = OmegaConf.to_container(cfg.tfidf_options)
+    tfidf_opts = cast(
+        dict[str, TfIdfValueType],
+        OmegaConf.to_container(cfg.tfidf_options),
+    )
     # Work around for Optional field
     # https://omegaconf.readthedocs.io/en/2.1_branch/usage.html#struct-flag
     with open_dict(cfg):
