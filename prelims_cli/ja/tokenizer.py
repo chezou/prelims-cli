@@ -1,7 +1,6 @@
 from typing import Optional
 
-from sudachipy import tokenizer
-from sudachipy import dictionary
+from sudachipy import dictionary, tokenizer
 
 
 class Tokenizer:

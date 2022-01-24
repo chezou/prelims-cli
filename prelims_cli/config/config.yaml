@@ -12,7 +12,6 @@ handlers:
           stop_words: english
           max_df: 0.95
           min_df: 2
-        tokenizer: null
   # - target_path: "content/post"
   #   ignore_files:
   #     - _index.md

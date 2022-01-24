@@ -1,11 +1,10 @@
-from typing import Any
-
-from omegaconf import DictConfig, OmegaConf
-from prelims import StaticSitePostsHandler
-from prelims.processor import Recommender
+from typing import Callable, Union
 
 import hydra
 from hydra.utils import to_absolute_path
+from omegaconf import DictConfig, OmegaConf, open_dict
+from prelims import StaticSitePostsHandler
+from prelims.processor import Recommender
 
 
 @hydra.main(config_path="config", config_name="config")
@@ -30,7 +29,13 @@ def set_processor(h: StaticSitePostsHandler, cfg: DictConfig) -> StaticSitePosts
 def set_recommender(
     h: StaticSitePostsHandler, cfg: DictConfig
 ) -> StaticSitePostsHandler:
-    tfidf_opts: dict[str, Any] = OmegaConf.to_container(cfg.tfidf_options)
+    tfidf_opts: dict[
+        str, Union[int, str, Callable[[str], list[str]]]
+    ] = OmegaConf.to_container(cfg.tfidf_options)
+    # Work around for Optional field
+    # https://omegaconf.readthedocs.io/en/2.1_branch/usage.html#struct-flag
+    with open_dict(cfg):
+        cfg.tokenizer = cfg.get("tokenizer", None)
     tokenizer_opt = cfg.tokenizer
     if tokenizer_opt:
         if tokenizer_opt.lang == "ja" and tokenizer_opt.type == "sudachi":
