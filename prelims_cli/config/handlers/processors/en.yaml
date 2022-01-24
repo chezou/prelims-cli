@@ -1,6 +1,0 @@
-permalink_base: "/blog"
-tf_idf_options:
-  stop_words: english
-  max_df: 0.95
-  min_df: 2
-tokenizer: null
