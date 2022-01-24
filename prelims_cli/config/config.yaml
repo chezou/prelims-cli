@@ -1,0 +1,28 @@
+defaults:
+  - handlers/processors: en
+  - _self_
+
+handlers:
+  - target_path: "content/blog"
+    ignore_files:
+      - _index.md
+    processors:
+      - permalink_base: "/blog"
+        tfidf_options:
+          stop_words: english
+          max_df: 0.95
+          min_df: 2
+        tokenizer: null
+  - target_path: "content/post"
+    ignore_files:
+      - _index.md
+    processors:
+      - permalink_base: "/post"
+        tfidf_options:
+          max_df: 0.95
+          min_df: 2
+        tokenizer:
+          lang: ja
+          type: sudachi
+          mode: C
+          dict: full
