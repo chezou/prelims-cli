@@ -10,8 +10,15 @@ from prelims.processor import Recommender  # type: ignore
 @hydra.main(config_path="config", config_name="config")
 def main(cfg: DictConfig) -> None:
     for handler in cfg.handlers:
+        # Work around for Optional field
+        # https://omegaconf.readthedocs.io/en/2.1_branch/usage.html#struct-flag
+        with open_dict(handler):
+            handler.ignore_files = handler.get("ignore_files", [])
+            handler.encoding = handler.get("encoding", "utf-8")
         h = StaticSitePostsHandler(
-            to_absolute_path(handler.target_path), ignore_files=handler.ignore_files
+            to_absolute_path(handler.target_path),
+            ignore_files=handler.ignore_files,
+            encoding=handler.encoding,
         )
         print(f"target: {to_absolute_path(handler.target_path)}")
         for prc in handler.processors:
