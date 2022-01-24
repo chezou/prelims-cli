@@ -4,6 +4,14 @@ CLI for [prelims](https://github.com/takuti/prelims).
 
 ## Install
 
+Run:
+
+```sh
+python -m pip install -U git+https://github.com/chezou/prelims-cli.git@main
+```
+
+If you need Japanese tokenization, run:
+
 ```sh
 python -m pip install -U git+https://github.com/chezou/prelims-cli.git@main#egg=prelims-cli[ja]
 ```
