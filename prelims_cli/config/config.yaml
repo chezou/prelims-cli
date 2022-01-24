@@ -6,7 +6,8 @@ handlers:
     ignore_files:
       - _index.md
     processors:
-      - permalink_base: "/blog"
+      - type: recommender
+        permalink_base: "/blog"
         tfidf_options:
           stop_words: english
           max_df: 0.95
@@ -16,7 +17,8 @@ handlers:
   #   ignore_files:
   #     - _index.md
   #   processors:
-  #     - permalink_base: "/post"
+  #     - type: recommender
+  #       permalink_base: "/post"
   #       tfidf_options:
   #         max_df: 0.95
   #         min_df: 2
