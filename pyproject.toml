@@ -20,6 +20,7 @@ pytest = "^6.0"
 mypy = "^0.931"
 black = "^21.12b0"
 flake8 = "^4.0.1"
+isort = "^5.10.1"
 
 [tool.poetry.extras]
 ja = ["SudachiPy", "SudachiDict-full"]
@@ -35,7 +36,8 @@ build-backend = "poetry.core.masonry.api"
 test = { cmd = "pytest tests", help = "runs all unit tests" }
 pr_test = "task lint"
 fmt = { cmd = "black tests prelims_cli", help = "format code" }
-lint = { cmd = "task lint_black && task lint_flake8 && task lint_mypy", help = "exec lint" }
+lint = { cmd = "task lint_black && task lint_flake8 && task lint_isort && task lint_mypy", help = "exec lint" }
 lint_flake8 = "flake8 --max-line-length=88 tests prelims_cli"
 lint_mypy = "mypy tests prelims_cli"
 lint_black = "black --check tests prelims_cli"
+lint_isort = "isort prelims_cli"
