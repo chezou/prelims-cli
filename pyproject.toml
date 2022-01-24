@@ -24,6 +24,9 @@ flake8 = "^4.0.1"
 [tool.poetry.extras]
 ja = ["SudachiPy", "SudachiDict-full"]
 
+[tool.poetry.scripts]
+prelims-cli = "prelims_cli.cli:main"
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
