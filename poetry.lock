@@ -234,7 +234,7 @@ testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "prelims"
-version = "0.0.5"
+version = "0.0.6"
 description = "Front matter post-processor for static site generators"
 category = "main"
 optional = false
@@ -425,7 +425,7 @@ ja = ["SudachiPy", "SudachiDict-full"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.10,<3.11"
-content-hash = "ccd080e06a652ac3777a15f59381479c95ca21a26e3b4f7005e7533dd27a6d3a"
+content-hash = "a55d590ec2ad2b2559d6ae1a69d34c688812715d66725b87de5c46baec02f9e1"
 
 [metadata.files]
 antlr4-python3-runtime = [
@@ -550,8 +550,8 @@ pluggy = [
     {file = "pluggy-1.0.0.tar.gz", hash = "sha256:4224373bacce55f955a878bf9cfa763c1e360858e330072059e10bad68531159"},
 ]
 prelims = [
-    {file = "prelims-0.0.5-py3-none-any.whl", hash = "sha256:07c2c5a0ac4c0e792ef0ac73d69c372a85213e235728e904743ce9d21ef53c9d"},
-    {file = "prelims-0.0.5.tar.gz", hash = "sha256:e8b1704152acefbe8c2f644a4effd77d3ffcbeb66fd44645ddf52ded82fa41b3"},
+    {file = "prelims-0.0.6-py3-none-any.whl", hash = "sha256:81b2ffeef206181ec4dc387cc1371aeea033f2063338944580a1c6bc431bc71f"},
+    {file = "prelims-0.0.6.tar.gz", hash = "sha256:a502d50be2255e25fbd4fdf30ba422a268c2a26bc41e8e65d6960cf351015157"},
 ]
 psutil = [
     {file = "psutil-5.9.0-cp27-cp27m-manylinux2010_i686.whl", hash = "sha256:55ce319452e3d139e25d6c3f85a1acf12d1607ddedea5e35fb47a552c051161b"},

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "prelims-cli"
-version = "0.0.2"
+version = "0.0.3"
 description = "prelims CLI - Front matter post-processor CLI"
 authors = ["Aki Ariga <chezou@gmail.com>"]
 
@@ -9,7 +9,7 @@ python = ">=3.10,<3.11"
 taskipy = "^1.9.0"
 numpy = "^1.22.1"
 scipy = "^1.7.3"
-prelims = "^0.0.5"
+prelims = "^0.0.6"
 hydra-core = "^1.1.1"
 
 SudachiPy = { version = "^0.6.2", optional = true }
