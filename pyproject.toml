@@ -3,6 +3,11 @@ name = "prelims-cli"
 version = "0.0.3"
 description = "prelims CLI - Front matter post-processor CLI"
 authors = ["Aki Ariga <chezou@gmail.com>"]
+maintainers = ["Aki Ariga <chezou@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/chezou/prelims-cli"
+repository = "https://github.com/chezou/prelims-cli"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
