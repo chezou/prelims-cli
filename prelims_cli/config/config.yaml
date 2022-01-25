@@ -8,6 +8,8 @@ handlers:
     processors:
       - type: recommender
         permalink_base: "/blog"
+        topk: 3
+        lower_path: true
         tfidf_options:
           stop_words: english
           max_df: 0.95

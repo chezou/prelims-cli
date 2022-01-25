@@ -7,7 +7,7 @@ from prelims import StaticSitePostsHandler  # type: ignore
 from prelims.processor import Recommender  # type: ignore
 
 
-@hydra.main(config_path="config", config_name="config")
+@hydra.main(config_path="config")
 def main(cfg: DictConfig) -> None:
     for handler in cfg.handlers:
         # Work around for Optional field
@@ -46,6 +46,8 @@ def set_recommender(h: StaticSitePostsHandler, cfg: DictConfig) -> None:
     # https://omegaconf.readthedocs.io/en/2.1_branch/usage.html#struct-flag
     with open_dict(cfg):
         cfg.tokenizer = cfg.get("tokenizer", None)
+        cfg.topk = cfg.get("topk", 3)
+        cfg.lower_path = cfg.get("lower_path", True)
     tokenizer_opt = cfg.tokenizer
     if tokenizer_opt:
         if tokenizer_opt.lang == "ja" and tokenizer_opt.type == "sudachi":
@@ -56,7 +58,14 @@ def set_recommender(h: StaticSitePostsHandler, cfg: DictConfig) -> None:
         else:
             raise NotImplementedError("Unknown lang/type for tokenizer")
 
-    h.register_processor(Recommender(permalink_base=cfg.permalink_base, **tfidf_opts))
+    h.register_processor(
+        Recommender(
+            permalink_base=cfg.permalink_base,
+            topk=cfg.topk,
+            lower_path=cfg.lower_path,
+            **tfidf_opts,
+        )
+    )
 
 
 if __name__ == "__main__":
