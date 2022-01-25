@@ -63,7 +63,7 @@ handlers:
 ```
 
 ```sh
-$ prelims-cli --config-dir ./scripts/config --config-name myconfig hydra.run.dir=. hydra.output_subdir=null hydra/job_logging=disabled hydra/hydra_logging=disabled
+$ prelims-cli --config ./scripts/config/myconfig.yaml
 target: /user/chezo/src/chezo.uno/content/blog
 target: /users/chezo/src/chezo.uno/content/post
 ```
