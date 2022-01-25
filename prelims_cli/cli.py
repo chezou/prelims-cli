@@ -58,9 +58,9 @@ def set_recommender(h: StaticSitePostsHandler, cfg: DictConfig) -> None:
         cfg.topk = cfg.get("topk", 3)
         if not cfg.topk:
             logger.warning("topk is undefined. Fallback to default: 3")
+        cfg.lower_path = cfg.get("lower_path", True)
         if not cfg.lower_path:
             logger.warning("lower_path is undefined. Fallback to default: True")
-        cfg.lower_path = cfg.get("lower_path", True)
     tkn_opt = cfg.tokenizer
     if tkn_opt:
         if tkn_opt.lang == "ja" and tkn_opt.type == "sudachi":
