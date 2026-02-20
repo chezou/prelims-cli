@@ -412,12 +412,8 @@ version = "0.0.4"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "numpy", version = "2.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "omegaconf" },
     { name = "prelims" },
-    { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "scipy", version = "1.17.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
 ]
 
 [package.optional-dependencies]
@@ -436,10 +432,8 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "click", specifier = ">=8.0.3" },
-    { name = "numpy", specifier = ">=1.22.1" },
     { name = "omegaconf", specifier = ">=2.1.1" },
     { name = "prelims", specifier = ">=0.0.6" },
-    { name = "scipy", specifier = ">=1.7.3" },
     { name = "sudachidict-full", marker = "extra == 'ja'", specifier = ">=20211220" },
     { name = "sudachipy", marker = "extra == 'ja'", specifier = ">=0.6.2" },
 ]
