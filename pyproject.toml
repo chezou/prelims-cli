@@ -1,6 +1,6 @@
 [project]
 name = "prelims-cli"
-version = "0.0.4"
+dynamic = ["version"]
 description = "prelims CLI - Front matter post-processor CLI"
 authors = [{ name = "Aki Ariga", email = "chezou@gmail.com" }]
 maintainers = [{ name = "Aki Ariga", email = "chezou@gmail.com" }]
@@ -25,8 +25,11 @@ Homepage = "https://github.com/chezou/prelims-cli"
 Repository = "https://github.com/chezou/prelims-cli"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
 
 [dependency-groups]
 dev = [
