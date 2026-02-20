@@ -1,11 +1,9 @@
 import logging
-
 from typing import Callable, Union, cast
 
 from omegaconf import DictConfig, OmegaConf, open_dict
 from prelims import StaticSitePostsHandler  # type: ignore
-from prelims.processor import Recommender, OpenGraphMediaExtractor  # type: ignore
-
+from prelims.processor import OpenGraphMediaExtractor, Recommender  # type: ignore
 
 logger = logging.getLogger(__name__)
 

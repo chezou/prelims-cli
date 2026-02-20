@@ -5,7 +5,7 @@ import click
 from omegaconf import OmegaConf, open_dict
 from prelims import StaticSitePostsHandler  # type: ignore
 
-from processor import set_processor
+from prelims_cli.processor import set_processor
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
