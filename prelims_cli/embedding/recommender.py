@@ -17,8 +17,8 @@ logger = logging.getLogger(__name__)
 class EmbeddingRecommender(BaseFrontMatterProcessor):
     """Generate article recommendations using ONNX embedding model similarity.
 
-    Uses ruri-v3-30m (256-dim Japanese embedding model) by default.
-    Embeddings are cached in SQLite keyed by content hash.
+    Model is selected by ``language`` (default ``"en"``).
+    Embeddings are cached in a per-language SQLite DB keyed by content hash.
 
     Parameters
     ----------
@@ -28,12 +28,18 @@ class EmbeddingRecommender(BaseFrontMatterProcessor):
         Number of recommended articles (default 3).
     lower_path : bool
         Lowercase paths in recommendations (default True).
-    cache_db : str
+    cache_db : str | None
         SQLite database path for embedding cache.
-    model_name : str
+        Defaults to ``.prelims_embedding_cache_{language}.db``.
+    model_name : str | None
         HuggingFace repo ID for the ONNX model.
-    model_file : str
+        If None, resolved from ``language``.
+    model_file : str | None
         Path to the ONNX model file within the repo.
+        If None, resolved from ``language``.
+    language : str
+        Language shorthand (``"en"`` or ``"ja"``). Determines the default
+        model and cache DB name. Ignored when ``model_name`` is set explicitly.
     prefix : str
         Text prefix prepended to each article before embedding.
     batch_size : int
