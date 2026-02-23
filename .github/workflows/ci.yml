@@ -17,7 +17,24 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: uv sync
-      - run: uv run pytest tests
+      - run: uv run pytest tests -m "not slow"
       - run: uv run mypy prelims_cli
       - run: uv run ruff check
       - run: uv run ruff format --check
+
+  test-embedding:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: uv sync --extra embedding
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface/hub
+          key: hf-ruri-v3-30m-onnx
+      - run: uv run pytest tests/test_integration_embedding.py -m slow -v

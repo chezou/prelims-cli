@@ -16,6 +16,12 @@ dependencies = [
 
 [project.optional-dependencies]
 ja = ["SudachiPy>=0.6.2", "SudachiDict-full>=20211220"]
+embedding = [
+    "onnxruntime>=1.17.0",
+    "tokenizers>=0.21.0",
+    "huggingface-hub>=0.20.0",
+    "numpy>=1.24.0",
+]
 
 [project.scripts]
 prelims-cli = "prelims_cli.cli:main"
@@ -37,6 +43,9 @@ dev = [
   "mypy>=0.931",
   "ruff>=0.9",
 ]
+
+[tool.pytest.ini_options]
+markers = ["slow: marks tests that require model download (deselect with '-m \"not slow\"')"]
 
 [tool.ruff]
 line-length = 88
