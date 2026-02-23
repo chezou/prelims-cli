@@ -31,7 +31,7 @@ Assuming the following folder directory:
 
 where, post and blog are pages, and scripts is the place to put scripts.
 
-Here is the example of configuration:
+Here is the example of configuration for the normal recommender:
 
 ```myconfig.yaml
 handlers:
@@ -61,6 +61,31 @@ handlers:
           mode: C
           dict: full
 ```
+
+Here is the example of configuration for the embedding-based recommender:
+
+```myconfig-embedding.yaml
+handlers:
+  - target_path: "content/blog"
+    ignore_files:
+      - _index.md
+    processors:
+      - permalink_base: "/blog"
+        type: embedding_recommender
+        language: en  # Use onnx-community/granite-embedding-small-english-r2-ONNX
+        topk: 3
+        cache_db: ".prelims_embedding_cache_en.db"
+  - target_path: "content/post"
+    ignore_files:
+      - _index.md
+    processors:
+      - permalink_base: "/post"
+        type: embedding_recommender
+        language: ja   # Use sirasagi62/ruri-v3-30m-ONNX
+        topk: 3
+        cache_db: ".prelims_embedding_cache_ja.db"
+```
+
 
 ```sh
 $ prelims-cli --config ./scripts/config/myconfig.yaml
