@@ -34,3 +34,11 @@ def test_set_processor_routes_open_graph(mock_set_og):
     cfg = OmegaConf.create({"type": "open_graph_media_extractor"})
     set_processor(handler, cfg)
     mock_set_og.assert_called_once_with(handler, cfg)
+
+
+@patch("prelims_cli.processor.set_embedding_recommender")
+def test_set_processor_routes_embedding_recommender(mock_set_emb):
+    handler = MagicMock()
+    cfg = OmegaConf.create({"type": "embedding_recommender"})
+    set_processor(handler, cfg)
+    mock_set_emb.assert_called_once_with(handler, cfg)

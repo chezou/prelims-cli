@@ -13,6 +13,8 @@ def set_processor(h: StaticSitePostsHandler, cfg: DictConfig) -> None:
         set_recommender(h, cfg)
     elif cfg.type == "open_graph_media_extractor":
         set_open_graph_media_extractor(h, cfg)
+    elif cfg.type == "embedding_recommender":
+        set_embedding_recommender(h, cfg)
     else:
         raise NotImplementedError(f"Unknown Processor type: {cfg.type}")
 
@@ -58,6 +60,31 @@ def set_recommender(h: StaticSitePostsHandler, cfg: DictConfig) -> None:
             **tfidf_opts,
         )
     )
+
+
+def set_embedding_recommender(h: StaticSitePostsHandler, cfg: DictConfig) -> None:
+    from .embedding import EmbeddingRecommender
+
+    with open_dict(cfg):
+        kwargs: dict[str, object] = {
+            "permalink_base": cfg.get("permalink_base", ""),
+            "topk": cfg.get("topk", 3),
+            "lower_path": cfg.get("lower_path", True),
+            "language": cfg.get("language", "en"),
+            "prefix": cfg.get("prefix", ""),
+            "batch_size": cfg.get("batch_size", 32),
+        }
+        cache_db = cfg.get("cache_db", None)
+        if cache_db is not None:
+            kwargs["cache_db"] = cache_db
+        model_name = cfg.get("model_name", None)
+        if model_name is not None:
+            kwargs["model_name"] = model_name
+        model_file = cfg.get("model_file", None)
+        if model_file is not None:
+            kwargs["model_file"] = model_file
+
+    h.register_processor(EmbeddingRecommender(**kwargs))  # type: ignore[arg-type]
 
 
 def set_open_graph_media_extractor(h: StaticSitePostsHandler, cfg: DictConfig) -> None:
