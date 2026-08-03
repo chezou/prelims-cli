@@ -12,6 +12,7 @@ dependencies = [
   "prelims>=0.0.6",
   "click>=8.0.3",
   "omegaconf>=2.1.1",
+  "PyYAML>=5.1",
 ]
 
 [project.optional-dependencies]
@@ -42,6 +43,7 @@ dev = [
   "pytest>=6.0",
   "mypy>=0.931",
   "ruff>=0.9",
+  "types-PyYAML>=6.0",
 ]
 
 [tool.pytest.ini_options]

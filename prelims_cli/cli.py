@@ -3,8 +3,8 @@ import os
 
 import click
 from omegaconf import OmegaConf, open_dict
-from prelims import StaticSitePostsHandler  # type: ignore
 
+from prelims_cli.handler import StablePostsHandler
 from prelims_cli.processor import set_processor
 
 logging.basicConfig(level=logging.INFO)
@@ -21,7 +21,7 @@ def main(config: str) -> None:
         with open_dict(handler):
             handler.ignore_files = handler.get("ignore_files", [])
             handler.encoding = handler.get("encoding", "utf-8")
-        h = StaticSitePostsHandler(
+        h = StablePostsHandler(
             handler.target_path,
             ignore_files=handler.ignore_files,
             encoding=handler.encoding,
