@@ -20,15 +20,23 @@ POOLING_METHODS = ("mean", "cls")
 # no setting reflects. Forget to bump it and sites keep serving stale vectors.
 EMBEDDING_CACHE_VERSION = 1
 
+# Revisions are pinned because an unpinned repo resolves to whatever `main` is
+# at download time. The cache DB keys on the model name, not on its weights, so
+# an upstream re-upload would leave old and new vectors side by side in the same
+# database and they would be compared to each other — dimensions match, nothing
+# raises, the recommendations are just quietly wrong. The pin is part of the
+# cache key, so bumping it re-embeds everything and keeps one generation.
 LANGUAGE_MODELS = {
     "ja": {
         "model_name": "sirasagi62/ruri-v3-30m-ONNX",
         "model_file": "onnx/model_quantized.onnx",
+        "revision": "cdf9391f1ff2198daa8f63f7ccf97d7b3e7415a0",
         "pooling": "mean",
     },
     "en": {
         "model_name": "onnx-community/granite-embedding-small-english-r2-ONNX",
         "model_file": "onnx/model_quantized.onnx",
+        "revision": "1dc7835ba0cb9c76a3618d0bf0c427c97671b3c8",
         "pooling": "cls",
     },
 }
@@ -48,6 +56,7 @@ class OnnxEmbedder:
         model_file: str = DEFAULT_MODEL_FILE,
         *,
         pooling: str,
+        revision: str | None = None,
         prefix: str = "",
     ) -> None:
         if pooling not in POOLING_METHODS:
@@ -64,14 +73,18 @@ class OnnxEmbedder:
             Tokenizer,
         )
 
-        model_path = hf_hub_download(repo_id=model_name, filename=model_file)
+        model_path = hf_hub_download(
+            repo_id=model_name, filename=model_file, revision=revision
+        )
         tokenizer_path = hf_hub_download(
-            repo_id=model_name, filename=DEFAULT_TOKENIZER_FILE
+            repo_id=model_name, filename=DEFAULT_TOKENIZER_FILE, revision=revision
         )
 
         # Some ONNX models store weights in a companion _data file
         try:
-            hf_hub_download(repo_id=model_name, filename=f"{model_file}_data")
+            hf_hub_download(
+                repo_id=model_name, filename=f"{model_file}_data", revision=revision
+            )
         except EntryNotFoundError:
             pass
 
@@ -81,6 +94,7 @@ class OnnxEmbedder:
         self.tokenizer = Tokenizer.from_file(tokenizer_path)
         self.tokenizer.enable_truncation(max_length=MAX_LENGTH)
         self.pooling = pooling
+        self.revision = revision
         self.prefix = prefix
 
     def embed(self, texts: list[str]) -> np.ndarray:

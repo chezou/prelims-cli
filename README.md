@@ -100,9 +100,16 @@ an error:
         pooling: cls
 ```
 
-Cached embeddings are keyed by the model, pooling and prefix as well as the
-article content, so changing any of them re-embeds the affected articles
-instead of reusing stale vectors. Changes to the embedding code itself are not
+Model revisions are pinned to a commit in `LANGUAGE_MODELS`. Without a pin,
+an upstream re-upload would leave vectors from two different models in the same
+cache DB, compared against each other — same dimensions, no error, quietly worse
+recommendations. To take an upstream update, bump the `revision` there; the
+whole cache re-embeds and stays one generation. `revision` is also accepted in
+the config for a custom `model_name`.
+
+Cached embeddings are keyed by the model, its revision, pooling and prefix as
+well as the article content, so changing any of them re-embeds the affected
+articles instead of reusing stale vectors. Changes to the embedding code itself are not
 visible in those settings, so `EMBEDDING_CACHE_VERSION` in
 `prelims_cli/embedding/inference.py` is part of the key too — bump it in any
 change that makes `embed()` return different vectors for the same input.

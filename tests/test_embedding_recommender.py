@@ -373,6 +373,70 @@ def test_pooling_passed_to_embedder(MockEmbedder: MagicMock, tmp_path: Path) -> 
     assert MockEmbedder.call_args.kwargs["pooling"] == "cls"
 
 
+def test_language_resolves_revision() -> None:
+    """Language models must be pinned, not tracking whatever main is."""
+    for language in ("ja", "en"):
+        revision = EmbeddingRecommender(language=language).revision
+        assert revision == LANGUAGE_MODELS[language]["revision"]
+        # A commit SHA, not a branch name
+        assert len(revision) == 40
+
+
+def test_explicit_revision_overrides_language_default() -> None:
+    rec = EmbeddingRecommender(language="ja", revision="main")
+    assert rec.revision == "main"
+
+
+def test_explicit_model_leaves_revision_unpinned() -> None:
+    rec = EmbeddingRecommender(model_name="custom/model-ONNX", pooling="mean")
+    assert rec.revision is None
+
+
+@patch("prelims_cli.embedding.recommender.OnnxEmbedder")
+def test_revision_passed_to_embedder(MockEmbedder: MagicMock, tmp_path: Path) -> None:
+    embedder_instance = MockEmbedder.return_value
+    embedder_instance.embed.side_effect = _fake_embeddings
+
+    posts = [
+        _make_post("/posts/a.md", "content A"),
+        _make_post("/posts/b.md", "content B"),
+    ]
+    EmbeddingRecommender(
+        permalink_base="/blog", language="en", cache_db=str(tmp_path / "cache.db")
+    ).process(posts)
+
+    assert (
+        MockEmbedder.call_args.kwargs["revision"] == LANGUAGE_MODELS["en"]["revision"]
+    )
+
+
+@patch("prelims_cli.embedding.recommender.OnnxEmbedder")
+def test_revision_change_invalidates_cache(
+    MockEmbedder: MagicMock, tmp_path: Path
+) -> None:
+    """Vectors from one revision must not be reused after repinning."""
+    embedder_instance = MockEmbedder.return_value
+    embedder_instance.embed.side_effect = _fake_embeddings
+
+    cache_path = str(tmp_path / "cache.db")
+
+    def make_posts() -> list[MagicMock]:
+        return [
+            _make_post("/posts/a.md", "content A"),
+            _make_post("/posts/b.md", "content B"),
+        ]
+
+    EmbeddingRecommender(language="en", revision="a" * 40, cache_db=cache_path).process(
+        make_posts()
+    )
+    MockEmbedder.reset_mock()
+
+    EmbeddingRecommender(language="en", revision="b" * 40, cache_db=cache_path).process(
+        make_posts()
+    )
+    MockEmbedder.assert_called_once()
+
+
 @patch("prelims_cli.embedding.recommender.OnnxEmbedder")
 def test_cache_version_bump_invalidates_cache(
     MockEmbedder: MagicMock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
