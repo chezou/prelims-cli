@@ -46,9 +46,11 @@ Requires: uv sync --extra embedding
 from __future__ import annotations
 
 import argparse
+import hashlib
 import tempfile
 from collections import Counter
 from collections.abc import Sequence
+from contextlib import AbstractContextManager, nullcontext
 from pathlib import Path
 
 import yaml
@@ -116,6 +118,18 @@ def drop_common(
     stop = {t for t, _ in dropped}
     filtered = {p: terms - stop for p, terms in tagged.items()}
     return {p: terms for p, terms in filtered.items() if terms}, dropped
+
+
+def cache_db_for(home: str, args: argparse.Namespace, spec: str) -> str:
+    """Path of the cache DB for one variant.
+
+    Named after what the variant is rather than whether it is --a or --b, so a
+    persistent --cache-dir survives swapping the two, and a corpus never shares
+    a file with another one (prune() would delete the other corpus's rows).
+    Embeddings do not depend on topk, so a sweep reuses them all.
+    """
+    digest = hashlib.sha1(f"{args.vary}\0{spec}".encode()).hexdigest()[:8]
+    return str(Path(home) / f"{args.content_dir.name}-{digest}.db")
 
 
 def parse_config(spec: str) -> dict[str, str]:
@@ -214,6 +228,14 @@ def main() -> None:
     parser.add_argument("--b", default="cls", help="candidate value (after)")
     parser.add_argument("--ignore", nargs="*", default=["_index.md"])
     parser.add_argument(
+        "--cache-dir",
+        type=Path,
+        default=None,
+        help="keep the embedding caches here instead of throwaway DBs, so "
+        "re-running — with a different --topk, say — costs no embedding. "
+        "Each variant gets its own file keyed by its settings",
+    )
+    parser.add_argument(
         "--tag-keys",
         nargs="+",
         default=list(TAG_KEYS),
@@ -263,10 +285,20 @@ def main() -> None:
     parsed = {p: split_front_matter(p) for p in paths}
     bodies = {p: body for p, (_, body) in parsed.items()}
 
-    with tempfile.TemporaryDirectory() as tmp:
+    if args.cache_dir:
+        args.cache_dir.mkdir(parents=True, exist_ok=True)
+        cache_home: AbstractContextManager[str] = nullcontext(str(args.cache_dir))
+    else:
+        cache_home = tempfile.TemporaryDirectory()
+
+    with cache_home as home:
         print(f"{len(paths)} articles, varying {args.vary}: {args.a!r} -> {args.b!r}\n")
-        before = run_variant(paths, bodies, args, args.a, f"{tmp}/a.db")
-        after = run_variant(paths, bodies, args, args.b, f"{tmp}/b.db")
+        before = run_variant(
+            paths, bodies, args, args.a, cache_db_for(home, args, args.a)
+        )
+        after = run_variant(
+            paths, bodies, args, args.b, cache_db_for(home, args, args.b)
+        )
 
     # The recommender maps file paths to permalinks; to look up a recommended
     # article's tags we need the reverse, so recompute them the same way.
