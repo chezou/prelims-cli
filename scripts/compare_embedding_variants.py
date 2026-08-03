@@ -157,8 +157,12 @@ def run_variant(
 
 def tag_overlap(
     recs: dict[str, list[str]], tags_by_permalink: dict[str, set[str]]
-) -> tuple[float, float, int]:
-    """Return (fraction sharing >=1 tag, mean shared tags, articles scored)."""
+) -> tuple[float, float, int, int]:
+    """Return (fraction sharing >=1 tag, mean shared tags, articles, pairs).
+
+    Only pairs where both articles carry tags are counted, so a corpus that is
+    mostly untagged resolves far less than its article count suggests.
+    """
     hits = shared = considered = scored = 0
     for path, recommended in recs.items():
         own = tags_by_permalink.get(path)
@@ -174,8 +178,8 @@ def tag_overlap(
             shared += overlap
             hits += overlap > 0
     if not considered:
-        return 0.0, 0.0, scored
-    return hits / considered, shared / considered, scored
+        return 0.0, 0.0, scored, 0
+    return hits / considered, shared / considered, scored, considered
 
 
 def hub_spread(recs: dict[str, list[str]]) -> tuple[int, float]:
@@ -325,10 +329,16 @@ def main() -> None:
             print(f"  dropped over --max-df {args.max_df}: {len(dropped)} — {shown}")
 
         print(f"\ntag overlap (higher is better), topk={args.topk}")
-        print(f"{'variant':<24}{'any-tag':>10}{'avg shared':>13}{'scored':>9}")
+        header = f"{'variant':<24}{'any-tag':>10}{'avg shared':>13}"
+        print(f"{header}{'scored':>9}{'pairs':>8}")
         for value, recs in ((args.a, before), (args.b, after)):
-            frac, mean, scored = tag_overlap(recs, tags_by_permalink)
-            print(f"{label_of(value):<24}{frac:>10.3f}{mean:>13.3f}{scored:>9}")
+            frac, mean, scored, pairs = tag_overlap(recs, tags_by_permalink)
+            row = f"{label_of(value):<24}{frac:>10.3f}{mean:>13.3f}"
+            print(f"{row}{scored:>9}{pairs:>8}")
+        print(
+            "  pairs = recommendations where both articles are tagged; "
+            "a difference smaller than a few pairs is noise"
+        )
 
     print("\nhub spread (lower is better)")
     print(f"{'variant':<24}{'max in-deg':>12}{'top-5 share':>14}")
