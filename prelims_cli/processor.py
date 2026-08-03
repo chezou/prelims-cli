@@ -86,6 +86,9 @@ def set_embedding_recommender(h: StaticSitePostsHandler, cfg: DictConfig) -> Non
         pooling = cfg.get("pooling", None)
         if pooling is not None:
             kwargs["pooling"] = pooling
+        revision = cfg.get("revision", None)
+        if revision is not None:
+            kwargs["revision"] = revision
 
     h.register_processor(EmbeddingRecommender(**kwargs))  # type: ignore[arg-type]
 

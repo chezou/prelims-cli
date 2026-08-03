@@ -50,6 +50,11 @@ class EmbeddingRecommender(BaseFrontMatterProcessor):
         Pooling method (``"mean"`` or ``"cls"``). If None, resolved from
         ``language``. Required when ``model_name`` is set explicitly, since
         the wrong pooling degrades embeddings silently instead of failing.
+    revision : str | None
+        Git revision of the model repo. If None, resolved from ``language``,
+        which pins a commit. With an explicit ``model_name`` it defaults to
+        the repo's default branch — pin it unless you want upstream re-uploads
+        to mix two generations of vectors in one cache.
     prefix : str
         Text prefix prepended to each article before embedding.
     batch_size : int
@@ -69,6 +74,7 @@ class EmbeddingRecommender(BaseFrontMatterProcessor):
         model_file: str | None = None,
         language: str = DEFAULT_LANGUAGE,
         pooling: str | None = None,
+        revision: str | None = None,
         prefix: str = "",
         batch_size: int = 8,
         max_content_chars: int = 2000,
@@ -83,6 +89,8 @@ class EmbeddingRecommender(BaseFrontMatterProcessor):
             model_file = LANGUAGE_MODELS[language]["model_file"]
             if pooling is None:
                 pooling = LANGUAGE_MODELS[language]["pooling"]
+            if revision is None:
+                revision = LANGUAGE_MODELS[language]["revision"]
         else:
             if model_file is None:
                 model_file = "onnx/model_quantized.onnx"
@@ -104,6 +112,7 @@ class EmbeddingRecommender(BaseFrontMatterProcessor):
         self.model_name = model_name
         self.model_file = model_file
         self.pooling = pooling
+        self.revision = revision
         self.prefix = prefix
         self.batch_size = batch_size
         self.max_content_chars = max_content_chars
@@ -130,13 +139,14 @@ class EmbeddingRecommender(BaseFrontMatterProcessor):
         contents = [post.content[: self.max_content_chars] for post in posts]
         paths = [str(post.path) for post in posts]
         # Cached vectors are only reusable when they were produced by the same
-        # model, the same pooling/prefix, and the same version of embed(), so
-        # all of those are part of the key.
+        # model at the same revision, the same pooling/prefix, and the same
+        # version of embed(), so all of those are part of the key.
         fingerprint = "\x00".join(
             [
                 str(EMBEDDING_CACHE_VERSION),
                 self.model_name,
                 self.model_file,
+                self.revision or "",
                 self.pooling,
                 self.prefix,
             ]
@@ -163,6 +173,7 @@ class EmbeddingRecommender(BaseFrontMatterProcessor):
                 model_name=self.model_name,
                 model_file=self.model_file,
                 pooling=self.pooling,
+                revision=self.revision,
                 prefix=self.prefix,
             )
             uncached_texts = [contents[i] for i in uncached_indices]
