@@ -21,7 +21,13 @@ import sys
 
 import numpy as np
 
-from prelims_cli.embedding.inference import POOLING_METHODS, OnnxEmbedder
+from prelims_cli.embedding.inference import (
+    POOLING_METHODS,
+    OnnxEmbedder,
+    _cls_pool,
+    _l2_normalize,
+    _mean_pool,
+)
 
 SUPPLIED_INPUTS = {"input_ids", "attention_mask"}
 
@@ -62,6 +68,40 @@ def describe_io(embedder: OnnxEmbedder) -> tuple[set[str], list]:
     for o in outputs:
         print(f"  {o.name:<20} {o.type:<24} {o.shape}")
     return required, list(outputs[0].shape)
+
+
+def report_pooling_match(embedder: OnnxEmbedder, texts: list[str]) -> str | None:
+    """Compare both pooling methods against the model's own pooled output.
+
+    Sentence-transformers exports often ship a `sentence_embedding` output
+    alongside the token states. It was produced by the model's own pooling
+    module, so whichever of ours reproduces it is the one the model wants —
+    which beats reading the model card.
+    """
+    input_ids, attention_mask = embedder._tokenize(texts)
+    outputs = embedder.session.run(
+        None, {"input_ids": input_ids, "attention_mask": attention_mask}
+    )
+    pooled = next((o for o in outputs[1:] if o.ndim == 2), None)
+    if pooled is None:
+        print("no pooled output exported — pooling cannot be verified here")
+        return None
+
+    reference = _l2_normalize(pooled)
+    candidates = {
+        "mean": _mean_pool(outputs[0], attention_mask),
+        "cls": _cls_pool(outputs[0]),
+    }
+    best, best_sim = None, -1.0
+    for name, vectors in candidates.items():
+        sim = float((_l2_normalize(vectors) * reference).sum(axis=1).mean())
+        print(f"  {name:<6} vs exported sentence_embedding: cosine {sim:+.4f}")
+        if sim > best_sim:
+            best, best_sim = name, sim
+    if best_sim < 0.99:
+        print("  neither reproduces it closely — the export may pool differently")
+        return None
+    return best
 
 
 def report_probes(embedder: OnnxEmbedder) -> bool:
@@ -125,6 +165,17 @@ def main() -> int:
     norms = np.linalg.norm(embeddings, axis=1)
     print(f"embedding shape: {embeddings.shape} (dim={embeddings.shape[1]})")
     print(f"L2 norms: {norms.round(4).tolist()}")
+
+    print("\nwhich pooling does the model itself use?")
+    wanted = report_pooling_match(embedder, PROBES["en"])
+    if wanted and wanted != args.pooling:
+        print(
+            f"\nWRONG POOLING: this export pools with {wanted!r}, not {args.pooling!r}."
+        )
+        print("Re-run with the right one; the difference does not raise on its own.")
+        return 1
+    if wanted:
+        print(f"  confirmed: {wanted}")
 
     print("\nsame-topic pair should beat the unrelated one:")
     if not report_probes(embedder):
