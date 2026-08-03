@@ -94,3 +94,15 @@ target: /users/chezo/src/chezo.uno/content/post
 ```
 
 Then your articles' front matter were updated.
+
+Articles whose front matter did not change are left untouched, and updated ones
+are written in block style:
+
+```yaml
+tags:
+  - AI
+  - Hugo
+```
+
+This keeps the output stable across runs, so a CMS or an editor writing the same
+style does not produce a diff on every run.
