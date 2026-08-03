@@ -238,6 +238,16 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    # Without this the spec is passed through as a pooling method and the error
+    # comes from deep inside the recommender, naming neither flag.
+    if args.vary != "config":
+        for flag, value in (("--a", args.a), ("--b", args.b)):
+            if "=" in value:
+                parser.error(
+                    f"{flag} is {value!r}, which looks like a config spec, but "
+                    f"--vary is {args.vary!r}. Add --vary config."
+                )
+
     paths = sorted(
         p
         for p in args.content_dir.rglob("*.md")
