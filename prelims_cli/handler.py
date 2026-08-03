@@ -1,10 +1,10 @@
-import re
 from typing import Any
 
 import yaml
 from prelims import StaticSitePostsHandler  # type: ignore
 
-RE_FRONT_MATTER = re.compile(r"---\n([\s\S]*?\n)---\n")
+# Reuse the pattern prelims parsed `raw_content` with, so both see the same block
+from prelims.post import RE_FRONT_MATTER  # type: ignore
 
 
 class BlockStyleDumper(yaml.Dumper):
@@ -36,7 +36,12 @@ def save_post(post: Any) -> None:
     if post.front_matter == yaml.safe_load(m.group(1)):
         return
 
-    content = post.raw_content.replace(m.group(1), dump_front_matter(post.front_matter))
+    start, end = m.span(1)
+    content = (
+        post.raw_content[:start]
+        + dump_front_matter(post.front_matter)
+        + post.raw_content[end:]
+    )
     with open(post.path, "w", encoding=post.encoding) as f:
         f.write(content)
 

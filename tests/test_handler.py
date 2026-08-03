@@ -30,6 +30,15 @@ draft: true
 Hello world.
 """
 
+REPEATED_IN_BODY = """---
+title: hello
+---
+
+Hello world.
+
+title: hello
+"""
+
 
 def write_post(tmp_path, content):
     path = tmp_path / "index.md"
@@ -86,6 +95,28 @@ recommendations:
 ---
 
 Hello world.
+"""
+    )
+
+
+def test_save_post_only_replaces_the_front_matter(tmp_path):
+    path = write_post(tmp_path, REPEATED_IN_BODY)
+    post = Post.load(path)
+
+    post.update("recommendations", ["/post/x/"])
+    save_post(post)
+
+    assert (
+        path.read_text(encoding="utf-8")
+        == """---
+title: hello
+recommendations:
+  - /post/x/
+---
+
+Hello world.
+
+title: hello
 """
     )
 
