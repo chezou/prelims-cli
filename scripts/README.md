@@ -30,7 +30,14 @@ uv run --extra embedding python scripts/compare_embedding_variants.py \
 ```
 
 It reports membership changes separately from order-only ones, and — when the
-front matter has `tags` or `categories` — how often recommendations share a tag
-with the article they are attached to, plus how concentrated recommendations
-are on a few articles. Temporary cache DBs are used, so the real ones are left
-alone.
+front matter has `tags`, `categories` or `keywords` — how often recommendations
+share a tag with the article they are attached to, plus how concentrated
+recommendations are on a few articles. Temporary cache DBs are used, so the real
+ones are left alone.
+
+Check the `tag source` lines in the output before quoting the overlap number.
+If most articles are tagged only through an auto-extracted `keywords` list, the
+metric drifts toward lexical overlap and flatters models that rank by surface
+wording. `--tag-keys tags categories` restricts it to curated tags (at the cost
+of coverage) and `--max-df 0.05` drops filler terms; running both is the way to
+tell whether a result survives.
