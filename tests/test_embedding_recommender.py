@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
-from prelims_cli.embedding.inference import LANGUAGE_MODELS
+from prelims_cli.embedding.inference import EMBEDDING_CACHE_VERSION, LANGUAGE_MODELS
 from prelims_cli.embedding.recommender import EmbeddingRecommender, _content_hash
 
 
@@ -371,6 +371,46 @@ def test_pooling_passed_to_embedder(MockEmbedder: MagicMock, tmp_path: Path) -> 
     rec.process(posts)
 
     assert MockEmbedder.call_args.kwargs["pooling"] == "cls"
+
+
+@patch("prelims_cli.embedding.recommender.OnnxEmbedder")
+def test_cache_version_bump_invalidates_cache(
+    MockEmbedder: MagicMock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Bumping the version must re-embed even when every setting is unchanged.
+
+    This is the escape hatch for changes to embed() itself, which no setting
+    reflects.
+    """
+    embedder_instance = MockEmbedder.return_value
+    embedder_instance.embed.side_effect = _fake_embeddings
+
+    cache_path = str(tmp_path / "cache.db")
+
+    def make_posts() -> list[MagicMock]:
+        return [
+            _make_post("/posts/a.md", "content A"),
+            _make_post("/posts/b.md", "content B"),
+        ]
+
+    def run() -> None:
+        EmbeddingRecommender(
+            permalink_base="/blog", language="en", cache_db=cache_path
+        ).process(make_posts())
+
+    run()
+    MockEmbedder.reset_mock()
+
+    # Same everything → cache hit, no embedder
+    run()
+    MockEmbedder.assert_not_called()
+
+    monkeypatch.setattr(
+        "prelims_cli.embedding.recommender.EMBEDDING_CACHE_VERSION",
+        EMBEDDING_CACHE_VERSION + 1,
+    )
+    run()
+    MockEmbedder.assert_called_once()
 
 
 @patch("prelims_cli.embedding.recommender.OnnxEmbedder")

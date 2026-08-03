@@ -13,6 +13,13 @@ logger = logging.getLogger(__name__)
 # so every entry must state it explicitly and there is no default.
 POOLING_METHODS = ("mean", "cls")
 
+# Bump this whenever a change to embed() makes it return different vectors for
+# the same input — a new normalization, different truncation, a pooling bug fix.
+# It is part of the cache key, so bumping it re-embeds every cached article.
+# Model, pooling and prefix are already in that key; this covers the code, which
+# no setting reflects. Forget to bump it and sites keep serving stale vectors.
+EMBEDDING_CACHE_VERSION = 1
+
 LANGUAGE_MODELS = {
     "ja": {
         "model_name": "sirasagi62/ruri-v3-30m-ONNX",

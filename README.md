@@ -102,7 +102,10 @@ an error:
 
 Cached embeddings are keyed by the model, pooling and prefix as well as the
 article content, so changing any of them re-embeds the affected articles
-instead of reusing stale vectors.
+instead of reusing stale vectors. Changes to the embedding code itself are not
+visible in those settings, so `EMBEDDING_CACHE_VERSION` in
+`prelims_cli/embedding/inference.py` is part of the key too — bump it in any
+change that makes `embed()` return different vectors for the same input.
 
 
 ```sh

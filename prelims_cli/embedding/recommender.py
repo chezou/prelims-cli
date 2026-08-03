@@ -11,6 +11,7 @@ from prelims.processor.base import BaseFrontMatterProcessor  # type: ignore
 from .cache import EmbeddingCache
 from .inference import (
     DEFAULT_LANGUAGE,
+    EMBEDDING_CACHE_VERSION,
     LANGUAGE_MODELS,
     POOLING_METHODS,
     OnnxEmbedder,
@@ -129,9 +130,16 @@ class EmbeddingRecommender(BaseFrontMatterProcessor):
         contents = [post.content[: self.max_content_chars] for post in posts]
         paths = [str(post.path) for post in posts]
         # Cached vectors are only reusable when they were produced by the same
-        # model and the same pooling/prefix, so those are part of the key.
+        # model, the same pooling/prefix, and the same version of embed(), so
+        # all of those are part of the key.
         fingerprint = "\x00".join(
-            [self.model_name, self.model_file, self.pooling, self.prefix]
+            [
+                str(EMBEDDING_CACHE_VERSION),
+                self.model_name,
+                self.model_file,
+                self.pooling,
+                self.prefix,
+            ]
         )
         hashes = [_content_hash(f"{fingerprint}\x00{c}") for c in contents]
 
