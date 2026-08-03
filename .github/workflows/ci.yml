@@ -36,5 +36,5 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: ~/.cache/huggingface/hub
-          key: hf-ruri-v3-30m-onnx
+          key: hf-ruri-v3-30m-onnx-granite-small-en-r2-onnx
       - run: uv run pytest tests/test_integration_embedding.py -m slow -v

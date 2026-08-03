@@ -9,7 +9,13 @@ import numpy as np
 from prelims.processor.base import BaseFrontMatterProcessor  # type: ignore
 
 from .cache import EmbeddingCache
-from .inference import DEFAULT_LANGUAGE, LANGUAGE_MODELS, OnnxEmbedder
+from .inference import (
+    DEFAULT_LANGUAGE,
+    EMBEDDING_CACHE_VERSION,
+    LANGUAGE_MODELS,
+    POOLING_METHODS,
+    OnnxEmbedder,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +46,10 @@ class EmbeddingRecommender(BaseFrontMatterProcessor):
     language : str
         Language shorthand (``"en"`` or ``"ja"``). Determines the default
         model and cache DB name. Ignored when ``model_name`` is set explicitly.
+    pooling : str | None
+        Pooling method (``"mean"`` or ``"cls"``). If None, resolved from
+        ``language``. Required when ``model_name`` is set explicitly, since
+        the wrong pooling degrades embeddings silently instead of failing.
     prefix : str
         Text prefix prepended to each article before embedding.
     batch_size : int
@@ -58,6 +68,7 @@ class EmbeddingRecommender(BaseFrontMatterProcessor):
         model_name: str | None = None,
         model_file: str | None = None,
         language: str = DEFAULT_LANGUAGE,
+        pooling: str | None = None,
         prefix: str = "",
         batch_size: int = 8,
         max_content_chars: int = 2000,
@@ -70,8 +81,21 @@ class EmbeddingRecommender(BaseFrontMatterProcessor):
                 )
             model_name = LANGUAGE_MODELS[language]["model_name"]
             model_file = LANGUAGE_MODELS[language]["model_file"]
-        elif model_file is None:
-            model_file = "onnx/model_quantized.onnx"
+            if pooling is None:
+                pooling = LANGUAGE_MODELS[language]["pooling"]
+        else:
+            if model_file is None:
+                model_file = "onnx/model_quantized.onnx"
+            if pooling is None:
+                raise ValueError(
+                    "pooling must be set explicitly when model_name is given "
+                    f"(one of {list(POOLING_METHODS)}). Check the model card: "
+                    "the wrong pooling silently degrades embeddings."
+                )
+        if pooling not in POOLING_METHODS:
+            raise ValueError(
+                f"Unsupported pooling: {pooling!r}. Supported: {list(POOLING_METHODS)}"
+            )
 
         self.permalink_base = permalink_base
         self.topk = topk
@@ -79,6 +103,7 @@ class EmbeddingRecommender(BaseFrontMatterProcessor):
         self.cache_db = cache_db or f".prelims_embedding_cache_{language}.db"
         self.model_name = model_name
         self.model_file = model_file
+        self.pooling = pooling
         self.prefix = prefix
         self.batch_size = batch_size
         self.max_content_chars = max_content_chars
@@ -104,7 +129,19 @@ class EmbeddingRecommender(BaseFrontMatterProcessor):
     ) -> None:
         contents = [post.content[: self.max_content_chars] for post in posts]
         paths = [str(post.path) for post in posts]
-        hashes = [_content_hash(c) for c in contents]
+        # Cached vectors are only reusable when they were produced by the same
+        # model, the same pooling/prefix, and the same version of embed(), so
+        # all of those are part of the key.
+        fingerprint = "\x00".join(
+            [
+                str(EMBEDDING_CACHE_VERSION),
+                self.model_name,
+                self.model_file,
+                self.pooling,
+                self.prefix,
+            ]
+        )
+        hashes = [_content_hash(f"{fingerprint}\x00{c}") for c in contents]
 
         # Check cache
         embeddings: list[np.ndarray | None] = []
@@ -125,6 +162,7 @@ class EmbeddingRecommender(BaseFrontMatterProcessor):
             embedder = OnnxEmbedder(
                 model_name=self.model_name,
                 model_file=self.model_file,
+                pooling=self.pooling,
                 prefix=self.prefix,
             )
             uncached_texts = [contents[i] for i in uncached_indices]

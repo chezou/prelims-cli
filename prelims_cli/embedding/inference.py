@@ -6,14 +6,30 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
+# Pooling is a per-model property, not a global one: ruri-v3 ships a
+# 1_Pooling/config.json that selects mean pooling, while granite-embedding r2
+# is trained for CLS pooling (its model card reads model_output[0][:, 0]).
+# Using the wrong one does not raise, it just degrades the embedding quality,
+# so every entry must state it explicitly and there is no default.
+POOLING_METHODS = ("mean", "cls")
+
+# Bump this whenever a change to embed() makes it return different vectors for
+# the same input — a new normalization, different truncation, a pooling bug fix.
+# It is part of the cache key, so bumping it re-embeds every cached article.
+# Model, pooling and prefix are already in that key; this covers the code, which
+# no setting reflects. Forget to bump it and sites keep serving stale vectors.
+EMBEDDING_CACHE_VERSION = 1
+
 LANGUAGE_MODELS = {
     "ja": {
         "model_name": "sirasagi62/ruri-v3-30m-ONNX",
         "model_file": "onnx/model_quantized.onnx",
+        "pooling": "mean",
     },
     "en": {
         "model_name": "onnx-community/granite-embedding-small-english-r2-ONNX",
         "model_file": "onnx/model_quantized.onnx",
+        "pooling": "cls",
     },
 }
 DEFAULT_LANGUAGE = "en"
@@ -30,8 +46,15 @@ class OnnxEmbedder:
         self,
         model_name: str = DEFAULT_MODEL_NAME,
         model_file: str = DEFAULT_MODEL_FILE,
+        *,
+        pooling: str,
         prefix: str = "",
     ) -> None:
+        if pooling not in POOLING_METHODS:
+            raise ValueError(
+                f"Unsupported pooling: {pooling!r}. Supported: {list(POOLING_METHODS)}"
+            )
+
         import onnxruntime as ort  # type: ignore[import-not-found,import-untyped]
         from huggingface_hub import hf_hub_download  # type: ignore[import-not-found]
         from huggingface_hub.utils import (  # type: ignore[import-not-found]
@@ -57,6 +80,7 @@ class OnnxEmbedder:
         )
         self.tokenizer = Tokenizer.from_file(tokenizer_path)
         self.tokenizer.enable_truncation(max_length=MAX_LENGTH)
+        self.pooling = pooling
         self.prefix = prefix
 
     def embed(self, texts: list[str]) -> np.ndarray:
@@ -78,7 +102,10 @@ class OnnxEmbedder:
         )
         last_hidden_state = outputs[0]  # (N, seq_len, dim)
 
-        embeddings = _mean_pool(last_hidden_state, attention_mask)
+        if self.pooling == "cls":
+            embeddings = _cls_pool(last_hidden_state)
+        else:
+            embeddings = _mean_pool(last_hidden_state, attention_mask)
         embeddings = _l2_normalize(embeddings)
         return embeddings
 
@@ -113,6 +140,20 @@ def _mean_pool(last_hidden_state: np.ndarray, attention_mask: np.ndarray) -> np.
     summed = (last_hidden_state * mask).sum(axis=1)
     counts = mask.sum(axis=1).clip(min=1e-9)
     return (summed / counts).astype(np.float32)
+
+
+def _cls_pool(last_hidden_state: np.ndarray) -> np.ndarray:
+    """Take the first ([CLS]) token embedding of each sequence.
+
+    Padding is right-aligned, so index 0 is always a real token.
+
+    Args:
+        last_hidden_state: (N, seq_len, dim) float array
+
+    Returns:
+        (N, dim) float32 array
+    """
+    return last_hidden_state[:, 0].astype(np.float32)
 
 
 def _l2_normalize(x: np.ndarray) -> np.ndarray:
