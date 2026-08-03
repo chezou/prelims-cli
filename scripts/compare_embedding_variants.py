@@ -133,16 +133,20 @@ def cache_db_for(home: str, args: argparse.Namespace, spec: str) -> str:
 
 
 def parse_config(spec: str) -> dict[str, str]:
-    """Parse "model_name=x,pooling=mean" into kwargs."""
+    """Parse "model_name=x,pooling=mean" into kwargs.
+
+    Values are taken verbatim: ruri-v3's prefix is "トピック: " with a trailing
+    space, and stripping it silently embeds something else than the model was
+    trained for.
+    """
     kwargs = {}
     for pair in spec.split(","):
-        pair = pair.strip()
-        if not pair:
+        if not pair.strip():
             continue
         if "=" not in pair:
-            raise ValueError(f"expected key=value, got {pair!r}")
+            raise ValueError(f"expected key=value, got {pair.strip()!r}")
         key, value = pair.split("=", 1)
-        kwargs[key.strip()] = value.strip()
+        kwargs[key.strip()] = value
     return kwargs
 
 
