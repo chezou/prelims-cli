@@ -46,17 +46,22 @@ PROBES = {
 }
 
 
-def describe_io(embedder: OnnxEmbedder) -> set[str]:
-    """Print the model's inputs and outputs; return required input names."""
+def describe_io(embedder: OnnxEmbedder) -> tuple[set[str], list]:
+    """Print the model's inputs and outputs.
+
+    Returns the required input names and the shape of the first output, which
+    is what embed() pools over.
+    """
     print("inputs:")
     required = set()
     for i in embedder.session.get_inputs():
         print(f"  {i.name:<20} {i.type:<24} {i.shape}")
         required.add(i.name)
     print("outputs:")
-    for o in embedder.session.get_outputs():
+    outputs = embedder.session.get_outputs()
+    for o in outputs:
         print(f"  {o.name:<20} {o.type:<24} {o.shape}")
-    return required
+    return required, list(outputs[0].shape)
 
 
 def report_probes(embedder: OnnxEmbedder) -> bool:
@@ -96,7 +101,7 @@ def main() -> int:
         prefix=args.prefix,
     )
 
-    required = describe_io(embedder)
+    required, first_output_shape = describe_io(embedder)
     extra = required - SUPPLIED_INPUTS
     print()
     if extra:
@@ -104,6 +109,17 @@ def main() -> int:
         print("OnnxEmbedder only feeds input_ids and attention_mask.")
         return 1
     print("inputs are covered by OnnxEmbedder (input_ids + attention_mask)")
+
+    # embed() pools over outputs[0] and expects (batch, seq_len, dim). An
+    # export whose first output is already pooled would make _cls_pool return
+    # a garbage 1-D slice instead of failing.
+    if len(first_output_shape) != 3:
+        print(
+            f"NOT USABLE AS-IS: first output has rank {len(first_output_shape)}"
+            f" {first_output_shape}, expected (batch, seq_len, dim)."
+        )
+        print("It looks pre-pooled; embed() would pool it a second time.")
+        return 1
 
     embeddings = embedder.embed(PROBES["en"])
     norms = np.linalg.norm(embeddings, axis=1)
