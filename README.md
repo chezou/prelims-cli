@@ -86,6 +86,24 @@ handlers:
         cache_db: ".prelims_embedding_cache_ja.db"
 ```
 
+`language` picks both the model and its pooling method (`en` uses CLS pooling,
+`ja` uses mean pooling). When you point the recommender at another model with
+`model_name`, you must also state its `pooling` (`mean` or `cls`) — check the
+model card, because the wrong pooling degrades the embeddings without raising
+an error:
+
+```yaml
+      - permalink_base: "/blog"
+        type: embedding_recommender
+        model_name: "your-org/your-model-ONNX"
+        model_file: "onnx/model_quantized.onnx"
+        pooling: cls
+```
+
+Cached embeddings are keyed by the model, pooling and prefix as well as the
+article content, so changing any of them re-embeds the affected articles
+instead of reusing stale vectors.
+
 
 ```sh
 $ prelims-cli --config ./scripts/config/myconfig.yaml
