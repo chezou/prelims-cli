@@ -36,6 +36,9 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: ~/.cache/huggingface/hub
-          # Includes the pinned revisions so bumping one refreshes the cache
-          key: hf-ruri-cdf9391-granite-1dc7835
+          # Keyed on the file holding the pinned revisions: a static key would
+          # hit after a bump and restore a cache without the new model, so the
+          # download would repeat every run and never be saved.
+          key: hf-${{ hashFiles('prelims_cli/embedding/inference.py') }}
+          restore-keys: hf-
       - run: uv run pytest tests/test_integration_embedding.py -m slow -v
