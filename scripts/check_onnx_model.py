@@ -17,11 +17,14 @@ changing the embedder rather than just adding a config entry.
 from __future__ import annotations
 
 import argparse
+import json
 import sys
+from pathlib import Path
 
 import numpy as np
 
 from prelims_cli.embedding.inference import (
+    MAX_LENGTH,
     POOLING_METHODS,
     OnnxEmbedder,
     _cls_pool,
@@ -104,6 +107,54 @@ def report_pooling_match(embedder: OnnxEmbedder, texts: list[str]) -> str | None
     return best
 
 
+def report_context_window(
+    embedder: OnnxEmbedder, model_name: str, revision: str | None
+) -> None:
+    """Report how much of an article this model can actually see.
+
+    `max_content_chars` is a character budget, but models are limited in
+    tokens, and the rate differs by language — the same 8,000 characters is
+    several times more tokens in Japanese than in English. A model whose
+    positional limit is below what we feed it cannot benefit from a longer
+    budget no matter what the comparison numbers say, so check this before
+    spending a run on it.
+    """
+    from huggingface_hub import hf_hub_download
+    from huggingface_hub.utils import EntryNotFoundError
+
+    limit = None
+    try:
+        config_path = hf_hub_download(
+            repo_id=model_name, filename="config.json", revision=revision
+        )
+        config = json.loads(Path(config_path).read_text())
+        limit = config.get("max_position_embeddings")
+        print(f"  architecture: {config.get('model_type', 'unknown')}")
+        print(f"  max_position_embeddings: {limit if limit else 'not declared'}")
+    except (EntryNotFoundError, OSError, ValueError) as exc:
+        print(f"  config.json unavailable ({type(exc).__name__}) — limit unknown")
+
+    print(f"  we truncate at: {MAX_LENGTH} tokens (MAX_LENGTH, same for every model)")
+    if limit and MAX_LENGTH > limit:
+        print(
+            f"  WARNING: MAX_LENGTH exceeds this model's {limit}-token limit. Long"
+            " articles are fed past it, which does not raise — it just degrades."
+        )
+
+    # Characters per token, so a max_content_chars budget can be read in tokens.
+    # Estimated from short probe sentences, so treat it as a rough rate.
+    print("  characters per token (rough, from probe text):")
+    for language, texts in PROBES.items():
+        text = "".join(texts)
+        tokens = len(embedder.tokenizer.encode(text).ids)
+        rate = len(text) / tokens
+        budget = int(limit * rate) if limit else None
+        line = f"    {language}: {rate:.1f} chars/token"
+        if budget:
+            line += f" — its {limit}-token limit is about {budget:,} characters"
+        print(line)
+
+
 def report_probes(embedder: OnnxEmbedder) -> bool:
     """Embed each probe set; return True if every same-topic pair wins."""
     all_passed = True
@@ -165,6 +216,9 @@ def main() -> int:
     norms = np.linalg.norm(embeddings, axis=1)
     print(f"embedding shape: {embeddings.shape} (dim={embeddings.shape[1]})")
     print(f"L2 norms: {norms.round(4).tolist()}")
+
+    print("\nhow much of an article can it see?")
+    report_context_window(embedder, args.model_name, args.revision)
 
     print("\nwhich pooling does the model itself use?")
     wanted = report_pooling_match(embedder, PROBES["en"])

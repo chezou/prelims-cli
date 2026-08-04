@@ -11,6 +11,12 @@ prints the model's inputs and outputs, fails if it needs anything beyond
 languages and verifies that same-topic pairs come out closer than unrelated
 ones. Run it before adding a model to `LANGUAGE_MODELS`.
 
+It also reports the model's positional limit and how many characters that comes
+to in each language, which is what decides whether raising `max_content_chars`
+can do anything for that model at all. `MAX_LENGTH` truncates every model at the
+same 8192 tokens, so a model with a shorter window is fed past its limit — that
+does not raise, it just degrades, and the script warns about it.
+
 ```sh
 uv run --extra embedding python scripts/check_onnx_model.py \
     --model-name hotchpotch/bekko-embedding-v1-a8m \
