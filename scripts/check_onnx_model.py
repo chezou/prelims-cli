@@ -81,6 +81,10 @@ def report_pooling_match(embedder: OnnxEmbedder, texts: list[str]) -> str | None
     module, so whichever of ours reproduces it is the one the model wants —
     which beats reading the model card.
     """
+    # embed() prepends the prefix before tokenizing; matching that here keeps
+    # the comparison on the same inputs the real embeddings are built from.
+    if embedder.prefix:
+        texts = [embedder.prefix + t for t in texts]
     input_ids, attention_mask = embedder._tokenize(texts)
     outputs = embedder.session.run(
         None, {"input_ids": input_ids, "attention_mask": attention_mask}

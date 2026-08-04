@@ -46,6 +46,7 @@ Requires: uv sync --extra embedding
 from __future__ import annotations
 
 import argparse
+import difflib
 import hashlib
 import inspect
 import tempfile
@@ -125,12 +126,16 @@ def cache_db_for(home: str, args: argparse.Namespace, spec: str) -> str:
     """Path of the cache DB for one variant.
 
     Named after what the variant is rather than whether it is --a or --b, so a
-    persistent --cache-dir survives swapping the two, and a corpus never shares
-    a file with another one (prune() would delete the other corpus's rows).
-    Embeddings do not depend on topk, so a sweep reuses them all.
+    persistent --cache-dir survives swapping the two. Embeddings do not depend
+    on topk, so a sweep reuses them all.
+
+    The corpus's full path is in the digest, not just its directory name: two
+    checkouts can both end in content/blog, and sharing a file between them
+    would let prune() delete the other corpus's rows.
     """
-    digest = hashlib.sha1(f"{args.vary}\0{spec}".encode()).hexdigest()[:8]
-    return str(Path(home) / f"{args.content_dir.name}-{digest}.db")
+    corpus = args.content_dir.resolve()
+    digest = hashlib.sha1(f"{corpus}\0{args.vary}\0{spec}".encode()).hexdigest()[:8]
+    return str(Path(home) / f"{corpus.name}-{digest}.db")
 
 
 def parse_config(spec: str) -> dict[str, object]:
@@ -147,11 +152,29 @@ def parse_config(spec: str) -> dict[str, object]:
         if "=" not in pair:
             raise ValueError(f"expected key=value, got {pair.strip()!r}")
         key, value = pair.split("=", 1)
-        kwargs[key.strip()] = _coerce(key.strip(), value)
+        key = key.strip()
+        if key in RESERVED_KEYS:
+            raise ValueError(
+                f"{key!r} is set by this script and cannot be varied; "
+                f"use --{key.replace('_', '-')} instead"
+            )
+        if key not in _PARAMS:
+            close = difflib.get_close_matches(key, sorted(set(_PARAMS) - {"self"}))
+            hint = f" Did you mean {close[0]!r}?" if close else ""
+            raise ValueError(
+                f"unknown setting {key!r}."
+                f" Known: {sorted(set(_PARAMS) - RESERVED_KEYS - {'self'})}.{hint}"
+            )
+        kwargs[key] = _coerce(key, value)
     return kwargs
 
 
 _PARAMS = inspect.signature(EmbeddingRecommender.__init__).parameters
+
+# Varying these would make the report describe something other than what ran:
+# topk is printed from args and drives the metrics, and permalink_base and
+# lower_path decide the keys that recommendations are matched on.
+RESERVED_KEYS = frozenset({"permalink_base", "topk", "lower_path", "cache_db"})
 
 
 def _coerce(key: str, value: str) -> object:
