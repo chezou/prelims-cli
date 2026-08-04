@@ -9,6 +9,7 @@ from prelims_cli.embedding.inference import (
     _cls_pool,
     _l2_normalize,
     _mean_pool,
+    _plan_batches,
 )
 
 
@@ -135,6 +136,124 @@ def test_invalid_pooling_raises() -> None:
 def test_language_models_declare_pooling() -> None:
     assert LANGUAGE_MODELS["ja"]["pooling"] == "mean"
     assert LANGUAGE_MODELS["en"]["pooling"] == "cls"
+
+
+def test_plan_batches_covers_every_index_once() -> None:
+    lengths = [10, 3, 7, 1, 5, 20, 2]
+    batches = _plan_batches(lengths, token_budget=20, max_batch=4)
+    assert sorted(i for b in batches for i in b) == list(range(len(lengths)))
+
+
+def test_plan_batches_respects_token_budget() -> None:
+    lengths = [4, 4, 4, 4, 4, 4]
+    batches = _plan_batches(lengths, token_budget=8, max_batch=100)
+    for batch in batches:
+        assert len(batch) * max(lengths[i] for i in batch) <= 8
+    assert len(batches) == 3
+
+
+def test_plan_batches_respects_max_batch() -> None:
+    lengths = [1] * 10
+    batches = _plan_batches(lengths, token_budget=1000, max_batch=3)
+    assert [len(b) for b in batches] == [3, 3, 3, 1]
+
+
+def test_plan_batches_keeps_oversized_text_alone() -> None:
+    """A text over budget on its own must still be embedded, not dropped."""
+    lengths = [2, 2, 500]
+    batches = _plan_batches(lengths, token_budget=8, max_batch=100)
+    assert [2] in batches
+    assert sorted(i for b in batches for i in b) == [0, 1, 2]
+
+
+def test_plan_batches_groups_similar_lengths() -> None:
+    """The point of sorting: padding stays close to the real token count.
+
+    Interleaved short and long texts would otherwise pad every batch up to
+    the long one — the failure mode this batching exists to avoid.
+    """
+    lengths = [1, 100, 1, 100, 1, 100]
+    batches = _plan_batches(lengths, token_budget=200, max_batch=3)
+    padded = sum(len(b) * max(lengths[i] for i in b) for b in batches)
+    assert padded <= sum(lengths) * 1.1
+
+
+class _LengthTokenizer:
+    """Tokenizes each text into ``len(text)`` copies of its own length.
+
+    Lets a test tell embeddings apart by the length of the text they came
+    from, which is what checking the restored order needs.
+    """
+
+    def encode_batch(self, texts: list[str]) -> list[_FakeEncoding]:
+        return [_FakeEncoding([len(t)] * len(t)) for t in texts]
+
+
+class _IdentitySession:
+    """Returns hidden states carrying each row's first token id."""
+
+    def run(self, output_names: Any, inputs: dict[str, np.ndarray]) -> list[np.ndarray]:
+        ids = inputs["input_ids"]
+        first = ids[:, :1].astype(np.float32)
+        hidden = np.repeat(first[:, :, np.newaxis], ids.shape[1], axis=1)
+        return [np.concatenate([hidden, np.ones_like(hidden)], axis=2)]
+
+
+def test_embed_all_returns_input_order() -> None:
+    """Batching sorts by length, so the result has to be put back."""
+    embedder = OnnxEmbedder.__new__(OnnxEmbedder)
+    embedder.session = _IdentitySession()  # type: ignore[assignment]
+    embedder.tokenizer = _LengthTokenizer()  # type: ignore[assignment]
+    embedder.pooling = "cls"
+    embedder.prefix = ""
+    embedder.batch_size = 8
+    embedder.token_budget = 8
+
+    texts = ["a" * n for n in (5, 1, 3, 2, 4)]
+    result = embedder.embed_all(texts)
+
+    expected = _l2_normalize(
+        np.array([[float(len(t)), 1.0] for t in texts], dtype=np.float32)
+    )
+    np.testing.assert_array_almost_equal(result, expected)
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    [
+        ({"batch_size": 0}, "batch_size must be at least 1"),
+        ({"token_budget": 0}, "token_budget must be at least 1"),
+        ({"token_budget": -1}, "token_budget must be at least 1"),
+    ],
+)
+def test_non_positive_batching_limits_raise(kwargs: dict, message: str) -> None:
+    """Zero degrades to one text per batch instead of failing, so reject it."""
+    with pytest.raises(ValueError, match=message):
+        OnnxEmbedder(pooling="mean", **kwargs)
+
+
+def test_embed_all_rejects_a_batch_of_the_wrong_size() -> None:
+    """A short result would otherwise leave Nones and fail inside np.stack."""
+
+    class _ShortSession:
+        def run(self, output_names: Any, inputs: dict[str, np.ndarray]) -> list:
+            return [np.ones((1, 2, 2), dtype=np.float32)]
+
+    embedder = OnnxEmbedder.__new__(OnnxEmbedder)
+    embedder.session = _ShortSession()  # type: ignore[assignment]
+    embedder.tokenizer = _LengthTokenizer()  # type: ignore[assignment]
+    embedder.pooling = "cls"
+    embedder.prefix = ""
+    embedder.batch_size = 8
+    embedder.token_budget = 4096
+
+    with pytest.raises(ValueError, match="argument 2 is shorter"):
+        embedder.embed_all(["aa", "bb"])
+
+
+def test_embed_all_handles_empty_input() -> None:
+    embedder = OnnxEmbedder.__new__(OnnxEmbedder)
+    assert embedder.embed_all([]).shape == (0, 0)
 
 
 def test_l2_normalize() -> None:

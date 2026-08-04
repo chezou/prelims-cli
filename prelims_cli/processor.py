@@ -74,6 +74,15 @@ def set_embedding_recommender(h: StaticSitePostsHandler, cfg: DictConfig) -> Non
             "prefix": cfg.get("prefix", ""),
             "batch_size": cfg.get("batch_size", 32),
         }
+        # Only forwarded when set, so the library keeps ownership of the
+        # defaults — these two decide peak memory together and are easy to
+        # put out of step from a site config.
+        token_budget = cfg.get("token_budget", None)
+        if token_budget is not None:
+            kwargs["token_budget"] = token_budget
+        max_content_chars = cfg.get("max_content_chars", None)
+        if max_content_chars is not None:
+            kwargs["max_content_chars"] = max_content_chars
         cache_db = cfg.get("cache_db", None)
         if cache_db is not None:
             kwargs["cache_db"] = cache_db
