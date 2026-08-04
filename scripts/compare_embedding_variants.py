@@ -86,7 +86,7 @@ def split_front_matter(path: Path) -> tuple[dict, str]:
 
     Parsed by prelims' own loader so the two cannot drift apart.
     """
-    post = PrelimsPost.load(str(path))
+    post = PrelimsPost.load(path)
     meta = post.front_matter if isinstance(post.front_matter, dict) else {}
     return meta, post.content
 
