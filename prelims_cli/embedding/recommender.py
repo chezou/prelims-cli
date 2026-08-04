@@ -67,7 +67,11 @@ class EmbeddingRecommender(BaseFrontMatterProcessor):
         the length of the posts in the batch, not their number.
     max_content_chars : int
         Truncate post content to this many characters before embedding.
-        Reduces peak memory by limiting token sequence length.
+        The default of 8000 is a quality choice: on a 419-post corpus, 2000
+        characters discarded 44% of the Japanese text and 64% of the English,
+        and raising it improved tag agreement at every topk in both languages.
+        Beyond 8000 the measurements flattened out. Peak memory is bounded by
+        ``token_budget``, not by this.
     """
 
     def __init__(
@@ -84,7 +88,7 @@ class EmbeddingRecommender(BaseFrontMatterProcessor):
         prefix: str = "",
         batch_size: int = 8,
         token_budget: int = TOKEN_BUDGET,
-        max_content_chars: int = 2000,
+        max_content_chars: int = 8000,
     ) -> None:
         if model_name is None:
             if language not in LANGUAGE_MODELS:
