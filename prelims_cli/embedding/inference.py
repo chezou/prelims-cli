@@ -79,6 +79,13 @@ class OnnxEmbedder:
             raise ValueError(
                 f"Unsupported pooling: {pooling!r}. Supported: {list(POOLING_METHODS)}"
             )
+        # Both are site-configurable. Zero or negative values do not fail on
+        # their own — they quietly degrade to one text per batch — so reject
+        # them here, where the setting came from.
+        if batch_size < 1:
+            raise ValueError(f"batch_size must be at least 1, got {batch_size}")
+        if token_budget < 1:
+            raise ValueError(f"token_budget must be at least 1, got {token_budget}")
 
         import onnxruntime as ort  # type: ignore[import-not-found,import-untyped]
         from huggingface_hub import hf_hub_download  # type: ignore[import-not-found]
@@ -130,9 +137,19 @@ class OnnxEmbedder:
         lengths = self._token_lengths(texts)
         embeddings: list[np.ndarray | None] = [None] * len(texts)
         for batch in _plan_batches(lengths, self.token_budget, self.batch_size):
-            for i, embedding in zip(batch, self.embed([texts[i] for i in batch])):
+            # strict=True so a batch that comes back the wrong size fails here,
+            # naming the cause, rather than later as a stack of Nones.
+            rows = self.embed([texts[i] for i in batch])
+            for i, embedding in zip(batch, rows, strict=True):
                 embeddings[i] = embedding
-        return np.stack(embeddings)  # type: ignore[arg-type]
+
+        filled = [e for e in embeddings if e is not None]
+        if len(filled) != len(texts):
+            raise RuntimeError(
+                f"batching covered {len(filled)} of {len(texts)} texts; "
+                "every text must land in exactly one batch"
+            )
+        return np.stack(filled)
 
     def embed(self, texts: list[str]) -> np.ndarray:
         """Compute L2-normalized embeddings for a list of texts as one batch.

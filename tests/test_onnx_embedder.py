@@ -218,6 +218,39 @@ def test_embed_all_returns_input_order() -> None:
     np.testing.assert_array_almost_equal(result, expected)
 
 
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    [
+        ({"batch_size": 0}, "batch_size must be at least 1"),
+        ({"token_budget": 0}, "token_budget must be at least 1"),
+        ({"token_budget": -1}, "token_budget must be at least 1"),
+    ],
+)
+def test_non_positive_batching_limits_raise(kwargs: dict, message: str) -> None:
+    """Zero degrades to one text per batch instead of failing, so reject it."""
+    with pytest.raises(ValueError, match=message):
+        OnnxEmbedder(pooling="mean", **kwargs)
+
+
+def test_embed_all_rejects_a_batch_of_the_wrong_size() -> None:
+    """A short result would otherwise leave Nones and fail inside np.stack."""
+
+    class _ShortSession:
+        def run(self, output_names: Any, inputs: dict[str, np.ndarray]) -> list:
+            return [np.ones((1, 2, 2), dtype=np.float32)]
+
+    embedder = OnnxEmbedder.__new__(OnnxEmbedder)
+    embedder.session = _ShortSession()  # type: ignore[assignment]
+    embedder.tokenizer = _LengthTokenizer()  # type: ignore[assignment]
+    embedder.pooling = "cls"
+    embedder.prefix = ""
+    embedder.batch_size = 8
+    embedder.token_budget = 4096
+
+    with pytest.raises(ValueError, match="argument 2 is shorter"):
+        embedder.embed_all(["aa", "bb"])
+
+
 def test_embed_all_handles_empty_input() -> None:
     embedder = OnnxEmbedder.__new__(OnnxEmbedder)
     assert embedder.embed_all([]).shape == (0, 0)
