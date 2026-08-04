@@ -47,6 +47,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import inspect
 import tempfile
 from collections import Counter
 from collections.abc import Sequence
@@ -132,22 +133,39 @@ def cache_db_for(home: str, args: argparse.Namespace, spec: str) -> str:
     return str(Path(home) / f"{args.content_dir.name}-{digest}.db")
 
 
-def parse_config(spec: str) -> dict[str, str]:
+def parse_config(spec: str) -> dict[str, object]:
     """Parse "model_name=x,pooling=mean" into kwargs.
 
     Values are taken verbatim: ruri-v3's prefix is "トピック: " with a trailing
     space, and stripping it silently embeds something else than the model was
     trained for.
     """
-    kwargs = {}
+    kwargs: dict[str, object] = {}
     for pair in spec.split(","):
         if not pair.strip():
             continue
         if "=" not in pair:
             raise ValueError(f"expected key=value, got {pair.strip()!r}")
         key, value = pair.split("=", 1)
-        kwargs[key.strip()] = value
+        kwargs[key.strip()] = _coerce(key.strip(), value)
     return kwargs
+
+
+_PARAMS = inspect.signature(EmbeddingRecommender.__init__).parameters
+
+
+def _coerce(key: str, value: str) -> object:
+    """Cast to the type of the recommender's default for that parameter.
+
+    max_content_chars and batch_size are ints; handing them a string makes the
+    slice raise deep inside process().
+    """
+    default = _PARAMS[key].default if key in _PARAMS else None
+    if isinstance(default, bool):
+        return value.strip().lower() not in ("false", "0", "no")
+    if isinstance(default, int):
+        return int(value)
+    return value
 
 
 def run_variant(
