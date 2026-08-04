@@ -55,7 +55,7 @@ from collections.abc import Sequence
 from contextlib import AbstractContextManager, nullcontext
 from pathlib import Path
 
-import yaml
+from prelims.post import Post as PrelimsPost  # type: ignore
 
 from prelims_cli.embedding.recommender import EmbeddingRecommender
 
@@ -75,20 +75,20 @@ class Post:
 
 
 def split_front_matter(path: Path) -> tuple[dict, str]:
-    """Return (front matter dict, body). Best-effort on odd files."""
-    text = path.read_text(encoding="utf-8")
-    if not text.startswith("---"):
-        return {}, text
-    _, _, rest = text.partition("\n")
-    end = rest.find("\n---")
-    if end == -1:
-        return {}, text
-    head, body = rest[:end], rest[end + len("\n---") :].lstrip()
-    try:
-        meta = yaml.safe_load(head)
-    except yaml.YAMLError:
-        return {}, body
-    return (meta if isinstance(meta, dict) else {}), body
+    """Return (front matter dict, embedded text) for one article.
+
+    The text is what prelims itself would hand the recommender, not the raw
+    markdown: prelims strips HTML tags, code fences, math and URLs before
+    embedding. Reading the file directly overstates how much the model sees —
+    on a corpus of Medium exports it counted 154 articles over 2000 characters
+    where the real pipeline had 93 — which makes any comparison of input
+    length measure something other than what runs in production.
+
+    Parsed by prelims' own loader so the two cannot drift apart.
+    """
+    post = PrelimsPost.load(str(path))
+    meta = post.front_matter if isinstance(post.front_matter, dict) else {}
+    return meta, post.content
 
 
 def tags_of(meta: dict, keys: Sequence[str] = TAG_KEYS) -> set[str]:
