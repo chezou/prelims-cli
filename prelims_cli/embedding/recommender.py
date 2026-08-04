@@ -14,6 +14,7 @@ from .inference import (
     EMBEDDING_CACHE_VERSION,
     LANGUAGE_MODELS,
     POOLING_METHODS,
+    TOKEN_BUDGET,
     OnnxEmbedder,
 )
 
@@ -58,7 +59,12 @@ class EmbeddingRecommender(BaseFrontMatterProcessor):
     prefix : str
         Text prefix prepended to each article before embedding.
     batch_size : int
-        Batch size for embedding inference.
+        Maximum posts per inference batch. A batch may hold fewer when the
+        posts are long, since ``token_budget`` also applies.
+    token_budget : int
+        Maximum padded token slots per inference batch. This is what bounds
+        peak memory; ``batch_size`` alone cannot, because memory depends on
+        the length of the posts in the batch, not their number.
     max_content_chars : int
         Truncate post content to this many characters before embedding.
         Reduces peak memory by limiting token sequence length.
@@ -77,6 +83,7 @@ class EmbeddingRecommender(BaseFrontMatterProcessor):
         revision: str | None = None,
         prefix: str = "",
         batch_size: int = 8,
+        token_budget: int = TOKEN_BUDGET,
         max_content_chars: int = 2000,
     ) -> None:
         if model_name is None:
@@ -115,6 +122,7 @@ class EmbeddingRecommender(BaseFrontMatterProcessor):
         self.revision = revision
         self.prefix = prefix
         self.batch_size = batch_size
+        self.token_budget = token_budget
         self.max_content_chars = max_content_chars
 
     def process(self, posts: list, allow_overwrite: bool = True) -> None:  # type: ignore
@@ -175,15 +183,10 @@ class EmbeddingRecommender(BaseFrontMatterProcessor):
                 pooling=self.pooling,
                 revision=self.revision,
                 prefix=self.prefix,
+                batch_size=self.batch_size,
+                token_budget=self.token_budget,
             )
-            uncached_texts = [contents[i] for i in uncached_indices]
-
-            # Process in batches
-            new_embeddings: list[np.ndarray] = []
-            for start in range(0, len(uncached_texts), self.batch_size):
-                batch = uncached_texts[start : start + self.batch_size]
-                batch_embs = embedder.embed(batch)
-                new_embeddings.extend(batch_embs)
+            new_embeddings = embedder.embed_all([contents[i] for i in uncached_indices])
 
             # Fill in and cache
             cache_entries: list[tuple[str, str, np.ndarray]] = []

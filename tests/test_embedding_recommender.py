@@ -31,7 +31,7 @@ def _fake_embeddings(texts: list[str]) -> np.ndarray:
 def test_process_basic(MockEmbedder: MagicMock, tmp_path: Path) -> None:
     """Basic process: 3 posts, verify recommendations are set."""
     embedder_instance = MockEmbedder.return_value
-    embedder_instance.embed.side_effect = _fake_embeddings
+    embedder_instance.embed_all.side_effect = _fake_embeddings
 
     posts = [
         _make_post("/posts/a.md", "Python machine learning"),
@@ -56,7 +56,7 @@ def test_process_basic(MockEmbedder: MagicMock, tmp_path: Path) -> None:
 @patch("prelims_cli.embedding.recommender.OnnxEmbedder")
 def test_permalink_generation(MockEmbedder: MagicMock, tmp_path: Path) -> None:
     embedder_instance = MockEmbedder.return_value
-    embedder_instance.embed.side_effect = _fake_embeddings
+    embedder_instance.embed_all.side_effect = _fake_embeddings
 
     posts = [
         _make_post("/posts/MyPost.md", "content alpha"),
@@ -83,7 +83,7 @@ def test_permalink_generation(MockEmbedder: MagicMock, tmp_path: Path) -> None:
 @patch("prelims_cli.embedding.recommender.OnnxEmbedder")
 def test_permalink_index_file(MockEmbedder: MagicMock, tmp_path: Path) -> None:
     embedder_instance = MockEmbedder.return_value
-    embedder_instance.embed.side_effect = _fake_embeddings
+    embedder_instance.embed_all.side_effect = _fake_embeddings
 
     posts = [
         _make_post("/posts/my-article/index.md", "content one"),
@@ -106,7 +106,7 @@ def test_permalink_index_file(MockEmbedder: MagicMock, tmp_path: Path) -> None:
 def test_caching_behavior(MockEmbedder: MagicMock, tmp_path: Path) -> None:
     """Second run should use cache and not call embedder."""
     embedder_instance = MockEmbedder.return_value
-    embedder_instance.embed.side_effect = _fake_embeddings
+    embedder_instance.embed_all.side_effect = _fake_embeddings
 
     posts = [
         _make_post("/posts/a.md", "same content"),
@@ -126,7 +126,7 @@ def test_caching_behavior(MockEmbedder: MagicMock, tmp_path: Path) -> None:
 
     # Reset mock
     MockEmbedder.reset_mock()
-    embedder_instance.embed.reset_mock()
+    embedder_instance.embed_all.reset_mock()
 
     # Second run with same content: should NOT instantiate embedder
     posts2 = [
@@ -153,7 +153,7 @@ def test_partial_cache_hit(MockEmbedder: MagicMock, tmp_path: Path) -> None:
         return _fake_embeddings(texts)
 
     embedder_instance = MockEmbedder.return_value
-    embedder_instance.embed.side_effect = tracking_embed
+    embedder_instance.embed_all.side_effect = tracking_embed
 
     cache_path = str(tmp_path / "cache.db")
 
@@ -208,7 +208,7 @@ def test_content_truncation(MockEmbedder: MagicMock, tmp_path: Path) -> None:
         return _fake_embeddings(texts)
 
     embedder_instance = MockEmbedder.return_value
-    embedder_instance.embed.side_effect = capture_embed
+    embedder_instance.embed_all.side_effect = capture_embed
 
     long_content = "A" * 5000
     posts = [
@@ -235,7 +235,7 @@ def test_content_truncation(MockEmbedder: MagicMock, tmp_path: Path) -> None:
 def test_content_truncation_cache_key(MockEmbedder: MagicMock, tmp_path: Path) -> None:
     """Cache key should reflect truncated content, not original."""
     embedder_instance = MockEmbedder.return_value
-    embedder_instance.embed.side_effect = _fake_embeddings
+    embedder_instance.embed_all.side_effect = _fake_embeddings
 
     cache_path = str(tmp_path / "cache.db")
 
@@ -252,7 +252,7 @@ def test_content_truncation_cache_key(MockEmbedder: MagicMock, tmp_path: Path) -
     )
     rec.process(posts)
     MockEmbedder.reset_mock()
-    embedder_instance.embed.reset_mock()
+    embedder_instance.embed_all.reset_mock()
 
     # Same original content, same truncation → cache hit
     posts2 = [
@@ -272,7 +272,7 @@ def test_content_truncation_cache_key(MockEmbedder: MagicMock, tmp_path: Path) -
 @patch("prelims_cli.embedding.recommender.OnnxEmbedder")
 def test_lower_path_false(MockEmbedder: MagicMock, tmp_path: Path) -> None:
     embedder_instance = MockEmbedder.return_value
-    embedder_instance.embed.side_effect = _fake_embeddings
+    embedder_instance.embed_all.side_effect = _fake_embeddings
 
     posts = [
         _make_post("/posts/MyPost.md", "content alpha"),
@@ -357,7 +357,7 @@ def test_pooling_overrides_language_default() -> None:
 @patch("prelims_cli.embedding.recommender.OnnxEmbedder")
 def test_pooling_passed_to_embedder(MockEmbedder: MagicMock, tmp_path: Path) -> None:
     embedder_instance = MockEmbedder.return_value
-    embedder_instance.embed.side_effect = _fake_embeddings
+    embedder_instance.embed_all.side_effect = _fake_embeddings
 
     posts = [
         _make_post("/posts/a.md", "content A"),
@@ -395,7 +395,7 @@ def test_explicit_model_leaves_revision_unpinned() -> None:
 @patch("prelims_cli.embedding.recommender.OnnxEmbedder")
 def test_revision_passed_to_embedder(MockEmbedder: MagicMock, tmp_path: Path) -> None:
     embedder_instance = MockEmbedder.return_value
-    embedder_instance.embed.side_effect = _fake_embeddings
+    embedder_instance.embed_all.side_effect = _fake_embeddings
 
     posts = [
         _make_post("/posts/a.md", "content A"),
@@ -416,7 +416,7 @@ def test_revision_change_invalidates_cache(
 ) -> None:
     """Vectors from one revision must not be reused after repinning."""
     embedder_instance = MockEmbedder.return_value
-    embedder_instance.embed.side_effect = _fake_embeddings
+    embedder_instance.embed_all.side_effect = _fake_embeddings
 
     cache_path = str(tmp_path / "cache.db")
 
@@ -447,7 +447,7 @@ def test_cache_version_bump_invalidates_cache(
     reflects.
     """
     embedder_instance = MockEmbedder.return_value
-    embedder_instance.embed.side_effect = _fake_embeddings
+    embedder_instance.embed_all.side_effect = _fake_embeddings
 
     cache_path = str(tmp_path / "cache.db")
 
@@ -483,7 +483,7 @@ def test_pooling_change_invalidates_cache(
 ) -> None:
     """Vectors pooled one way must not be reused after switching pooling."""
     embedder_instance = MockEmbedder.return_value
-    embedder_instance.embed.side_effect = _fake_embeddings
+    embedder_instance.embed_all.side_effect = _fake_embeddings
 
     cache_path = str(tmp_path / "cache.db")
 
