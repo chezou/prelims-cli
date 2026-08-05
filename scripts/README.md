@@ -47,3 +47,29 @@ metric drifts toward lexical overlap and flatters models that rank by surface
 wording. `--tag-keys tags categories` restricts it to curated tags (at the cost
 of coverage) and `--max-df 0.05` drops filler terms; running both is the way to
 tell whether a result survives.
+
+`rerun_all.sh` drives this script over a whole evaluation in one go.
+
+## rerun_all.sh
+
+Drives `compare_embedding_variants.py` over a whole evaluation in one go —
+every model pair, both input lengths, both referees, and the per-article diffs
+— and tees the output to a file. Written so that a report built on these
+numbers can be regenerated rather than trusted.
+
+```sh
+bash scripts/rerun_all.sh
+```
+
+Run it with `bash` explicitly: it relies on arrays that a POSIX shell does not
+have, and on word splitting that zsh does not do. Point it elsewhere with
+environment variables:
+
+```sh
+JA=../site/content/post EN=../site/content/blog \
+  CACHE=~/.cache/eval OUT=~/run.txt bash scripts/rerun_all.sh
+```
+
+Embeddings are keyed on article text alone, so editing front matter tags does
+not invalidate them. With a warm `--cache-dir` the whole sweep returns in
+seconds, which makes it cheap to re-measure after fixing the referee.
