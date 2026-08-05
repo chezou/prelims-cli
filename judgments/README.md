@@ -7,8 +7,9 @@ meant the models were equal or the metric was blind.
 
 ## relevance_labels.json
 
-147 source articles from chezo.uno (143 ja / 4 en), 762 judged recommendation
-pairs, 416 marked relevant. Keyed by permalink:
+162 source articles from chezo.uno (143 ja / 19 en), 827 judged recommendation
+pairs, 458 marked relevant. Japanese is a sample; English is every article whose
+recommendations changed. Keyed by permalink:
 
 ```json
 {
@@ -43,6 +44,15 @@ Collection conditions, which are what make the labels usable:
 
 One judge (the corpus author), so there is no inter-annotator agreement figure.
 
+## report.html
+
+The full writeup these labels belong to — the model comparison, the metric that
+had to be repaired mid-way, the human evaluation, and how the decision was
+actually made. Written in Japanese. Open it in a browser; it is self-contained.
+
+Read it before reusing any number from here, because most of the report is about
+why the obvious readings of those numbers are wrong.
+
 ## score_judgments.py
 
 ```sh
@@ -59,13 +69,25 @@ bootstrap interval, a per-article sign test, and a confusion matrix of tag
 agreement against the human labels.
 
 That last table is the point. On this data tag agreement scored **precision
-0.85, recall 0.07**: when tags matched, the human agreed, but 387 of the 416
-relevant recommendations had no tag overlap to find. 90% of judged pairs had an
-untagged article on one end and were invisible to the metric entirely. The
-proxy was not wrong, it was narrow — and the models differed mostly in the part
-it could not see.
+0.76, recall 0.09**: 418 of the 458 relevant recommendations had no tag overlap
+to find, and 86% of judged pairs had an untagged article on one end, invisible
+to the metric entirely. The proxy was not wrong, it was narrow — and the models
+differed mostly in the part it could not see.
+
+It breaks differently per language. Japanese: precision 0.86, recall 0.06 —
+right when it fires, almost blind otherwise. English, where 70% of articles
+carry tags rather than 23%: recall 0.29 but precision 0.63, so tag agreement
+becomes loose enough to call unrelated pairs related. Neither end of that
+trade-off makes it a stand-in for a human.
 
 The model difference itself stayed undecided: +1.7pt [−9.2, +12.5] on the
-unbiased random 40, 41 wins to 32 per article (sign test p = 0.35). Judging all
-389 changed articles would tighten that to roughly [−1.8, +5.1] — still short
-of a verdict, which is why collection stopped at 147.
+unbiased random 40, 46 wins to 36 per article (sign test p = 0.32). Judging all
+389 changed articles would tighten that to roughly [−1.8, +5.1] — still short of
+a verdict, which is why collection stopped at 162.
+
+English is the one place a verdict was reachable, because all 19 changed
+articles were judged: **40/57 against 40/57, an exact tie**. That matters beyond
+English, because the fixed-pool precision@3 on the same corpus had put the
+candidate ahead by +5.8pt [+1.4, +11.6] — the only interval in the whole study
+that excluded zero. Human judgment did not reproduce it. Treat a lone
+significant cell on 23 tagged articles as what it is.

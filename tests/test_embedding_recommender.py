@@ -549,3 +549,15 @@ def test_pooling_change_invalidates_cache(
     )
     rec2.process(make_posts())
     MockEmbedder.assert_called_once()
+
+
+def test_language_multilingual_resolves_bekko() -> None:
+    """The multilingual preset needs no prefix and no per-language switch."""
+    rec = EmbeddingRecommender(language="multilingual")
+    assert rec.model_name == "hotchpotch/bekko-embedding-v1-a25m"
+    assert rec.model_file == "onnx/model.onnx"
+    assert rec.pooling == "mean"
+    assert rec.prefix == ""
+    # Pinned, like the other two: an unpinned revision is not part of the cache
+    # fingerprint, so an upstream re-upload would mix two vector generations.
+    assert rec.revision == LANGUAGE_MODELS["multilingual"]["revision"]

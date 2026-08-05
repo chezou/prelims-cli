@@ -5,12 +5,124 @@
    "/blog/2019-04-24_ruby-for-data-science-and-machine-learning-9f03e99125e0/"
   ]
  },
+ "/blog/2017-02-11_visualize-your-massive-data-with-impala-and-redash-afe31133c644/": {
+  "done": true,
+  "rel": [
+   "/blog/2017-03-26_how-to-connect-secure-impala-cluster-from-rstudio-on-macos-with-implyr-213c6536e4c7/",
+   "/blog/2016-10-15_building-predictive-model-with-ibis--impala-and-scikit-learn-356b41f404e0/",
+   "/blog/2016-12-30_livy---jupyter-notebook---sparkmagic---powerful---easy-notebook-for-data-scientist-a8b72345ea2d/",
+   "/blog/2022-05-05-sqllineage-with-digdag-log/"
+  ]
+ },
+ "/blog/2017-03-26_how-to-connect-secure-impala-cluster-from-rstudio-on-macos-with-implyr-213c6536e4c7/": {
+  "done": true,
+  "rel": [
+   "/blog/2017-02-11_visualize-your-massive-data-with-impala-and-redash-afe31133c644/",
+   "/blog/2016-10-15_building-predictive-model-with-ibis--impala-and-scikit-learn-356b41f404e0/",
+   "/blog/2017-03-26_sparkavro--manupilate-apache-avro-file-with-sparklyr-a53c61eaf0b0/",
+   "/blog/2016-12-30_livy---jupyter-notebook---sparkmagic---powerful---easy-notebook-for-data-scientist-a8b72345ea2d/"
+  ]
+ },
+ "/blog/2017-03-26_sparkavro--manupilate-apache-avro-file-with-sparklyr-a53c61eaf0b0/": {
+  "done": true,
+  "rel": [
+   "/blog/2016-12-30_livy---jupyter-notebook---sparkmagic---powerful---easy-notebook-for-data-scientist-a8b72345ea2d/",
+   "/blog/2017-03-26_how-to-connect-secure-impala-cluster-from-rstudio-on-macos-with-implyr-213c6536e4c7/",
+   "/blog/2016-10-15_building-predictive-model-with-ibis--impala-and-scikit-learn-356b41f404e0/",
+   "/blog/2022-05-05-sqllineage-with-digdag-log/"
+  ]
+ },
+ "/blog/2017-05-02_an-easy-way-to-get-url-list-of-your-medium-publication-c60c61244101/": {
+  "done": true,
+  "rel": [
+   "/blog/2025-08-24-configured-pages-cms/",
+   "/blog/2022-01-25_hugo-content-based-recommendation/",
+   "/blog/2026-03-19-migrated-from-pages-cms-to-sveltia-cms/"
+  ]
+ },
  "/blog/2017-07-24_simple-way-to-distribute-your-private-python-packages-within-your-organization-fb7af5dbd4c9/": {
   "done": true,
   "rel": [
    "/blog/2017-08-30_python-basics--package-management-462918458f96/",
    "/blog/2019-11-26_how-to-release-python-package-from-github-actions-d5a1d8edba6e/",
    "/blog/2022-05-21_fastest-way-to-release-python-cli/"
+  ]
+ },
+ "/blog/2017-08-02_how-to-run-cloudera-director-on-your-macos-windows-10-710f82aa1d63/": {
+  "done": true,
+  "rel": [
+   "/blog/2017-07-24_simple-way-to-distribute-your-private-python-packages-within-your-organization-fb7af5dbd4c9/",
+   "/blog/2017-03-26_how-to-connect-secure-impala-cluster-from-rstudio-on-macos-with-implyr-213c6536e4c7/",
+   "/blog/2017-02-11_visualize-your-massive-data-with-impala-and-redash-afe31133c644/"
+  ]
+ },
+ "/blog/2017-08-03_why-oss-based-machine-learning-is-good--3ab45a1a5e52/": {
+  "done": true,
+  "rel": [
+   "/blog/2019-06-04_the-first-conference-of-operational-machine-learning--opml--19-308baad36108/",
+   "/blog/2019-04-24_ruby-for-data-science-and-machine-learning-9f03e99125e0/",
+   "/blog/2025-05-02-ml-project-and-scrum/"
+  ]
+ },
+ "/blog/2019-04-24_ruby-for-data-science-and-machine-learning-9f03e99125e0/": {
+  "done": true,
+  "rel": [
+   "/blog/2017-08-03_why-oss-based-machine-learning-is-good--3ab45a1a5e52/",
+   "/blog/2016-10-15_building-predictive-model-with-ibis--impala-and-scikit-learn-356b41f404e0/",
+   "/blog/2019-06-04_the-first-conference-of-operational-machine-learning--opml--19-308baad36108/"
+  ]
+ },
+ "/blog/2019-06-04_the-first-conference-of-operational-machine-learning--opml--19-308baad36108/": {
+  "done": true,
+  "rel": [
+   "/blog/2017-08-03_why-oss-based-machine-learning-is-good--3ab45a1a5e52/",
+   "/blog/2016-10-15_building-predictive-model-with-ibis--impala-and-scikit-learn-356b41f404e0/",
+   "/blog/2019-04-24_ruby-for-data-science-and-machine-learning-9f03e99125e0/"
+  ]
+ },
+ "/blog/2019-10-06_how-to-test-a-new-docker-image-for-digdag-workflow-on-circleci--c8bb92987877/": {
+  "done": true,
+  "rel": [
+   "/blog/2020-03-05_py-operator-development-guide-for-python-users/",
+   "/blog/2026-03-29-embedding-workflow-templates-in-skills-shifting-the-llm-s-role-from-generation-to-rendering/"
+  ]
+ },
+ "/blog/2020-03-05_py-operator-development-guide-for-python-users/": {
+  "done": true,
+  "rel": [
+   "/blog/2019-10-06_how-to-test-a-new-docker-image-for-digdag-workflow-on-circleci--c8bb92987877/",
+   "/blog/2026-03-29-embedding-workflow-templates-in-skills-shifting-the-llm-s-role-from-generation-to-rendering/"
+  ]
+ },
+ "/blog/2022-01-25_hugo-content-based-recommendation/": {
+  "done": true,
+  "rel": [
+   "/blog/2025-08-24-configured-pages-cms/",
+   "/blog/2017-05-02_an-easy-way-to-get-url-list-of-your-medium-publication-c60c61244101/",
+   "/blog/2024-01-26_scrape-notion-to-pdf/"
+  ]
+ },
+ "/blog/2022-05-21_fastest-way-to-release-python-cli/": {
+  "done": true,
+  "rel": [
+   "/blog/2019-11-26_how-to-release-python-package-from-github-actions-d5a1d8edba6e/",
+   "/blog/2017-08-30_python-basics--package-management-462918458f96/",
+   "/blog/2017-07-24_simple-way-to-distribute-your-private-python-packages-within-your-organization-fb7af5dbd4c9/"
+  ]
+ },
+ "/blog/2024-01-26_scrape-notion-to-pdf/": {
+  "done": true,
+  "rel": [
+   "/blog/2025-08-24-configured-pages-cms/",
+   "/blog/2022-01-25_hugo-content-based-recommendation/"
+  ]
+ },
+ "/blog/2025-05-02-ml-project-and-scrum/": {
+  "done": true,
+  "rel": [
+   "/blog/2026-03-29-embedding-workflow-templates-in-skills-shifting-the-llm-s-role-from-generation-to-rendering/",
+   "/blog/2025-09-19-review-fatigue/",
+   "/blog/2017-08-03_why-oss-based-machine-learning-is-good--3ab45a1a5e52/"
   ]
  },
  "/blog/2026-03-19-migrated-from-pages-cms-to-sveltia-cms/": {
@@ -27,6 +139,10 @@
    "/blog/2025-09-19-review-fatigue/",
    "/blog/2020-03-05_py-operator-development-guide-for-python-users/"
   ]
+ },
+ "/blog/2026-04-24-tiktok-kept-letting-strangers-create-accounts-wit/": {
+  "done": true,
+  "rel": []
  },
  "/post/2005-03-03-sugoi/": {
   "done": true,

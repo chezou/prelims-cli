@@ -88,8 +88,8 @@ seconds, which makes it cheap to re-measure after fixing the referee.
 ## Judging the tag metric itself
 
 Everything here scores recommendations against tags. To find out what that is
-worth, `../judgments/` holds human relevance labels for 147 articles and a
+worth, `../judgments/` holds human relevance labels for 162 articles and a
 script that scores them — including a confusion matrix of tag agreement against
-those labels. On this corpus tag agreement had precision 0.85 but recall 0.07,
+those labels. On this corpus tag agreement had precision 0.76 but recall 0.09,
 so a model comparison that comes out flat here is not evidence the models are
 equal. Read that README before drawing a conclusion from a small difference.

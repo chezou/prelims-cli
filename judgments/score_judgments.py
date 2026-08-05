@@ -15,7 +15,7 @@ model_file=onnx/model.onnx,pooling=mean,max_content_chars=8000"
 Reports precision@k under human judgment for both variants, a paired bootstrap
 interval on the difference, and — the reason this script exists — how well tag
 agreement predicts the human labels. On the run these labels came from, tag
-agreement scored precision 0.85 but recall 0.07: a narrow but honest slice of
+agreement scored precision 0.76 but recall 0.09: a narrow but honest slice of
 relevance, which is why it could not rank the two models.
 
 Labels were collected blind: model identity, tags and tag-hit marks hidden,

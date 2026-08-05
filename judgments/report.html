@@ -1,0 +1,2224 @@
+<title>関連記事推薦のための埋め込みモデル比較</title>
+
+<style>
+  :root {
+    --paper: #eef1f4;
+    --surface: #ffffff;
+    --ink: #131c24;
+    --ink-2: #3d4c59;
+    --muted: #5c6b78;
+    --line: #d4dce4;
+    --line-soft: #e4eaf0;
+    --incumbent: #2563eb;
+    --candidate: #b4530a;
+    --good: #1d6f42;
+    --warn: #8a5a00;
+
+    --ref: #5c6b78;
+    --s1: #b4530a;
+    --s2: #a21caf;
+    --s3: #2563eb;
+
+    --serif: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino,
+      "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui,
+      "Hiragino Sans", "Noto Sans JP", "Yu Gothic", Meiryo, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+      "Noto Sans Mono CJK JP", monospace;
+
+    --prose: 40rem;
+    --wide: 60rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #0c1218;
+      --surface: #141d25;
+      --ink: #e4ebf1;
+      --ink-2: #b7c4cf;
+      --muted: #8c9ba8;
+      --line: #26333f;
+      --line-soft: #1c2731;
+      --incumbent: #4a8cf0;
+      --candidate: #d07f2e;
+      --good: #5fb383;
+      --warn: #d2a24a;
+      --ref: #8c9ba8;
+      --s1: #d07f2e;
+      --s2: #be5bc8;
+      --s3: #4a8cf0;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #0c1218;
+    --surface: #141d25;
+    --ink: #e4ebf1;
+    --ink-2: #b7c4cf;
+    --muted: #8c9ba8;
+    --line: #26333f;
+    --line-soft: #1c2731;
+    --incumbent: #4a8cf0;
+    --candidate: #d07f2e;
+    --good: #5fb383;
+    --warn: #d2a24a;
+    --ref: #8c9ba8;
+    --s1: #d07f2e;
+    --s2: #be5bc8;
+    --s3: #4a8cf0;
+  }
+
+  :root[data-theme="light"] {
+    --paper: #eef1f4;
+    --surface: #ffffff;
+    --ink: #131c24;
+    --ink-2: #3d4c59;
+    --muted: #5c6b78;
+    --line: #d4dce4;
+    --line-soft: #e4eaf0;
+    --incumbent: #2563eb;
+    --candidate: #b4530a;
+    --good: #1d6f42;
+    --warn: #8a5a00;
+    --ref: #5c6b78;
+    --s1: #b4530a;
+    --s2: #a21caf;
+    --s3: #2563eb;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: var(--wide);
+    margin: 0 auto;
+    padding: 4rem 1.5rem 6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+  }
+
+  .col {
+    max-width: var(--prose);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--serif);
+    font-weight: 600;
+    text-wrap: balance;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  h1 { font-size: clamp(2rem, 5vw, 2.9rem); letter-spacing: -0.01em; }
+  h2 { font-size: 1.6rem; }
+  h3 { font-size: 1.1rem; font-family: var(--sans); font-weight: 650; }
+
+  p { margin: 0; }
+  a { color: inherit; text-decoration-color: var(--muted); }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--candidate);
+    outline-offset: 3px;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .lede { font-size: 1.12rem; color: var(--ink-2); }
+  .note { font-size: 0.9rem; color: var(--muted); }
+
+  /* ---- masthead ---- */
+  .masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 2.5rem;
+  }
+  .masthead dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 1rem 2rem;
+    margin: 0.5rem 0 0;
+    font-size: 0.85rem;
+  }
+  .masthead dt {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .masthead dd { margin: 0.2rem 0 0; font-family: var(--mono); font-size: 0.82rem; }
+
+  .verdict {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    align-self: flex-start;
+    padding: 0.45rem 0.9rem;
+    border: 1px solid var(--candidate);
+    border-radius: 2px;
+    color: var(--candidate);
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+  }
+
+  /* ---- sections ---- */
+  section { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 1rem;
+    border-top: 2px solid var(--ink);
+    padding-top: 0.9rem;
+  }
+  /* Which experiment this section belongs to, on its own row above the
+     heading, so the two-experiment spine is visible while scrolling. */
+  .head .eyebrow { flex-basis: 100%; margin-bottom: -0.5rem; }
+  .head .num {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--candidate);
+    letter-spacing: 0.08em;
+  }
+
+  /* ---- tables ---- */
+  .scroll { overflow-x: auto; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.88rem;
+    font-variant-numeric: tabular-nums;
+    background: var(--surface);
+  }
+  caption {
+    caption-side: top;
+    text-align: left;
+    font-size: 0.85rem;
+    color: var(--muted);
+    padding-bottom: 0.6rem;
+  }
+  th, td {
+    text-align: right;
+    padding: 0.6rem 0.85rem;
+    border-bottom: 1px solid var(--line-soft);
+    white-space: nowrap;
+  }
+  thead th {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    border-bottom: 1px solid var(--line);
+  }
+  th[scope="row"], td.lbl, th.lbl { text-align: left; font-weight: 500; }
+  td.num { font-family: var(--mono); }
+  td.win { color: var(--candidate); font-weight: 650; }
+  td.hold { color: var(--incumbent); font-weight: 650; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  /* ---- charts ---- */
+  figure { margin: 0; display: flex; flex-direction: column; gap: 1rem; }
+  figcaption { font-size: 0.85rem; color: var(--muted); }
+
+  .legend { display: flex; gap: 1.25rem; font-size: 0.82rem; flex-wrap: wrap; }
+  .legend span { display: inline-flex; align-items: center; gap: 0.45rem; }
+  .swatch { width: 10px; height: 10px; border-radius: 2px; }
+  .sw-a { background: var(--ref); }
+  .sw-b { background: var(--candidate); }
+
+  .bars { display: flex; flex-direction: column; gap: 1.4rem; }
+  .bars .group { display: flex; flex-direction: column; gap: 0.4rem; }
+  .bars .glabel { font-size: 0.85rem; color: var(--ink-2); }
+  .bars .bar {
+    display: grid;
+    grid-template-columns: 9.5rem 1fr;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .bars .bname { font-size: 0.8rem; color: var(--muted); }
+  .bars .fill {
+    height: 14px;
+    border-radius: 0 4px 4px 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 0.5rem;
+    color: var(--surface);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+  }
+  .fill-a { background: var(--ref); }
+  .fill-b { background: var(--candidate); }
+
+  /* ---- callouts ---- */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+    gap: 1.75rem 2rem;
+  }
+  .panel-chart { gap: 0.5rem; }
+  .panel-chart svg { width: 100%; height: auto; overflow: visible; }
+  .panel-chart .grid { stroke: var(--line); stroke-width: 1; }
+  .panel-chart .tick {
+    fill: var(--muted);
+    font-family: var(--mono);
+    font-size: 9px;
+  }
+  .panel-chart .axis-name { letter-spacing: 0.08em; }
+  .panel-chart .ln { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .panel-chart .pt { stroke: var(--surface); stroke-width: 2; }
+  .ln.ref { stroke: var(--ref); stroke-dasharray: 5 4; }
+  .pt.ref { fill: var(--ref); }
+  .ln.s1, .pt.s1 { stroke: var(--s1); }
+  .pt.s1 { fill: var(--s1); stroke: var(--surface); }
+  .ln.s2, .pt.s2 { stroke: var(--s2); }
+  .pt.s2 { fill: var(--s2); stroke: var(--surface); }
+  .ln.s3, .pt.s3 { stroke: var(--s3); }
+  .pt.s3 { fill: var(--s3); stroke: var(--surface); }
+  .key { width: 16px; height: 3px; border-radius: 2px; }
+  .key.ref { background: repeating-linear-gradient(90deg, var(--ref) 0 5px, transparent 5px 9px); }
+  .key.s1 { background: var(--s1); }
+  .key.s2 { background: var(--s2); }
+  .key.s3 { background: var(--s3); }
+
+  /* Input-length series. Own class names rather than reusing s1/s3, because
+     in this chart the colour means the character budget, not the model. */
+  .ln.len-a { stroke: var(--s1); stroke-dasharray: 5 4; }
+  .pt.len-a { fill: var(--s1); stroke: var(--surface); }
+  .ln.len-b { stroke: var(--s3); }
+  .pt.len-b { fill: var(--s3); stroke: var(--surface); }
+  .key.len-a { background: repeating-linear-gradient(90deg, var(--s1) 0 5px, transparent 5px 9px); }
+  .key.len-b { background: var(--s3); }
+  .panel-chart .zero { stroke: var(--ink-2); stroke-width: 1.5; }
+  .panel-chart .dlabel {
+    font-family: var(--mono);
+    font-size: 8px;
+    fill: var(--ink-2);
+  }
+
+
+  /* Formulas are MathML: rendered natively by the browser, no library to
+     load (an artifact cannot fetch one anyway). */
+  .eq {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  .eq math { font-size: 1.05rem; }
+  .eq .where { font-size: 0.82rem; color: var(--muted); }
+
+
+  /* Length histogram. Two classes rather than two identities: whether the
+     2,000-character cap was cutting the article or not. The neutral is
+     deliberate — it marks "nothing changed here". */
+  .panel-chart .bar-lo { fill: var(--ref); }
+  .panel-chart .bar-hi { fill: var(--candidate); }
+  .panel-chart .cut { stroke: var(--ink-2); stroke-width: 1.5; stroke-dasharray: 3 3; }
+  .key.lo { height: 10px; background: var(--ref); }
+  .key.hi { height: 10px; background: var(--candidate); }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 1.25rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .panel.flag { border-left: 3px solid var(--warn); }
+  .panel.ok { border-left: 3px solid var(--good); }
+
+  ul { margin: 0; padding-left: 1.15rem; display: flex; flex-direction: column; gap: 0.45rem; }
+  li::marker { color: var(--muted); }
+
+  pre {
+    margin: 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    line-height: 1.65;
+  }
+  code { font-family: var(--mono); font-size: 0.88em; }
+  pre code { font-size: 1em; }
+
+  .miss { display: flex; flex-direction: column; gap: 0.9rem; }
+  .miss div { display: flex; flex-direction: column; gap: 0.15rem; }
+  .miss .src { font-size: 0.85rem; }
+  .miss .dst { font-family: var(--mono); font-size: 0.78rem; color: var(--candidate); }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding-top: 1.5rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  @media (max-width: 34rem) {
+    .bars .bar { grid-template-columns: 7rem 1fr; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <p class="eyebrow">chezo.uno / prelims-cli</p>
+    <h1>関連記事推薦のための埋め込みモデル比較</h1>
+    <p class="lede">
+      日本語420本・英語33本のブログ記事を対象に、関連記事推薦の質を2つの実験で測定した。
+      <strong>実験1</strong>は埋め込みモデル5種の比較、<strong>実験2</strong>は埋め込みに与える
+      本文長の比較である。最初に使った指標には<strong>分母をモデル自身が動かせる</strong>という
+      設計上の欠陥があり、読み方によってモデルの順位が逆転した。判定対象を固定した指標に
+      作り直しても順位は決まらず、最後に<strong>推薦そのものを人手で判定して</strong>分かったのは、
+      <strong>この代理指標が関連性の 9% しか見ていなかった</strong>こと、そして
+      <strong>実際の推薦は両モデルとも 76% が妥当で、差は 120 枠中 2 件</strong>だということだった。
+      品質で順位がつかないと確かめた結果、判断は選好とコストに移り、
+      <strong>多言語モデル1つへの統合に落ち着いた。</strong>
+    </p>
+    <p>正解データが存在しないため、記事に付与された人手タグとの一致を代理指標に用いた。
+      既製のベンチマークではないので、<strong>指標の定義・偶然一致率・妥当性の検証を先に置き、
+      2つの実験を報告し、最後に人手評価で代理指標そのものを検証する。</strong>
+      指標の欠陥の発見と修理も、この順路の中で扱う。</p>
+    <p class="verdict"><strong>結論</strong>
+      <span>多言語モデル1つに統合（品質は同等・決め手は選好とコスト） · 入力を 8,000 文字へ</span></p>
+    <dl>
+      <div><dt>コーパス</dt><dd>ja 420本 / en 33本</dd></div>
+      <div><dt>審判</dt><dd>人手タグ（固定プール P@k・AUC）＋ 人手判定 162記事</dd></div>
+      <div><dt>topk</dt><dd>3 / 5 / 10 で符号の安定を確認</dd></div>
+      <div><dt>動かしたもの</dt><dd>モデル5種 / 入力長 / そして指標そのもの</dd></div>
+    </dl>
+    <p class="note">他言語での品質は測っていない。日本語と英語の2言語での結果である。</p>
+  </header>
+
+
+  <section>
+    <div class="head"><p class="eyebrow">前提</p><h2>対象システムと制約</h2></div>
+    <div class="col">
+      <p>chezo.uno は Hugo で生成している個人ブログで、記事末尾の関連記事は
+        <a href="https://github.com/chezou/prelims-cli">prelims-cli</a> が front matter に
+        書き込んでいる。記事を埋め込みベクトルにして、コサイン類似度の上位を推薦に使う仕組みである。</p>
+
+      <p><strong>これを GitHub Actions 上で回している。</strong>ここが制約を決めている。</p>
+
+      <ul>
+        <li><strong>GPU がない。</strong>推論は CPU のみ。ONNX Runtime で動くことが前提になる</li>
+        <li><strong>メモリが限られる。</strong>標準 runner は public リポジトリで 16 GB、
+          private で 7 GB。モデルの大きさだけでなく、埋め込み時のピークメモリも収まる必要がある</li>
+        <li><strong>記事を追加するたびに走る。</strong>実行時間がそのまま公開までの待ち時間になる</li>
+      </ul>
+
+      <p>この条件下で選べるのは<strong>軽量な埋め込みモデル</strong>に限られる。現状は言語ごとに
+        専用モデルを2つ持っており（日本語 ruri-v3-30m、英語 granite-small-english）、
+        言語判定して切り替えている。</p>
+
+      <p>出発点は、<a href="https://secon.dev/entry/2026/07/29/080000-bekko-embedding/">Bekko Embedding</a>
+        という軽量な多言語モデルへの興味だった（<a href="https://huggingface.co/hotchpotch/bekko-embedding-v1-a25m">a25m
+        のモデルカード</a>）。アクティブパラメータ 8M / 25M という
+        小ささでこの用途に足りるなら面白い、というのがまずあって、そこから
+        <strong>現行の2モデルを置き換えられるかもしれない</strong>、
+        <strong>置き換えられなくても日英以外のカバレッジを広げられるかもしれない</strong>、
+        という2つの期待がついてきた。</p>
+
+      <p>そこで Bekko の2サイズと、同じく軽量な多言語モデルである
+        granite-embedding-97m-multilingual-r2 を、現行の2モデルと同じ土俵で比較することにした。</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><p class="eyebrow">1 · 評価指標</p><h2>評価指標の定義</h2></div>
+    <div class="col">
+      <p>「良い関連記事」の正解データはない。代わりに、記事に付いている<strong>人手のタグ</strong>を
+        審判にした。同じタグを持つ記事同士を推薦できていれば、話題が合っているとみなす。
+        タグは推薦のために書かれたものではないので、審判としては独立している。</p>
+
+      <p>以下が、このレポートに出てくるすべての数字の定義になる。いずれも既製のベンチマークでは
+        なく、この検証のために書いた代理指標なので、計算方法を残しておく。実装は
+        <a href="https://github.com/chezou/prelims-cli/pull/11/changes#diff-d5fab2804f6350ec2994ad5b91d24a38995e97bf7a753dd09e3bbd2c90f8049b"><code>scripts/compare_embedding_variants.py</code></a>。
+        最初の指標（タグ一致率）には後述する設計上の欠陥が見つかったため、
+        <strong>モデル間の比較には次の2つ（固定プール precision@k と ペアワイズ AUC）を使う。</strong></p>
+
+      <h3>タグ一致率（any-tag@k）</h3>
+      <p>記事 <em>a</em> のタグ集合を T(a)、推薦上位 k 件を R<sub>k</sub>(a) とする。
+        採点対象は<strong>両側にタグがある組だけ</strong>で、片方でも無タグなら数えない。</p>
+      <div class="eq">
+<math display="block"><mi>P</mi><mo>=</mo><mo>{</mo><mo>(</mo><mi>a</mi><mo>,</mo><mi>r</mi><mo>)</mo><mo>&#x2223;</mo><mi>r</mi><mo>&#x2208;</mo><msub><mi>R</mi><mi>k</mi></msub><mo>(</mo><mi>a</mi><mo>)</mo><mo>,</mo><mi>T</mi><mo>(</mo><mi>a</mi><mo>)</mo><mo>&#x2260;</mo><mi>&#x2205;</mi><mo>,</mo><mi>T</mi><mo>(</mo><mi>r</mi><mo>)</mo><mo>&#x2260;</mo><mi>&#x2205;</mi><mo>}</mo></math>
+<math display="block"><mtext>any-tag@k</mtext><mo>=</mo><mfrac><mrow><mo>|</mo><mo>{</mo><mo>(</mo><mi>a</mi><mo>,</mo><mi>r</mi><mo>)</mo><mo>&#x2208;</mo><mi>P</mi><mo>:</mo><mi>T</mi><mo>(</mo><mi>a</mi><mo>)</mo><mo>&#x2229;</mo><mi>T</mi><mo>(</mo><mi>r</mi><mo>)</mo><mo>&#x2260;</mo><mi>&#x2205;</mi><mo>}</mo><mo>|</mo></mrow><mrow><mo>|</mo><mi>P</mi><mo>|</mo></mrow></mfrac></math>
+<math display="block"><msub><mtext>avg</mtext><mtext>shared</mtext></msub><mo>=</mo><mfrac><mrow><munder><mo>&#x2211;</mo><mrow><mo>(</mo><mi>a</mi><mo>,</mo><mi>r</mi><mo>)</mo><mo>&#x2208;</mo><mi>P</mi></mrow></munder><mo>|</mo><mi>T</mi><mo>(</mo><mi>a</mi><mo>)</mo><mo>&#x2229;</mo><mi>T</mi><mo>(</mo><mi>r</mi><mo>)</mo><mo>|</mo></mrow><mrow><mo>|</mo><mi>P</mi><mo>|</mo></mrow></mfrac></math>
+<p class="where">P は採点対象ペア、T(·) はタグ集合、R<sub>k</sub>(a) は記事 a への推薦上位 k 件。</p>
+      </div>
+      <p>T(a) は front matter の <code>tags</code> / <code>categories</code> /
+        <code>keywords</code> を小文字化して合併したもの。どのキーを使うかは
+        <code>--tag-keys</code> で切り替える。この検証の主要な数値は
+        <code>tags</code> と <code>categories</code> だけを使っている。</p>
+      <p class="note">この定義には欠陥がある。<strong>採点対象 P をモデル自身が選んでいる</strong>
+        —— どの記事を推薦するかはモデルが決めるので、分母がモデルごとに違う。
+        タグなし記事の推薦は分母から外れてノーカウントになるため、2つのモデルは同じ問題を
+        解かされていない。この帰結は「読み方で順位が逆になる」で示す。以下の2つが修理版で、
+        <strong>モデル間の順位はすべてこちらで判定している。</strong></p>
+
+      <h3>固定プール precision@k（judged-pool）</h3>
+      <p>推薦候補を<strong>タグ付き記事だけに制限してから</strong>上位 k 件を取る。
+        情報検索で不完全な正解データに使う condensed list の手法で、
+        ソースもタグ付き記事に限るので、<strong>分母は「ソース数 × k」で固定</strong>され、
+        どのモデルも同じ記事プールから同じ数だけ選ばされる。S をタグ付き記事の集合とすると:</p>
+      <div class="eq">
+<math display="block"><msub><mtext>prec</mtext><mtext>pool</mtext></msub><mo>@</mo><mi>k</mi><mo>=</mo><mfrac><mrow><munder><mo>&#x2211;</mo><mrow><mi>a</mi><mo>&#x2208;</mo><mi>S</mi></mrow></munder><mo>|</mo><mo>{</mo><mi>r</mi><mo>&#x2208;</mo><msubsup><mi>R</mi><mi>k</mi><mi>S</mi></msubsup><mo>(</mo><mi>a</mi><mo>)</mo><mo>:</mo><mi>T</mi><mo>(</mo><mi>a</mi><mo>)</mo><mo>&#x2229;</mo><mi>T</mi><mo>(</mo><mi>r</mi><mo>)</mo><mo>&#x2260;</mo><mi>&#x2205;</mi><mo>}</mo><mo>|</mo></mrow><mrow><mo>|</mo><mi>S</mi><mo>|</mo><mo>&#x00D7;</mo><mi>k</mi></mrow></mfrac></math>
+<p class="where">R<sub>k</sub><sup>S</sup>(a) は候補を S に制限した推薦上位 k 件。分母はモデルによらず一定。</p>
+      </div>
+      <p class="note">理論上の天井（どのランキングでも超えられないヒット数）も併記する。
+        同ラベルの相手が k 本未満しかない記事は k 本すべてを当てられないためで、
+        ja は k=3 で 285 枠中 203、en は 69 枠中 53 が上限になる。</p>
+
+      <h3>ペアワイズ AUC</h3>
+      <p>タグ付き記事の全ペアについて、<strong>同ラベルのペアが異ラベルのペアより
+        類似度上位に来る確率</strong>。0.5 が偶然。top-k の打ち切りを使わず類似度の順位全体を
+        使うので、<strong>ヒット数の増減では見えない差まで解像する</strong>。topk に依存しない。</p>
+      <div class="eq">
+<math display="block"><mtext>AUC</mtext><mo>=</mo><mi>P</mi><mo>(</mo><mi>sim</mi><mo>(</mo><msub><mi>p</mi><mo>+</mo></msub><mo>)</mo><mo>&gt;</mo><mi>sim</mi><mo>(</mo><msub><mi>p</mi><mo>&#x2212;</mo></msub><mo>)</mo><mo>)</mo><mo>+</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mi>P</mi><mo>(</mo><mi>sim</mi><mo>(</mo><msub><mi>p</mi><mo>+</mo></msub><mo>)</mo><mo>=</mo><mi>sim</mi><mo>(</mo><msub><mi>p</mi><mo>&#x2212;</mo></msub><mo>)</mo><mo>)</mo></math>
+<p class="where">p<sub>+</sub> は同ラベルのペア、p<sub>−</sub> は異ラベルのペアから一様に取る。ja は同ラベル212 対 異ラベル4,253、en は 53 対 200。</p>
+      </div>
+      <p>実装は確率を数え上げるのではなく、Mann-Whitney U 統計量として計算する。
+        全ペアの類似度に順位（同値は平均順位）を振り、同ラベルペアの順位和から求める:</p>
+      <div class="eq">
+<math display="block"><mtext>AUC</mtext><mo>=</mo><mfrac><mrow><munder><mo>&#x2211;</mo><mrow><mi>p</mi><mo>&#x2208;</mo><msub><mi>P</mi><mo>+</mo></msub></mrow></munder><mi>rank</mi><mo>(</mo><mi>p</mi><mo>)</mo><mo>&#x2212;</mo><mfrac><mrow><msub><mi>n</mi><mo>+</mo></msub><mo>(</mo><msub><mi>n</mi><mo>+</mo></msub><mo>+</mo><mn>1</mn><mo>)</mo></mrow><mn>2</mn></mfrac></mrow><mrow><msub><mi>n</mi><mo>+</mo></msub><mo>&#x00D7;</mo><msub><mi>n</mi><mo>&#x2212;</mo></msub></mrow></mfrac></math>
+<p class="where">rank は全ペアを類似度の昇順に並べた1始まりの順位（同値は平均）、n<sub>+</sub> / n<sub>−</sub> は同ラベル / 異ラベルのペア数。同値を平均順位にすることが、上の式の 1/2 の項に対応する。</p>
+      </div>
+      <p class="note">この形にすると、同ラベルペアが全部上位なら順位和が最大になって 1.0、
+        全部下位なら 0.0 になる。<strong>ペアを総当たりで比較せずに済む</strong>ので、
+        日本語の 4,465 ペアでも一瞬で出る。</p>
+      <p class="note">どちらの指標も、差には paired bootstrap の95%区間を付ける。
+        precision はソース記事単位、AUC は記事単位（ペア単位で引くと同じ記事を共有するペアの
+        相関で区間が狭く出すぎる）でリサンプルする。1,000回、seed 固定。</p>
+
+      <h3>ハブ集中度</h3>
+      <p>記事 x が何本の記事から推薦されたか（被推薦数、in-degree）を数え、その最大値と、
+        上位5記事が全推薦枠に占める割合を見る。N は記事数。</p>
+      <div class="eq">
+<math display="block"><mi>indeg</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mo>|</mo><mo>{</mo><mi>a</mi><mo>&#x2223;</mo><mi>x</mi><mo>&#x2208;</mo><msub><mi>R</mi><mi>k</mi></msub><mo>(</mo><mi>a</mi><mo>)</mo><mo>}</mo><mo>|</mo></math>
+<math display="block"><msub><mtext>max</mtext><mtext>indeg</mtext></msub><mo>=</mo><munder><mo movablelimits="false">max</mo><mi>x</mi></munder><mi>indeg</mi><mo>(</mo><mi>x</mi><mo>)</mo></math>
+<math display="block"><msub><mtext>top5</mtext><mtext>share</mtext></msub><mo>=</mo><mfrac><mrow><munder><mo>&#x2211;</mo><mrow><mi>x</mi><mo>&#x2208;</mo><msub><mtext>top</mtext><mn>5</mn></msub></mrow></munder><mi>indeg</mi><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mrow><mi>N</mi><mo>&#x00D7;</mo><mi>k</mi></mrow></mfrac></math>
+<p class="where">N は記事数、k は推薦件数。top<sub>5</sub> は被推薦数の上位5記事。</p>
+      </div>
+      <p>低いほど良い。特定の記事が話題と無関係にあちこちへ刺さる状態を捕まえる。
+        タグ一致率より先に反応することがあり、独立した観点として置いている。</p>
+
+      <h3>プローブの分離幅</h3>
+      <p>同じ内容を3言語に訳した3文（同トピック2文＋無関係1文）を埋め込み、
+        コサイン類似度の差を取る。実装は <a href="https://github.com/chezou/prelims-cli/pull/11/changes#diff-22d8c619507c277eded3ef3ba611ff9692eaf30ffbe93632a4d037fd5e5830de"><code>scripts/check_onnx_model.py</code></a>。</p>
+      <div class="eq">
+<math display="block"><mi>margin</mi><mo>=</mo><mi>cos</mi><mo>(</mo><msub><mi>e</mi><mn>0</mn></msub><mo>,</mo><msub><mi>e</mi><mn>1</mn></msub><mo>)</mo><mo>&#x2212;</mo><mo movablelimits="false">max</mo><mo>(</mo><mi>cos</mi><mo>(</mo><msub><mi>e</mi><mn>0</mn></msub><mo>,</mo><msub><mi>e</mi><mn>2</mn></msub><mo>)</mo><mo>,</mo><mi>cos</mi><mo>(</mo><msub><mi>e</mi><mn>1</mn></msub><mo>,</mo><msub><mi>e</mi><mn>2</mn></msub><mo>)</mo><mo>)</mo></math>
+<p class="where">e<sub>0</sub>, e<sub>1</sub> が同トピック、e<sub>2</sub> が無関係な文の埋め込み。</p>
+      </div>
+      <p class="note">この指標がランキング品質を測らないことは「指標の妥当性」で示す。</p>
+
+      <h3>membership 変化と order-only 変化</h3>
+      <p>2つの設定の推薦を比べたとき、上位 k 件の<strong>集合</strong>が変わったか、
+        順番だけが変わったかを分けて数える。順序だけの入れ替わりは front matter の差分には
+        出るが、読者から見た顔ぶれは変わらない。</p>
+      <div class="eq">
+<math display="block"><mtext>membership</mtext><mo>=</mo><mo>|</mo><mo>{</mo><mi>a</mi><mo>&#x2223;</mo><mi>set</mi><mo>(</mo><msubsup><mi>R</mi><mi>k</mi><mi>A</mi></msubsup><mo>(</mo><mi>a</mi><mo>)</mo><mo>)</mo><mo>&#x2260;</mo><mi>set</mi><mo>(</mo><msubsup><mi>R</mi><mi>k</mi><mi>B</mi></msubsup><mo>(</mo><mi>a</mi><mo>)</mo><mo>)</mo><mo>}</mo><mo>|</mo></math>
+<math display="block"><msub><mtext>order</mtext><mtext>only</mtext></msub><mo>=</mo><mo>|</mo><mo>{</mo><mi>a</mi><mo>&#x2223;</mo><msubsup><mi>R</mi><mi>k</mi><mi>A</mi></msubsup><mo>(</mo><mi>a</mi><mo>)</mo><mo>&#x2260;</mo><msubsup><mi>R</mi><mi>k</mi><mi>B</mi></msubsup><mo>(</mo><mi>a</mi><mo>)</mo><mo>&#x2227;</mo><mtext>set が一致</mtext><mo>}</mo><mo>|</mo></math>
+<p class="where">A, B は比較する2つの設定。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><p class="eyebrow">1 · 評価指標</p><h2>偶然一致率</h2></div>
+    <div class="col">
+      <p>この先に出てくる一致率は 0.3 から 0.5 のあたりに並ぶ。その値が高いのか低いのかは、
+        それだけでは決まらない。目盛りを与えるために、同じコーパスで<strong>無作為に選んだ2記事</strong>が
+        タグを共有する確率を求めた。推薦を一切しなかった場合の下限にあたる。</p>
+    </div>
+
+<div class="scroll">
+      <table>
+        <caption>無作為な2記事が1つ以上タグを共有する確率と、観測値との倍率。観測値は topk=5 の
+          全モデル分布</caption>
+        <thead>
+          <tr><th class="lbl">コーパス</th><th class="lbl">審判</th><th>タグ付き</th><th>全ペア</th>
+            <th>偶然一致率</th><th>観測 k=5</th><th>倍率</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row" rowspan="2">ja</th><td class="lbl">人手タグのみ</td>
+            <td class="num">95本</td><td class="num">4,465</td>
+            <td class="num">0.047</td><td class="num">0.384〜0.428</td><td class="num hold">約8〜9倍</td></tr>
+          <tr><td class="lbl">keywords 込み</td><td class="num">418本</td><td class="num">87,153</td>
+            <td class="num">0.047</td><td class="num">0.460〜0.536</td><td class="num">約10〜11倍</td></tr>
+          <tr><th scope="row" rowspan="2">en</th><td class="lbl">人手タグのみ</td>
+            <td class="num">23本</td><td class="num">253</td>
+            <td class="num">0.209</td><td class="num">0.356〜0.465</td><td class="num">約1.7〜2.2倍</td></tr>
+          <tr><td class="lbl">keywords 込み</td><td class="num">33本</td><td class="num">528</td>
+            <td class="num">0.225</td><td class="num">0.564〜0.570</td><td class="num">約2.5倍</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p>日本語では観測値が偶然の8〜9倍で、指標は信号を拾っている。一方<strong>英語は偶然が
+        21%に達する。</strong>タグ付きが23本しかなく、語彙も python / oss / machine learning に
+        集中しているためで、無作為でも当たりやすい。</p>
+
+      <p>これが英語で差を解像しにくい理由の一つになっている。<strong>偶然の水準が高いぶん、
+        モデル間で使える幅が圧縮されている。</strong>記事数だけの問題ではない。
+        granite-97m-multilingual の int8 は topk=10 で 0.294、偶然の1.4倍にとどまる。</p>
+
+      <div class="panel">
+        <p><strong>審判を替えても、日本語の偶然の水準はまったく動かない</strong>（どちらも 0.047）。
+          keywords を足しても目盛りが伸び縮みしているわけではない。それなのに勝者は入れ替わる —
+          keywords 込みでは bekko-a8m が +7.6pt、人手タグでは 2.3pt 負ける。倍率で見ても、
+          keywords 込みでは ruri 9.8倍に対し bekko 11.5倍、人手タグでは ruri 9.0倍に対し
+          bekko 8.5倍と逆転する。
+          <strong>スケールの問題ではなく、順序そのものが変わっている。</strong>次節で扱う。</p>
+      </div>
+
+      <div class="panel flag">
+        <p><strong>日本語の 0.40 と英語の 0.40 は同じ意味ではない。</strong>偶然の水準が
+          0.047 と 0.209 で4倍違う以上、言語をまたいだ一致率の絶対値は比較できない。
+          このレポートで言語をまたいで比べているのは、モデル間の順序と符号だけにとどめている。</p>
+        <p class="note">ペアワイズ AUC はここが違う。定義上どの言語でも偶然が 0.500 に揃うので、
+          ja 0.83 と en 0.77 のような比較には（同じ意味ではないにせよ）目盛りの共通性がある。
+          固定プール precision@k は一致率と同じくラベルの当たりやすさに依存するので、比較できない。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><p class="eyebrow">1 · 評価指標</p><h2>指標の妥当性</h2></div>
+    <div class="col">
+      <p>代理指標である以上、何を測れて何を測れないかを先に確定させる必要がある。
+        4点を確認した。</p>
+
+      <h3>タグの出所によって順位が入れ替わる</h3>
+      <p>front matter には人手の <code>tags</code> / <code>categories</code> のほかに、
+        <strong>TF-IDF で自動抽出された <code>keywords</code></strong> がある
+        （420本中405本に付与、2,350種、最頻値は「こと」）。これを審判に含めると、埋め込みが
+        置き換えようとしている当の手法との一致度を「話題の一致度」として測ることになる。
+        実際に審判を替えると、勝者が入れ替わる。</p>
+    </div>
+
+<figure>
+      <div class="legend">
+        <span><i class="swatch sw-a"></i>専用モデル（ruri-v3 / granite）</span>
+        <span><i class="swatch sw-b"></i>bekko-a8m</span>
+      </div>
+      <div class="bars">
+        <div class="group">
+          <p class="glabel">日本語 — 審判: TF-IDF 由来の keywords 込み（418本・2,090ペア）</p>
+          <div class="bar"><span class="bname">ruri-v3 + prefix</span><div class="fill fill-a" style="width:46.0%">0.460</div></div>
+          <div class="bar"><span class="bname">bekko-a8m</span><div class="fill fill-b" style="width:53.6%">0.536</div></div>
+        </div>
+        <div class="group">
+          <p class="glabel">日本語 — 審判: 人手のタグのみ（95本・271ペア）</p>
+          <div class="bar"><span class="bname">ruri-v3 + prefix</span><div class="fill fill-a" style="width:42.8%">0.428</div></div>
+          <div class="bar"><span class="bname">bekko-a8m</span><div class="fill fill-b" style="width:40.5%">0.405</div></div>
+        </div>
+        <div class="group">
+          <p class="glabel">英語 — 審判: keywords 込み（33本・165ペア）</p>
+          <div class="bar"><span class="bname">granite</span><div class="fill fill-a" style="width:57.0%">0.570</div></div>
+          <div class="bar"><span class="bname">bekko-a8m</span><div class="fill fill-b" style="width:56.4%">0.564</div></div>
+        </div>
+        <div class="group">
+          <p class="glabel">英語 — 審判: 人手のタグのみ（23本・103ペア）</p>
+          <div class="bar"><span class="bname">granite</span><div class="fill fill-a" style="width:44.7%">0.447</div></div>
+          <div class="bar"><span class="bname">bekko-a8m</span><div class="fill fill-b" style="width:44.9%">0.449</div></div>
+        </div>
+      </div>
+      <figcaption>タグを1つ以上共有する推薦の割合（topk=5、0〜1のスケール）。日本語では審判を替えると
+        bekko の +7.6pt が −2.3pt に転じる。英語ではどちらの審判でも差がつかない。</figcaption>
+    </figure>
+
+    <div class="col">
+      <p><strong>日本語では bekko の +7.6pt が −2.3pt に転じる。</strong>偶然一致率のほうは
+        まったく動かない（どちらも 0.047）ので、目盛りが伸縮しているのではなく順序そのものが
+        変わっている。<strong>本レポートの数値はすべて人手の
+        <code>tags</code> / <code>categories</code> のみで測っている。</strong></p>
+
+      <p class="note">英語では審判を替えても差がつかない（−0.6pt と +0.2pt）。汚染が日本語だけに出るのは、
+        <code>keywords</code> の付与率が日本語 405/420・英語 29/33 と大きく違うことに加えて、
+        人手タグの側が日本語では 95本しかカバーしていないためである。<strong>審判を替えると
+        採点対象が 271ペアから 2,090ペアへ8倍に膨らみ、その増分がすべて TF-IDF 由来になる。</strong></p>
+
+      <p class="note">修理後の指標で測り直すと、この汚染の出方まで見える。keywords 審判のもとでは
+        固定プール precision@5 で a8m が +7.6pt [＋5.6, ＋9.6] と有意に勝つのに、
+        <strong>同じ keywords 審判でも AUC では +1.1pt [−0.4, +2.5] しか差がない。</strong>
+        a8m の優位はランキング全体ではなく上位数件に集中しており、それは TF-IDF の語を
+        表層的に共有する記事が最上位に来やすいという説明と整合する。</p>
+
+      <h3>言語をまたいだ絶対値は比較できない</h3>
+      <p>偶然一致率は日本語 0.047 に対し英語 0.209 で、4倍の開きがある。
+        <strong>日本語の 0.40 と英語の 0.40 は同じ意味を持たない。</strong>
+        本レポートで言語をまたいで比べているのは、モデル間の順序と符号だけにとどめている。</p>
+
+      <h3>プローブの分離幅はランキング品質を測らない</h3>
+      <p>同一内容の3言語プローブで、同トピックのペアと無関係な文の類似度差を取る指標である。
+        <strong>bekko-a25m は a8m より分離幅が狭い（日本語 0.173 対 0.379）が、推薦は良い。</strong>
+        この指標が捉えているのは埋め込み空間の広がり方であって、ランキングの優劣ではない。</p>
+    </div>
+
+<div class="scroll">
+      <table>
+        <caption>同トピック − 無関係（大きいほど識別できている）</caption>
+        <thead>
+          <tr><th class="lbl">モデル</th><th>日本語</th><th>英語</th><th>フランス語</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">bekko-a8m</th><td class="num win">0.379</td><td class="num win">0.588</td><td class="num win">0.509</td></tr>
+          <tr><th scope="row">ruri-v3 + prefix</th><td class="num">0.168</td><td class="num">0.154</td><td class="num">0.072</td></tr>
+          <tr><th scope="row">granite (cls)</th><td class="num">0.055</td><td class="num">0.179</td><td class="num">0.139</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p>既存2モデルは無関係な文にも 0.72〜0.85 を返し、値が狭い帯に圧縮されている。
+        ruri のフランス語 0.072 と granite-english の日本語 0.055 は、守備範囲外の言語で分離が
+        ほぼ消えることを示す。<strong>この指標の用途は「壊れていないか」「閾値を置けるか」の
+        判定に限られる。</strong>専用モデルを他言語へ流用できない根拠としては使える。</p>
+
+    </div>
+
+    <div class="legend">
+      <span><i class="key hi"></i>1本だけ — ペアを作れない</span>
+      <span><i class="key lo"></i>2本以上 — 採点対象になりうる</span>
+    </div>
+
+    <div class="chart-grid">
+      <figure class="panel-chart">
+        <figcaption><strong>日本語 — ラベル69種の内訳</strong>
+          <span class="note">縦軸はラベルの種類数</span></figcaption>
+        <svg viewBox="0 0 316 195" role="img"
+             aria-label="日本語のラベル頻度。69種のうち39種が1本の記事にしか付いていない">
+            <line class="grid" x1="50" x2="300" y1="140.4" y2="140.4" />
+            <text class="tick" x="44" y="143.9" text-anchor="end">0</text>
+            <line class="grid" x1="50" x2="300" y1="102.1" y2="102.1" />
+            <text class="tick" x="44" y="105.6" text-anchor="end">15</text>
+            <line class="grid" x1="50" x2="300" y1="63.9" y2="63.9" />
+            <text class="tick" x="44" y="67.4" text-anchor="end">30</text>
+            <line class="grid" x1="50" x2="300" y1="25.6" y2="25.6" />
+            <text class="tick" x="44" y="29.1" text-anchor="end">45</text>
+            <rect class="bar-hi" x="52.0" y="40.9" width="37.7" height="99.5" rx="2" />
+            <text class="tick" x="70.8" y="152" text-anchor="middle">1</text>
+            <text class="dlabel" x="70.8" y="37.9" text-anchor="middle">39</text>
+            <rect class="bar-lo" x="93.7" y="112.3" width="37.7" height="28.1" rx="2" />
+            <text class="tick" x="112.5" y="152" text-anchor="middle">2</text>
+            <text class="dlabel" x="112.5" y="109.3" text-anchor="middle">11</text>
+            <rect class="bar-lo" x="135.3" y="117.4" width="37.7" height="23.0" rx="2" />
+            <text class="tick" x="154.2" y="152" text-anchor="middle">3</text>
+            <text class="dlabel" x="154.2" y="114.4" text-anchor="middle">9</text>
+            <rect class="bar-lo" x="177.0" y="130.2" width="37.7" height="10.2" rx="2" />
+            <text class="tick" x="195.8" y="152" text-anchor="middle">4–5</text>
+            <text class="dlabel" x="195.8" y="127.2" text-anchor="middle">4</text>
+            <rect class="bar-lo" x="218.7" y="127.6" width="37.7" height="12.8" rx="2" />
+            <text class="tick" x="237.5" y="152" text-anchor="middle">6–9</text>
+            <text class="dlabel" x="237.5" y="124.6" text-anchor="middle">5</text>
+            <rect class="bar-lo" x="260.3" y="137.8" width="37.7" height="2.6" rx="2" />
+            <text class="tick" x="279.2" y="152" text-anchor="middle">10+</text>
+            <text class="dlabel" x="279.2" y="134.8" text-anchor="middle">1</text>
+            <text class="tick axis-name" x="175" y="188" text-anchor="middle">そのラベルが付いた記事数</text>
+        </svg>
+      </figure>
+      <figure class="panel-chart">
+        <figcaption><strong>英語 — ラベル26種の内訳</strong>
+          <span class="note">縦軸はラベルの種類数</span></figcaption>
+        <svg viewBox="0 0 316 195" role="img"
+             aria-label="英語のラベル頻度。26種のうち19種が1本の記事にしか付いていない">
+            <line class="grid" x1="50" x2="300" y1="140.4" y2="140.4" />
+            <text class="tick" x="44" y="143.9" text-anchor="end">0</text>
+            <line class="grid" x1="50" x2="300" y1="102.1" y2="102.1" />
+            <text class="tick" x="44" y="105.6" text-anchor="end">8</text>
+            <line class="grid" x1="50" x2="300" y1="63.9" y2="63.9" />
+            <text class="tick" x="44" y="67.4" text-anchor="end">16</text>
+            <line class="grid" x1="50" x2="300" y1="25.6" y2="25.6" />
+            <text class="tick" x="44" y="29.1" text-anchor="end">24</text>
+            <rect class="bar-hi" x="52.0" y="49.6" width="37.7" height="90.8" rx="2" />
+            <text class="tick" x="70.8" y="152" text-anchor="middle">1</text>
+            <text class="dlabel" x="70.8" y="46.6" text-anchor="middle">19</text>
+            <rect class="bar-lo" x="93.7" y="126.1" width="37.7" height="14.3" rx="2" />
+            <text class="tick" x="112.5" y="152" text-anchor="middle">2</text>
+            <text class="dlabel" x="112.5" y="123.1" text-anchor="middle">3</text>
+            <rect class="bar-lo" x="135.3" y="135.6" width="37.7" height="4.8" rx="2" />
+            <text class="tick" x="154.2" y="152" text-anchor="middle">3</text>
+            <text class="dlabel" x="154.2" y="132.6" text-anchor="middle">1</text>
+            <rect class="bar-lo" x="177.0" y="130.8" width="37.7" height="9.6" rx="2" />
+            <text class="tick" x="195.8" y="152" text-anchor="middle">4–5</text>
+            <text class="dlabel" x="195.8" y="127.8" text-anchor="middle">2</text>
+            <rect class="bar-lo" x="218.7" y="135.6" width="37.7" height="4.8" rx="2" />
+            <text class="tick" x="237.5" y="152" text-anchor="middle">6–9</text>
+            <text class="dlabel" x="237.5" y="132.6" text-anchor="middle">1</text>
+            <rect class="bar-lo" x="260.3" y="139.8" width="37.7" height="0.6" rx="2" />
+            <text class="tick" x="279.2" y="152" text-anchor="middle">10+</text>
+            <text class="tick axis-name" x="175" y="188" text-anchor="middle">そのラベルが付いた記事数</text>
+        </svg>
+      </figure>
+    </div>
+
+    <div class="col">
+      <p><strong>日本語の69種のうち39種、英語の26種のうち19種は、1本の記事にしか付いていない。</strong>
+        1本しかないラベルは定義上ペアを作れないので、<strong>語彙の半分以上は指標に何も寄与しない。</strong>
+        残りが作れる同ラベルのペアは日本語で 212、英語で 53 しかない。</p>
+
+      <p>これを全ペアと並べると、この指標の天井が見える。<strong>日本語のタグ付き95本が作る
+        4,465 ペアのうち、同じラベルを共有するのは 212 ペア（4.7%）だけ</strong>
+        —— これが「正解」の総数である。固定プールの topk=3 では、どのランキングでも 285 枠中
+        203 ヒットが上限で、現行モデルは 103（上限の51%）を取っている。悪い数字ではないが、
+        正解の総数がこの規模である以上、ヒット数だけで数ポイントの差に意味を持たせるのは難しい。</p>
+
+      <p class="note">英語には <code>machine_learning</code> と <code>machine-learning</code> が
+        別のラベルとして存在した。この検証の途中でタグの正規化を行い、本レポートの数値は
+        すべて正規化後に測り直したものである。</p>
+    </div>
+
+    <div class="col">
+      <h3>分解能 —— この指標は何ポイントの差まで見えるのか</h3>
+      <p>タグ一致率の分解能は |P|（両側にタグがある推薦ペアの数）に依存する。そして |P| は小さい。
+        日本語は 420本 × topk=3 で 1,260 件の推薦を出しているのに、
+        <strong>採点できるのは 174 件、全体の 14% しかない。</strong>
+        理由は一致率の低さではない。<strong>一致率自体は 49%、偶然の10倍あって信号ははっきり出ている。</strong>
+        効いているのは<strong>タグの網羅率</strong>のほうで、人手タグが付いているのは 420本中 95本。
+        しかも推薦する側とされる側の<strong>両端にタグが必要</strong>なので、23% が二乗で効く。</p>
+
+      <p>ではモデル間の2ポイントの差に意味はあるのか。paired bootstrap の95%区間で測ると、
+        3つの指標で分解能がはっきり違う。</p>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <caption>現行モデル対 bekko-a25m の差の 95% 区間（8,000 文字、人手タグ）。
+          指標によって区間の幅 ≒ 分解能が変わる</caption>
+        <thead>
+          <tr><th class="lbl">指標</th><th class="lbl">リサンプル単位</th>
+            <th>ja の区間幅</th><th>en の区間幅</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">タグ一致率（旧・分母がモデル依存）</th><td class="lbl">ソース記事</td>
+            <td class="num">±5pt</td><td class="num">±6pt</td></tr>
+          <tr><th scope="row">固定プール precision@3</th><td class="lbl">ソース記事</td>
+            <td class="num hold">±3.7pt</td><td class="num">±5.1pt</td></tr>
+          <tr><th scope="row">ペアワイズ AUC</th><td class="lbl">記事</td>
+            <td class="num hold">±3.9pt</td><td class="num">±8.5pt</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p>固定プール precision は k が大きいほど区間が締まり、日本語の k=10 では
+        <strong>±1.3pt</strong> まで縮む。<strong>旧指標では「差があるとしても ±7pt 以内」という
+        上限しか言えなかったのが、修理後は 1〜2pt 台の差を判定できるセルが出てくる。</strong>
+        実際にゼロを外れたセルが現れたことは実験の節で示す。</p>
+
+      <div class="panel">
+        <p><strong>粗い指標にも答えられる問いはあった。</strong>訊いたのは「置き換えるべきか」で、
+          旧指標が返したのは「差があるとしても ±7pt 以内」という<strong>上限</strong>である。
+          37 MB を 199 MB にする判断には、まず上限が分かれば足りた。
+          <strong>ただし順位を語るには、分母の欠陥を直し、分解能を上げる必要があった。</strong>
+          その両方をやったのが固定プール precision と AUC である。</p>
+      </div>
+
+      <p class="note">分解能を上げるもう1つの方法はタグの付いた記事を増やすこと。420本すべてに付けば
+        同ラベルペアは大きく増え、区間はさらに縮む。AUC が k=10 の precision より
+        英語で広いのは、記事単位のリサンプルでは23本しかない標本の揺れをまともに受けるためである。</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><p class="eyebrow">2 · 実験1: モデルの選択</p><h2>対象モデル</h2></div>
+    <div class="scroll">
+      <table>
+        <caption>いずれも ONNX。設定を1つ足すだけで動き、コード変更は不要だった</caption>
+        <thead>
+          <tr><th class="lbl">モデル</th><th class="lbl">役割</th><th>次元</th><th>サイズ</th>
+            <th class="lbl">pooling</th><th class="lbl">prefix</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">ruri-v3-30m</th><td class="lbl">日本語・現行</td><td class="num">256</td>
+            <td class="num">37 MB</td><td class="lbl">mean</td><td class="lbl">"トピック: "</td></tr>
+          <tr><th scope="row">granite-small-english-r2</th><td class="lbl">英語・現行</td><td class="num">384</td>
+            <td class="num">52 MB</td><td class="lbl">cls</td><td class="lbl">—</td></tr>
+          <tr><th scope="row">bekko-v1-a8m</th><td class="lbl">多言語・候補</td><td class="num">384</td>
+            <td class="num">130 MB</td><td class="lbl">mean</td><td class="lbl">—</td></tr>
+          <tr><th scope="row">bekko-v1-a25m</th><td class="lbl">多言語・候補</td><td class="num">384</td>
+            <td class="num">199 MB</td><td class="lbl">mean</td><td class="lbl">—</td></tr>
+          <tr><th scope="row">granite-97m-multilingual-r2</th><td class="lbl">多言語・候補</td><td class="num">384</td>
+            <td class="num">98 MB</td><td class="lbl">cls</td><td class="lbl">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col">
+      <p class="note">pooling を間違えると、エラーは出ないまま推薦だけが悪くなる。ruri と
+        granite-english は ONNX にモデル自身の文ベクトルが同梱されていたので、自前の pooling と
+        突き合わせて実測で確定した。bekko と granite-multilingual は同梱がないため、
+        それぞれ 1_Pooling/config.json で確認している。</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><p class="eyebrow">2 · 実験1: モデルの選択</p><h2>結果</h2></div>
+    <div class="col">
+      <p>モデル間の判定は<strong>固定プール precision@k と ペアワイズ AUC</strong> で行う
+        （分母がモデル依存になる旧指標での見え方は、記録としてこの節の後半に残す）。
+        precision は topk 3 / 5 / 10 で符号が揃うかを見る。AUC は topk に依存しない。</p>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <caption>実験1・入力 2,000 文字・人手タグ。候補をタグ付き記事（ja 95本 / en 23本）に
+          制限した固定プールでの成績。小さい数字はヒット数（枠は ja 285/475/950、en 69/115/230）。
+          色付きは各列の最良、<strong>薄色は現行との95%区間がゼロを外れて悪いセル</strong></caption>
+        <thead>
+          <tr><th class="lbl">コーパス</th><th class="lbl">モデル</th>
+            <th>AUC</th><th>P@3</th><th>P@5</th><th>P@10</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row" rowspan="5">ja</th><td class="lbl">ruri-v3 + prefix（現行）</td>
+            <td class="num">0.818</td><td class="num">0.361<br><span class="note">103</span></td>
+            <td class="num">0.316<br><span class="note">150</span></td><td class="num">0.245<br><span class="note">233</span></td></tr>
+          <tr><td class="lbl">bekko-a8m</td>
+            <td class="num">0.821</td><td class="num win">0.368<br><span class="note">105</span></td>
+            <td class="num win">0.326<br><span class="note">155</span></td><td class="num">0.249<br><span class="note">237</span></td></tr>
+          <tr><td class="lbl">bekko-a25m</td>
+            <td class="num win">0.835</td><td class="num">0.365<br><span class="note">104</span></td>
+            <td class="num">0.320<br><span class="note">152</span></td><td class="num win">0.258<br><span class="note">245</span></td></tr>
+          <tr><td class="lbl">granite-97m-multi（fp32）</td>
+            <td class="num">0.813</td><td class="num">0.351<br><span class="note">100</span></td>
+            <td class="num">0.314<br><span class="note">149</span></td><td class="num">0.256<br><span class="note">243</span></td></tr>
+          <tr><td class="lbl">同 int8</td>
+            <td class="num">0.809</td><td class="num win">0.368<br><span class="note">105</span></td>
+            <td class="num">0.309<br><span class="note">147</span></td><td class="num">0.243<br><span class="note">231</span></td></tr>
+          <tr><th scope="row" rowspan="5">en</th><td class="lbl">granite-small-english（現行）</td>
+            <td class="num">0.759</td><td class="num">0.449<br><span class="note">31</span></td>
+            <td class="num">0.426<br><span class="note">49</span></td><td class="num">0.335<br><span class="note">77</span></td></tr>
+          <tr><td class="lbl">bekko-a8m</td>
+            <td class="num win">0.798</td><td class="num">0.449<br><span class="note">31</span></td>
+            <td class="num">0.426<br><span class="note">49</span></td><td class="num win">0.357<br><span class="note">82</span></td></tr>
+          <tr><td class="lbl">bekko-a25m</td>
+            <td class="num">0.791</td><td class="num win">0.478<br><span class="note">33</span></td>
+            <td class="num win">0.443<br><span class="note">51</span></td><td class="num">0.339<br><span class="note">78</span></td></tr>
+          <tr><td class="lbl">granite-97m-multi（fp32）</td>
+            <td class="num">0.747</td><td class="num">0.464<br><span class="note">32</span></td>
+            <td class="num">0.409<br><span class="note">47</span></td><td class="num">0.326<br><span class="note">75</span></td></tr>
+          <tr><td class="lbl">同 int8</td>
+            <td class="num">0.680</td><td class="num">0.420<br><span class="note">29</span></td>
+            <td class="num hold">0.348<br><span class="note">40</span></td><td class="num hold">0.278<br><span class="note">64</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure>
+      <div class="legend">
+        <span><i class="swatch sw-a"></i>専用モデル（現行）</span>
+        <span><i class="swatch sw-b"></i>多言語の候補</span>
+      </div>
+      <div class="bars">
+        <div class="group">
+          <p class="glabel">日本語 — ペアワイズ AUC（バーは偶然 0.500 からの超過分）</p>
+          <div class="bar"><span class="bname">ruri-v3 + prefix</span><div class="fill fill-a" style="width:63.6%">0.818</div></div>
+          <div class="bar"><span class="bname">bekko-a8m</span><div class="fill fill-b" style="width:64.2%">0.821</div></div>
+          <div class="bar"><span class="bname">bekko-a25m</span><div class="fill fill-b" style="width:67.0%">0.835</div></div>
+          <div class="bar"><span class="bname">granite-97m fp32</span><div class="fill fill-b" style="width:62.6%">0.813</div></div>
+          <div class="bar"><span class="bname">granite-97m int8</span><div class="fill fill-b" style="width:61.8%">0.809</div></div>
+        </div>
+        <div class="group">
+          <p class="glabel">英語 — ペアワイズ AUC</p>
+          <div class="bar"><span class="bname">granite-small</span><div class="fill fill-a" style="width:51.8%">0.759</div></div>
+          <div class="bar"><span class="bname">bekko-a8m</span><div class="fill fill-b" style="width:59.6%">0.798</div></div>
+          <div class="bar"><span class="bname">bekko-a25m</span><div class="fill fill-b" style="width:58.2%">0.791</div></div>
+          <div class="bar"><span class="bname">granite-97m fp32</span><div class="fill fill-b" style="width:49.4%">0.747</div></div>
+          <div class="bar"><span class="bname">granite-97m int8</span><div class="fill fill-b" style="width:36.0%">0.680</div></div>
+        </div>
+      </div>
+      <figcaption>同ラベルのペアを異ラベルのペアより上位に置ける確率。0.500 が偶然。
+        両言語とも bekko 2種が現行以上に来るが、95%区間がゼロを外れるものはない。</figcaption>
+    </figure>
+
+    <div class="col">
+      <p><strong>2,000 文字の時点でゼロを外れるのは granite-97m int8 の英語だけで、しかも悪い方向</strong>
+        （P@5 −7.8pt [−13.9, −1.7]、P@10 −5.7pt [−10.4, −1.3]）。量子化の劣化であって
+        モデルの実力ではない（付録）。<strong>bekko の2つは、どの言語のどのセルでも現行と
+        区間が重なる</strong> —— ただし点推定は寄っていて、AUC は日本語で a25m +1.7pt、
+        英語で a8m +3.8pt / a25m +3.2pt と、<strong>4つの比較すべてで bekko 側がプラス</strong>である。</p>
+      <p class="note">「同等か、わずかに上かもしれないが、この標本では断定できない」——
+        これが固定プールでの実験1の読みになる。本番条件（8,000 文字）での再測定と
+        有意になるセルは「読み方で順位が逆になる」の後で扱う。</p>
+    </div>
+
+    <div class="col">
+      <h3>従来指標での見え方（記録）</h3>
+      <p>以下は分母の欠陥が見つかる前の読みである。専用モデルを破線の基準に置き、
+        多言語の候補3つを重ねた。数字そのものは正しいが、
+        <strong>モデル間の順位はここからは読めない</strong>。</p>
+    </div>
+
+    <div class="legend">
+      <span><i class="key ref"></i>専用モデル（基準）</span>
+      <span><i class="key s1"></i>bekko-a8m</span>
+      <span><i class="key s2"></i>bekko-a25m</span>
+      <span><i class="key s3"></i>granite-97m-multilingual（fp32）</span>
+    </div>
+
+    <div class="chart-grid">
+      <figure class="panel-chart">
+        <figcaption><strong>日本語 420本 · タグ一致率</strong> <span class="note">高いほど良い</span></figcaption>
+        <svg viewBox="0 0 316 190" role="img" aria-label="日本語 420本 · タグ一致率">
+          <line class="grid" x1="50" x2="300" y1="132.7" y2="132.7" />
+          <text class="tick" x="44" y="136.2" text-anchor="end">0.26</text>
+          <line class="grid" x1="50" x2="300" y1="109.8" y2="109.8" />
+          <text class="tick" x="44" y="113.3" text-anchor="end">0.32</text>
+          <line class="grid" x1="50" x2="300" y1="86.8" y2="86.8" />
+          <text class="tick" x="44" y="90.3" text-anchor="end">0.38</text>
+          <line class="grid" x1="50" x2="300" y1="63.9" y2="63.9" />
+          <text class="tick" x="44" y="67.4" text-anchor="end">0.44</text>
+          <line class="grid" x1="50" x2="300" y1="40.9" y2="40.9" />
+          <text class="tick" x="44" y="44.4" text-anchor="end">0.50</text>
+          <text class="tick" x="50" y="170" text-anchor="middle">3</text>
+          <text class="tick" x="175" y="170" text-anchor="middle">5</text>
+          <text class="tick" x="300" y="170" text-anchor="middle">10</text>
+          <text class="tick axis-name" x="175" y="188" text-anchor="middle">topk</text>
+          <polyline class="ln ref" points="50,45.1 175,68.5 300,104.8" />
+          <circle class="pt ref" cx="50" cy="45.1" r="4" />
+          <circle class="pt ref" cx="175" cy="68.5" r="4" />
+          <circle class="pt ref" cx="300" cy="104.8" r="4" />
+          <polyline class="ln s1" points="50,62.7 175,77.3 300,104.0" />
+          <circle class="pt s1" cx="50" cy="62.7" r="4" />
+          <circle class="pt s1" cx="175" cy="77.3" r="4" />
+          <circle class="pt s1" cx="300" cy="104.0" r="4" />
+          <polyline class="ln s2" points="50,58.5 175,76.5 300,102.1" />
+          <circle class="pt s2" cx="50" cy="58.5" r="4" />
+          <circle class="pt s2" cx="175" cy="76.5" r="4" />
+          <circle class="pt s2" cx="300" cy="102.1" r="4" />
+          <polyline class="ln s3" points="50,60.8 175,85.3 300,109.0" />
+          <circle class="pt s3" cx="50" cy="60.8" r="4" />
+          <circle class="pt s3" cx="175" cy="85.3" r="4" />
+          <circle class="pt s3" cx="300" cy="109.0" r="4" />
+        </svg>
+      </figure>
+      <figure class="panel-chart">
+        <figcaption><strong>英語 33本 · タグ一致率</strong> <span class="note">高いほど良い</span></figcaption>
+        <svg viewBox="0 0 316 190" role="img" aria-label="英語 33本 · タグ一致率">
+          <line class="grid" x1="50" x2="300" y1="132.7" y2="132.7" />
+          <text class="tick" x="44" y="136.2" text-anchor="end">0.26</text>
+          <line class="grid" x1="50" x2="300" y1="109.8" y2="109.8" />
+          <text class="tick" x="44" y="113.3" text-anchor="end">0.32</text>
+          <line class="grid" x1="50" x2="300" y1="86.8" y2="86.8" />
+          <text class="tick" x="44" y="90.3" text-anchor="end">0.38</text>
+          <line class="grid" x1="50" x2="300" y1="63.9" y2="63.9" />
+          <text class="tick" x="44" y="67.4" text-anchor="end">0.44</text>
+          <line class="grid" x1="50" x2="300" y1="40.9" y2="40.9" />
+          <text class="tick" x="44" y="44.4" text-anchor="end">0.50</text>
+          <text class="tick" x="50" y="170" text-anchor="middle">3</text>
+          <text class="tick" x="175" y="170" text-anchor="middle">5</text>
+          <text class="tick" x="300" y="170" text-anchor="middle">10</text>
+          <text class="tick axis-name" x="175" y="188" text-anchor="middle">topk</text>
+          <polyline class="ln ref" points="50,47.4 175,61.2 300,93.7" />
+          <circle class="pt ref" cx="50" cy="47.4" r="4" />
+          <circle class="pt ref" cx="175" cy="61.2" r="4" />
+          <circle class="pt ref" cx="300" cy="93.7" r="4" />
+          <polyline class="ln s1" points="50,37.8 175,60.4 300,80.7" />
+          <circle class="pt s1" cx="50" cy="37.8" r="4" />
+          <circle class="pt s1" cx="175" cy="60.4" r="4" />
+          <circle class="pt s1" cx="300" cy="80.7" r="4" />
+          <polyline class="ln s2" points="50,31.3 175,54.3 300,94.5" />
+          <circle class="pt s2" cx="50" cy="31.3" r="4" />
+          <circle class="pt s2" cx="175" cy="54.3" r="4" />
+          <circle class="pt s2" cx="300" cy="94.5" r="4" />
+          <polyline class="ln s3" points="50,40.9 175,63.5 300,99.5" />
+          <circle class="pt s3" cx="50" cy="40.9" r="4" />
+          <circle class="pt s3" cx="175" cy="63.5" r="4" />
+          <circle class="pt s3" cx="300" cy="99.5" r="4" />
+        </svg>
+      </figure>
+      <figure class="panel-chart">
+        <figcaption><strong>日本語 · 最大被推薦数</strong> <span class="note">低いほど良い</span></figcaption>
+        <svg viewBox="0 0 316 190" role="img" aria-label="日本語 · 最大被推薦数">
+          <line class="grid" x1="50" x2="300" y1="150.0" y2="150.0" />
+          <text class="tick" x="44" y="153.5" text-anchor="end">0</text>
+          <line class="grid" x1="50" x2="300" y1="111.7" y2="111.7" />
+          <text class="tick" x="44" y="115.2" text-anchor="end">20</text>
+          <line class="grid" x1="50" x2="300" y1="73.5" y2="73.5" />
+          <text class="tick" x="44" y="77.0" text-anchor="end">40</text>
+          <text class="tick" x="50" y="170" text-anchor="middle">3</text>
+          <text class="tick" x="175" y="170" text-anchor="middle">5</text>
+          <text class="tick" x="300" y="170" text-anchor="middle">10</text>
+          <text class="tick axis-name" x="175" y="188" text-anchor="middle">topk</text>
+          <polyline class="ln ref" points="50,125.1 175,111.7 300,83.0" />
+          <circle class="pt ref" cx="50" cy="125.1" r="4" />
+          <circle class="pt ref" cx="175" cy="111.7" r="4" />
+          <circle class="pt ref" cx="300" cy="83.0" r="4" />
+          <polyline class="ln s1" points="50,121.3 175,102.2 300,54.3" />
+          <circle class="pt s1" cx="50" cy="121.3" r="4" />
+          <circle class="pt s1" cx="175" cy="102.2" r="4" />
+          <circle class="pt s1" cx="300" cy="54.3" r="4" />
+          <polyline class="ln s2" points="50,119.4 175,98.3 300,63.9" />
+          <circle class="pt s2" cx="50" cy="119.4" r="4" />
+          <circle class="pt s2" cx="175" cy="98.3" r="4" />
+          <circle class="pt s2" cx="300" cy="63.9" r="4" />
+          <polyline class="ln s3" points="50,115.6 175,102.2 300,75.4" />
+          <circle class="pt s3" cx="50" cy="115.6" r="4" />
+          <circle class="pt s3" cx="175" cy="102.2" r="4" />
+          <circle class="pt s3" cx="300" cy="75.4" r="4" />
+        </svg>
+      </figure>
+      <figure class="panel-chart">
+        <figcaption><strong>英語 · 最大被推薦数</strong> <span class="note">低いほど良い</span></figcaption>
+        <svg viewBox="0 0 316 190" role="img" aria-label="英語 · 最大被推薦数">
+          <line class="grid" x1="50" x2="300" y1="150.0" y2="150.0" />
+          <text class="tick" x="44" y="153.5" text-anchor="end">0</text>
+          <line class="grid" x1="50" x2="300" y1="111.7" y2="111.7" />
+          <text class="tick" x="44" y="115.2" text-anchor="end">10</text>
+          <line class="grid" x1="50" x2="300" y1="73.5" y2="73.5" />
+          <text class="tick" x="44" y="77.0" text-anchor="end">20</text>
+          <line class="grid" x1="50" x2="300" y1="35.2" y2="35.2" />
+          <text class="tick" x="44" y="38.7" text-anchor="end">30</text>
+          <text class="tick" x="50" y="170" text-anchor="middle">3</text>
+          <text class="tick" x="175" y="170" text-anchor="middle">5</text>
+          <text class="tick" x="300" y="170" text-anchor="middle">10</text>
+          <text class="tick axis-name" x="175" y="188" text-anchor="middle">topk</text>
+          <polyline class="ln ref" points="50,111.7 175,92.6 300,50.5" />
+          <circle class="pt ref" cx="50" cy="111.7" r="4" />
+          <circle class="pt ref" cx="175" cy="92.6" r="4" />
+          <circle class="pt ref" cx="300" cy="50.5" r="4" />
+          <polyline class="ln s1" points="50,115.6 175,104.1 300,73.5" />
+          <circle class="pt s1" cx="50" cy="115.6" r="4" />
+          <circle class="pt s1" cx="175" cy="104.1" r="4" />
+          <circle class="pt s1" cx="300" cy="73.5" r="4" />
+          <polyline class="ln s2" points="50,119.4 175,96.4 300,62.0" />
+          <circle class="pt s2" cx="50" cy="119.4" r="4" />
+          <circle class="pt s2" cx="175" cy="96.4" r="4" />
+          <circle class="pt s2" cx="300" cy="62.0" r="4" />
+          <polyline class="ln s3" points="50,119.4 175,107.9 300,62.0" />
+          <circle class="pt s3" cx="50" cy="119.4" r="4" />
+          <circle class="pt s3" cx="175" cy="107.9" r="4" />
+          <circle class="pt s3" cx="300" cy="62.0" r="4" />
+        </svg>
+      </figure>
+    </div>
+
+    <div class="col">
+      <p class="note">人手の <code>tags</code> / <code>categories</code> のみを審判にした値。</p>
+
+      <p><strong>同じデータが、読み方によって逆の順位を返す。</strong>日本語の一致率では現行の
+        ruri が topk=3・5 で最良、再現率では bekko-a25m が3点とも最良になる。
+        <strong>どちらかが正しいのではなく、分母の取り方が違う。</strong></p>
+
+      <p>一致率の分母は「採点できたペア数」で、これは<strong>モデルが動かせる</strong>。
+        タグの付いた記事を推薦先に選びやすいモデルほど分母が増え、率は下がる。実際 a25m の
+        採点対象は ruri より常に多い（194 対 174、307 対 271、564 対 513）。
+        再現率の分母は「取りうる正解数」で、こちらはコーパスだけで決まるので動かせない。</p>
+
+      <p><strong>英語では両方の読み方が同じ向きを指す。</strong>一致率も再現率も bekko 系が
+        topk=3・5 で上、現行の granite-small-english はどの列でも最良にならない。
+        ただし採点対象は 58〜199ペアしかない。</p>
+
+      <p class="note">granite-97m-multilingual の int8 は、日本語で被推薦数が 47 まで伸びる
+        （現行 ruri は 35）。量子化の影響は付録に。</p>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <caption>実験1・入力 2,000 文字。<strong>一致率</strong>はモデルが分母を動かせる読み方、
+          <strong>再現率</strong>は分母を固定した読み方。<strong>被推薦</strong>は最大被推薦数（低いほど良い）。
+          色付きは各列の最良値</caption>
+        <thead>
+          <tr>
+            <th class="lbl">コーパス</th><th class="lbl">モデル</th>
+            <th>一致率 k=3</th><th>k=5</th><th>k=10</th>
+            <th>再現率 k=3</th><th>k=5</th><th>k=10</th>
+            <th>被推薦 k=3</th><th>k=5</th><th>k=10</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row" rowspan="5">ja 420本</th><td class="lbl">ruri-v3 + prefix（現行）</td>
+            <td class="num win">0.489</td><td class="num win">0.428</td><td class="num">0.333</td><td class="num">41.9</td><td class="num">38.3</td><td class="num">41.7</td><td class="num win">13</td><td class="num win">20</td><td class="num win">35</td></tr>
+          <tr><td class="lbl">bekko-a8m</td>
+            <td class="num">0.443</td><td class="num">0.405</td><td class="num">0.335</td><td class="num">41.9</td><td class="num">38.9</td><td class="num">44.1</td><td class="num">15</td><td class="num">25</td><td class="num">50</td></tr>
+          <tr><td class="lbl">bekko-a25m</td>
+            <td class="num">0.454</td><td class="num">0.407</td><td class="num win">0.340</td><td class="num hold">43.3</td><td class="num hold">41.3</td><td class="num hold">46.8</td><td class="num">16</td><td class="num">27</td><td class="num">45</td></tr>
+          <tr><td class="lbl">granite-97m-multi（fp32）</td>
+            <td class="num">0.448</td><td class="num">0.384</td><td class="num">0.322</td><td class="num">37.9</td><td class="num">35.6</td><td class="num">40.2</td><td class="num">18</td><td class="num">25</td><td class="num">39</td></tr>
+          <tr><td class="lbl">同 int8</td>
+            <td class="num">0.488</td><td class="num">0.405</td><td class="num">0.319</td><td class="num">40.4</td><td class="num">35.3</td><td class="num">36.8</td><td class="num">23</td><td class="num">33</td><td class="num">47</td></tr>
+          <tr><th scope="row" rowspan="5">en 33本</th><td class="lbl">granite-small-english（現行）</td>
+            <td class="num">0.483</td><td class="num">0.447</td><td class="num">0.362</td><td class="num">54.7</td><td class="num hold">59.7</td><td class="num">64.2</td><td class="num">10</td><td class="num">15</td><td class="num">26</td></tr>
+          <tr><td class="lbl">bekko-a8m</td>
+            <td class="num">0.508</td><td class="num">0.449</td><td class="num win">0.396</td><td class="num">56.6</td><td class="num">57.1</td><td class="num hold">69.8</td><td class="num">9</td><td class="num">12</td><td class="num win">20</td></tr>
+          <tr><td class="lbl">bekko-a25m</td>
+            <td class="num win">0.525</td><td class="num win">0.465</td><td class="num">0.360</td><td class="num hold">58.5</td><td class="num hold">59.7</td><td class="num">64.2</td><td class="num win">8</td><td class="num">14</td><td class="num">23</td></tr>
+          <tr><td class="lbl">granite-97m-multi（fp32）</td>
+            <td class="num">0.500</td><td class="num">0.441</td><td class="num">0.347</td><td class="num">56.6</td><td class="num">58.4</td><td class="num">65.1</td><td class="num win">8</td><td class="num win">11</td><td class="num">23</td></tr>
+          <tr><td class="lbl">同 int8</td>
+            <td class="num">0.419</td><td class="num">0.356</td><td class="num">0.294</td><td class="num">49.1</td><td class="num">48.1</td><td class="num">54.7</td><td class="num">9</td><td class="num">12</td><td class="num">21</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section>
+    <div class="head"><p class="eyebrow">3 · 実験2: 入力長</p><h2>入力長の効果</h2></div>
+    <div class="col">
+      <p>ここまでの5モデルは、すべて同じ条件で比べている — <strong>本文の先頭 2,000 文字だけを
+        埋め込む</strong>という条件で。実験1が固定していたこの値を、実験2では動かす。</p>
+
+      <p>2,000 という数字は <code>max_content_chars</code> の既定値で、メモリを抑えるために
+        置かれたものだ。品質のために選ばれた値ではない。まず、どれだけ捨てているのかを数えた。</p>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <caption>埋め込みに渡される本文の長さと、2,000 文字で切ったときに捨てている量</caption>
+        <thead>
+          <tr><th class="lbl">コーパス</th><th>中央値</th><th>最大</th>
+            <th>2,000 超え</th><th>捨てている本文</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">ja 420本</th><td class="num">776</td><td class="num">8,890</td>
+            <td class="num">93本（22%）</td><td class="num">全体の25%</td></tr>
+          <tr><th scope="row">en 33本</th><td class="num">1,854</td><td class="num">15,581</td>
+            <td class="num win">15本（45%）</td><td class="num win">全体の55%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p class="note">数え方に注意が要る。prelims は埋め込む前に <strong>HTML タグ・コードフェンス・
+        数式・URL を除去する</strong>ので、Markdown の生ファイルを数えると実際にモデルが見る量を
+        大きく上回る。このコーパスは Medium からの移行記事が多く HTML と URL を大量に含むため、
+        生ファイル基準では ja の中央値が 1,205 文字・2,000 超えが 154本に見えていた。
+        上の表はフィルタ後の値で、本番の実行ログ（2,000 → 8,000 で ja 93本・en 15本が
+        再埋め込みされた）と一致する。</p>
+
+      <p><strong>英語は本文の半分以上を捨てて埋め込んでいた。</strong>中央値が 1,854 文字なので、
+        長い記事ほど導入部だけで比較されていたことになる。分布で見るとさらにはっきりする。</p>
+    </div>
+
+    <div class="legend">
+      <span><i class="key lo"></i>2,000 文字以下 — 上限を上げても入力は変わらない</span>
+      <span><i class="key hi"></i>2,000 文字超 — 打ち切られていた</span>
+    </div>
+
+    <div class="chart-grid">
+      <figure class="panel-chart">
+        <figcaption><strong>日本語 420本</strong> <span class="note">記事数に占める割合 · 2,000 文字以下が 78%</span></figcaption>
+        <svg viewBox="0 0 316 195" role="img"
+             aria-label="日本語の本文長の分布。500文字以下が36パーセント、2,000文字以下が78パーセントを占める">
+            <line class="grid" x1="50" x2="300" y1="140.4" y2="140.4" />
+            <text class="tick" x="44" y="143.9" text-anchor="end">0%</text>
+            <line class="grid" x1="50" x2="300" y1="111.7" y2="111.7" />
+            <text class="tick" x="44" y="115.2" text-anchor="end">10%</text>
+            <line class="grid" x1="50" x2="300" y1="83.0" y2="83.0" />
+            <text class="tick" x="44" y="86.5" text-anchor="end">20%</text>
+            <line class="grid" x1="50" x2="300" y1="54.3" y2="54.3" />
+            <text class="tick" x="44" y="57.8" text-anchor="end">30%</text>
+            <line class="grid" x1="50" x2="300" y1="25.6" y2="25.6" />
+            <text class="tick" x="44" y="29.1" text-anchor="end">40%</text>
+            <rect class="bar-lo" x="52.0" y="37.4" width="27.2" height="103.0" rx="2" />
+            <text class="tick" x="65.6" y="152" text-anchor="middle">0.5k</text>
+            <rect class="bar-lo" x="83.2" y="73.2" width="27.2" height="67.2" rx="2" />
+            <text class="tick" x="96.9" y="152" text-anchor="middle">1k</text>
+            <rect class="bar-lo" x="114.5" y="87.6" width="27.2" height="52.8" rx="2" />
+            <text class="tick" x="128.1" y="152" text-anchor="middle">2k</text>
+            <rect class="bar-hi" x="145.8" y="107.4" width="27.2" height="33.0" rx="2" />
+            <text class="tick" x="159.4" y="152" text-anchor="middle">3k</text>
+            <rect class="bar-hi" x="177.0" y="126.1" width="27.2" height="14.4" rx="2" />
+            <text class="tick" x="190.6" y="152" text-anchor="middle">4k</text>
+            <rect class="bar-hi" x="208.2" y="128.1" width="27.2" height="12.3" rx="2" />
+            <text class="tick" x="221.9" y="152" text-anchor="middle">6k</text>
+            <rect class="bar-hi" x="239.5" y="137.0" width="27.2" height="3.4" rx="2" />
+            <text class="tick" x="253.1" y="152" text-anchor="middle">8k</text>
+            <rect class="bar-hi" x="270.8" y="139.8" width="27.2" height="0.6" rx="2" />
+            <text class="tick" x="284.4" y="152" text-anchor="middle">8k+</text>
+            <line class="cut" x1="143.8" x2="143.8" y1="20" y2="140.4" />
+            <text class="dlabel" x="143.8" y="17" text-anchor="middle">2,000</text>
+            <text class="tick axis-name" x="175" y="188" text-anchor="middle">本文の長さ（文字）</text>
+        </svg>
+      </figure>
+      <figure class="panel-chart">
+        <figcaption><strong>英語 33本</strong> <span class="note">記事数に占める割合 · 2,000 文字以下が 55%</span></figcaption>
+        <svg viewBox="0 0 316 195" role="img"
+             aria-label="英語の本文長の分布。2,000文字以下は55パーセントにとどまり、8,000文字超が12パーセントある">
+            <line class="grid" x1="50" x2="300" y1="140.4" y2="140.4" />
+            <text class="tick" x="44" y="143.9" text-anchor="end">0%</text>
+            <line class="grid" x1="50" x2="300" y1="111.7" y2="111.7" />
+            <text class="tick" x="44" y="115.2" text-anchor="end">10%</text>
+            <line class="grid" x1="50" x2="300" y1="83.0" y2="83.0" />
+            <text class="tick" x="44" y="86.5" text-anchor="end">20%</text>
+            <line class="grid" x1="50" x2="300" y1="54.3" y2="54.3" />
+            <text class="tick" x="44" y="57.8" text-anchor="end">30%</text>
+            <line class="grid" x1="50" x2="300" y1="25.6" y2="25.6" />
+            <text class="tick" x="44" y="29.1" text-anchor="end">40%</text>
+            <rect class="bar-lo" x="52.0" y="139.8" width="27.2" height="0.6" rx="2" />
+            <text class="tick" x="65.6" y="152" text-anchor="middle">0.5k</text>
+            <rect class="bar-lo" x="83.2" y="96.8" width="27.2" height="43.6" rx="2" />
+            <text class="tick" x="96.9" y="152" text-anchor="middle">1k</text>
+            <rect class="bar-lo" x="114.5" y="27.3" width="27.2" height="113.1" rx="2" />
+            <text class="tick" x="128.1" y="152" text-anchor="middle">2k</text>
+            <rect class="bar-hi" x="145.8" y="96.8" width="27.2" height="43.6" rx="2" />
+            <text class="tick" x="159.4" y="152" text-anchor="middle">3k</text>
+            <rect class="bar-hi" x="177.0" y="131.8" width="27.2" height="8.6" rx="2" />
+            <text class="tick" x="190.6" y="152" text-anchor="middle">4k</text>
+            <rect class="bar-hi" x="208.2" y="114.3" width="27.2" height="26.1" rx="2" />
+            <text class="tick" x="221.9" y="152" text-anchor="middle">6k</text>
+            <rect class="bar-hi" x="239.5" y="122.9" width="27.2" height="17.5" rx="2" />
+            <text class="tick" x="253.1" y="152" text-anchor="middle">8k</text>
+            <rect class="bar-hi" x="270.8" y="105.7" width="27.2" height="34.7" rx="2" />
+            <text class="tick" x="284.4" y="152" text-anchor="middle">8k+</text>
+            <line class="cut" x1="143.8" x2="143.8" y1="20" y2="140.4" />
+            <text class="dlabel" x="143.8" y="17" text-anchor="middle">2,000</text>
+            <text class="tick axis-name" x="175" y="188" text-anchor="middle">本文の長さ（文字）</text>
+        </svg>
+      </figure>
+    </div>
+
+    <div class="col">
+      <p><strong>日本語は 78% が 2,000 文字に収まっている。</strong>最も多い階級は 500 文字以下で、
+        420本のうち 150本を占める。<strong>上限を 8,000 に上げても、93本しか入力が変わらない。</strong>
+        英語は 2,000 文字以下が 55% にとどまり、8,000 文字を超える記事も 12% ある。</p>
+      <p class="note">この差が、同じ設定変更が英語で効いて日本語で効かなかった理由をそのまま説明する。
+        なお 8,000 文字を超えて残る日本語記事は 420本中1本だけで、日本語では 8,000 がほぼ「全文」にあたる。</p>
+    </div>
+
+
+    <div class="scroll">
+      <table>
+        <caption>入力上限とタグ一致率（人手タグのみ、%）。<strong>小さい数字は 的中ペア数 / 採点対象ペア数</strong>、
+          色付きは的中数の多いほう</caption>
+        <thead>
+          <tr><th class="lbl">コーパス</th><th class="lbl">入力上限</th>
+            <th>k=3</th><th>k=5</th><th>k=10</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row" rowspan="2">ja 420本</th><th scope="row">2,000</th><td class="num">48.9<br><span class="note">85/174</span></td><td class="num win">42.8<br><span class="note">116/271</span></td><td class="num">33.3<br><span class="note">171/513</span></td></tr>
+          <tr><th scope="row">8,000</th><td class="num win">49.1<br><span class="note">86/175</span></td><td class="num win">42.3<br><span class="note">116/274</span></td><td class="num win">34.3<br><span class="note">177/516</span></td></tr>
+          <tr><th scope="row" rowspan="2">en 33本</th><th scope="row">2,000</th><td class="num">48.3<br><span class="note">29/60</span></td><td class="num">44.7<br><span class="note">46/103</span></td><td class="num">36.2<br><span class="note">68/188</span></td></tr>
+          <tr><th scope="row">8,000</th><td class="num win">51.7<br><span class="note">30/58</span></td><td class="num win">50.0<br><span class="note">48/96</span></td><td class="num win">36.8<br><span class="note">70/190</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p><strong>この検証で唯一、読み方によらず同じ向きに出た結果である。</strong>
+        的中ペア数は日本語で +1 / ±0 / +6、英語で +1 / +2 / +2。6点中5点でプラス、
+        残る1点も横ばいで、<strong>マイナスが1つもない。</strong></p>
+
+      <p>モデル比較と違ってここが揃うのは、<strong>比べているのが同じモデルどうし</strong>だからである。
+        タグ付き記事を選びやすいかどうかというモデルの癖が両側で同じなので、分母の偏りが相殺される。
+        <strong>指標が壊れるのはモデルを跨いだときで、設定を跨いだときではない。</strong></p>
+
+      <p class="note">一致率で見ると英語のほうが大きく伸びて見えるが（+3.4 / +5.3 / +0.6 対
+        日本語 +0.2 / −0.5 / +1.0）、これは英語の分母が縮んでいるため（60→58、103→96）。
+        <strong>的中数で見れば両言語とも同程度に増えている。</strong></p>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <caption>修理後の指標でも同じ向きになる。固定プールのヒット数と AUC、2,000 → 8,000
+          （同一モデル、差は pt、[ ] は95%区間）</caption>
+        <thead>
+          <tr><th class="lbl">指標</th><th>ja 2,000</th><th>ja 8,000</th><th>差</th>
+            <th>en 2,000</th><th>en 8,000</th><th>差</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">P@3 ヒット</th><td class="num">103</td><td class="num">105</td>
+            <td class="num">+0.7 [−1.1, +2.5]</td>
+            <td class="num">31</td><td class="num">31</td><td class="num">+0.0 [−5.8, +5.8]</td></tr>
+          <tr><th scope="row">P@5 ヒット</th><td class="num">150</td><td class="num win">156</td>
+            <td class="num">+1.3 [−0.2, +2.7]</td>
+            <td class="num">49</td><td class="num win">51</td><td class="num">+1.7 [−2.6, +6.1]</td></tr>
+          <tr><th scope="row">P@10 ヒット</th><td class="num">233</td><td class="num win">240</td>
+            <td class="num">+0.7 [+0.0, +1.6]</td>
+            <td class="num">77</td><td class="num win">80</td><td class="num">+1.3 [+0.0, +2.6]</td></tr>
+          <tr><th scope="row">AUC</th><td class="num">0.818</td><td class="num win">0.826</td>
+            <td class="num">+0.8 [−0.4, +2.6]</td>
+            <td class="num">0.759</td><td class="num win">0.767</td><td class="num">+0.8 [−2.3, +5.9]</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p class="note">8セルすべてで点推定が非負、負に出たセルはひとつもない。単セルでは
+        有意にならない（k=10 の2つが区間の端でゼロに接する）が、<strong>同じ向きが
+        指標をまたぎ、言語をまたぎ、k をまたいで崩れない</strong>ことが、この変更のいちばん強い根拠になる。
+        モデル比較と違って両腕が同じモデルなので、旧指標の分母バイアスもほぼ相殺されていた
+        —— 修理前後で結論が変わらなかった唯一の実験である。</p>
+
+      <p class="note">それでも 8,000 を採る。両言語で正解ペアが増え、どちらも悪化していない。
+        費用はフィルタ後で日本語 1.33倍のトークン・2.5倍の attention、英語は絶対量が小さい。</p>
+
+      <h3>その先は測っていない</h3>
+      <p>生テキストで測っていた段階では 20,000 文字（実質無制限）まで見ており、8,000 から先は
+        両言語とも動かなかった。フィルタ後では測り直していない。<strong>ただしフィルタ後の最長記事は
+        日本語 8,890 文字・英語 15,581 文字</strong>なので、日本語で 8,000 を超えて残っている本文は
+        ごく一部の記事の末尾だけである。</p>
+
+      <h3>読み方で順位が逆になる</h3>
+      <p>実験1で見えた食い違いを、専用モデル対 bekko-a25m に絞って詰める。同じ推薦結果を
+        2つの読み方で採点し、<strong>差分（bekko − 専用モデル）</strong>を重ねた。
+        ゼロの線が専用モデルである。</p>
+
+      <div class="legend">
+        <span><i class="key len-a"></i>一致率の差（分母がモデル依存）</span>
+        <span><i class="key len-b"></i>再現率の差（分母を固定）</span>
+      </div>
+      <div class="chart-grid">
+        <figure class="panel-chart">
+          <figcaption><strong>日本語 · bekko-a25m − ruri-v3+prefix</strong>
+            <span class="note">入力 8,000 文字、pt、上が bekko 有利</span></figcaption>
+          <svg viewBox="0 0 316 190" role="img"
+               aria-label="日本語。bekko-a25m と ruri の差を2つの読み方で。一致率では負、再現率では正になり、逆を向く">
+            <line class="grid" x1="50" x2="300" y1="44.7" y2="44.7" />
+            <text class="tick" x="44" y="48.2" text-anchor="end">+4</text>
+            <line class="grid" x1="50" x2="300" y1="63.9" y2="63.9" />
+            <text class="tick" x="44" y="67.4" text-anchor="end">+2</text>
+            <line class="zero" x1="50" x2="300" y1="83.0" y2="83.0" />
+            <text class="tick" x="44" y="86.5" text-anchor="end">0</text>
+            <line class="grid" x1="50" x2="300" y1="102.1" y2="102.1" />
+            <text class="tick" x="44" y="105.6" text-anchor="end">−2</text>
+            <line class="grid" x1="50" x2="300" y1="121.3" y2="121.3" />
+            <text class="tick" x="44" y="124.8" text-anchor="end">−4</text>
+            <text class="tick" x="50" y="170" text-anchor="middle">3</text>
+            <text class="tick" x="175" y="170" text-anchor="middle">5</text>
+            <text class="tick" x="300" y="170" text-anchor="middle">10</text>
+            <text class="tick axis-name" x="175" y="188" text-anchor="middle">topk</text>
+            <polyline class="ln len-a" points="50,119.4 175,106.0 300,82.0" />
+            <circle class="pt len-a" cx="50" cy="119.4" r="4" />
+            <circle class="pt len-a" cx="175" cy="106.0" r="4" />
+            <circle class="pt len-a" cx="300" cy="82.0" r="4" />
+            <polyline class="ln len-b" points="50,59.4 175,60.9 300,34.0" />
+            <circle class="pt len-b" cx="50" cy="59.4" r="4" />
+            <circle class="pt len-b" cx="175" cy="60.9" r="4" />
+            <circle class="pt len-b" cx="300" cy="34.0" r="4" />
+          </svg>
+        </figure>
+        <figure class="panel-chart">
+          <figcaption><strong>英語 · bekko-a25m − granite-small-english</strong>
+            <span class="note">入力 8,000 文字、pt、上が bekko 有利</span></figcaption>
+          <svg viewBox="0 0 316 190" role="img"
+               aria-label="英語。bekko-a25m と granite の差を2つの読み方で。どちらの読み方でも topk=3 は正">
+            <line class="grid" x1="50" x2="300" y1="44.7" y2="44.7" />
+            <text class="tick" x="44" y="48.2" text-anchor="end">+4</text>
+            <line class="grid" x1="50" x2="300" y1="63.9" y2="63.9" />
+            <text class="tick" x="44" y="67.4" text-anchor="end">+2</text>
+            <line class="zero" x1="50" x2="300" y1="83.0" y2="83.0" />
+            <text class="tick" x="44" y="86.5" text-anchor="end">0</text>
+            <line class="grid" x1="50" x2="300" y1="102.1" y2="102.1" />
+            <text class="tick" x="44" y="105.6" text-anchor="end">−2</text>
+            <line class="grid" x1="50" x2="300" y1="121.3" y2="121.3" />
+            <text class="tick" x="44" y="124.8" text-anchor="end">−4</text>
+            <text class="tick" x="50" y="170" text-anchor="middle">3</text>
+            <text class="tick" x="175" y="170" text-anchor="middle">5</text>
+            <text class="tick" x="300" y="170" text-anchor="middle">10</text>
+            <text class="tick axis-name" x="175" y="188" text-anchor="middle">topk</text>
+            <polyline class="ln len-a" points="50,51.4 175,87.8 300,90.7" />
+            <circle class="pt len-a" cx="50" cy="51.4" r="4" />
+            <circle class="pt len-a" cx="175" cy="87.8" r="4" />
+            <circle class="pt len-a" cx="300" cy="90.7" r="4" />
+            <polyline class="ln len-b" points="50,28.8 175,58.2 300,101.1" />
+            <circle class="pt len-b" cx="50" cy="28.8" r="4" />
+            <circle class="pt len-b" cx="175" cy="58.2" r="4" />
+            <circle class="pt len-b" cx="300" cy="101.1" r="4" />
+          </svg>
+        </figure>
+      </div>
+
+      <div class="scroll">
+        <table>
+          <caption>bekko-a25m − 専用モデル（pt、プラスなら bekko 有利）。入力 8,000 文字</caption>
+          <thead>
+            <tr><th class="lbl">コーパス</th><th class="lbl">読み方</th>
+              <th>k=3</th><th>k=5</th><th>k=10</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row" rowspan="2">ja 420本</th><th scope="row">一致率</th>
+              <td class="num">−3.8</td><td class="num">−2.4</td><td class="num">+0.1</td></tr>
+            <tr><th scope="row">再現率</th>
+              <td class="num win">+2.5</td><td class="num win">+2.3</td><td class="num win">+5.1</td></tr>
+            <tr><th scope="row" rowspan="2">en 33本</th><th scope="row">一致率</th>
+              <td class="num win">+3.3</td><td class="num">−0.5</td><td class="num">−0.8</td></tr>
+            <tr><th scope="row">再現率</th>
+              <td class="num win">+5.7</td><td class="num win">+2.6</td><td class="num">−1.9</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="col">
+        <p><strong>日本語では符号が完全に逆になる。</strong>一致率は3点中2点で ruri を上とし、
+          再現率は3点とも a25m を上とする。<strong>同じ推薦結果、同じタグ、違うのは分母だけである。</strong></p>
+
+        <p>a25m は的中ペアを多く見つけている（86→91、116→123、177→198）。同時に採点対象も
+          多く抱えている（175→201、274→308、516→576）。<strong>タグの付いた記事を推薦先に
+          選びやすい</strong>という性質が、一方の式では罰、もう一方では褒賞として現れる。</p>
+
+        <div class="panel flag">
+          <p><strong>これは審判の設計に起因する。</strong>日本語の 420本のうち 325本にはタグがない。
+            そうした記事は「不正解」ではなく<strong>判定不能</strong>である。判定不能な記事を推薦すると、
+            一致率では分母から外れて有利に、再現率では取りこぼしとして不利になる。
+            <strong>推薦結果に応じて分母が動く指標を作ってしまった</strong>——情報検索でいう
+            不完全な正解データの問題そのものである。</p>
+          <p class="note">分母を固定した読み方（再現率、または「記事数 × k」に対する的中率）は
+            この影響を受けない。<strong>同じコーパス・同じ k の中では、これらは定数で割っているだけなので
+            順位が完全に一致する</strong>——つまり選択肢は「分母が動く指標」か「動かない指標」の2つしかない。
+            F 値のように両者を混ぜても、片方の偏りをそのまま引き継ぐだけで解決しない。</p>
+        </div>
+
+        <p>ここまでが診断である。修理は「指標の定義」の2つ —— 候補をタグ付き記事に制限した
+          <strong>固定プール precision@k</strong> と、top-k の打ち切りを捨てた
+          <strong>ペアワイズ AUC</strong>。同じ埋め込みを、分母をモデルに触らせない形で測り直した。</p>
+
+        <h3>分母を固定して測り直す</h3>
+      </div>
+
+      <div class="scroll">
+        <table>
+          <caption>現行モデル対 bekko-a25m、入力 8,000 文字・人手タグ・固定プール。
+            差は pt（プラスなら a25m 有利）、[ ] は95%区間。<strong>色付きはゼロを外れたセル</strong></caption>
+          <thead>
+            <tr><th class="lbl">コーパス</th><th class="lbl">指標</th>
+              <th>現行</th><th>a25m</th><th>差 [95%区間]</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row" rowspan="4">ja</th><th scope="row">P@3</th>
+              <td class="num">0.368<br><span class="note">105</span></td><td class="num">0.368<br><span class="note">105</span></td>
+              <td class="num">+0.0 [−3.5, +3.9]</td></tr>
+            <tr><th scope="row">P@5</th>
+              <td class="num">0.328<br><span class="note">156</span></td><td class="num">0.318<br><span class="note">151</span></td>
+              <td class="num">−1.1 [−3.6, +1.3]</td></tr>
+            <tr><th scope="row">P@10</th>
+              <td class="num">0.253<br><span class="note">240</span></td><td class="num">0.266<br><span class="note">253</span></td>
+              <td class="num win">+1.4 [+0.1, +2.6]</td></tr>
+            <tr><th scope="row">AUC</th>
+              <td class="num">0.826</td><td class="num">0.844</td>
+              <td class="num">+1.8 [−2.3, +5.6]</td></tr>
+            <tr><th scope="row" rowspan="4">en</th><th scope="row">P@3</th>
+              <td class="num">0.449<br><span class="note">31</span></td><td class="num">0.507<br><span class="note">35</span></td>
+              <td class="num win">+5.8 [+1.4, +11.6]</td></tr>
+            <tr><th scope="row">P@5</th>
+              <td class="num">0.443<br><span class="note">51</span></td><td class="num">0.461<br><span class="note">53</span></td>
+              <td class="num">+1.7 [−0.9, +5.2]</td></tr>
+            <tr><th scope="row">P@10</th>
+              <td class="num">0.348<br><span class="note">80</span></td><td class="num">0.326<br><span class="note">75</span></td>
+              <td class="num">−2.2 [−6.1, +1.7]</td></tr>
+            <tr><th scope="row">AUC</th>
+              <td class="num">0.767</td><td class="num">0.793</td>
+              <td class="num">+2.6 [−5.8, +11.3]</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="col">
+        <p><strong>順位の逆転は消えた。</strong>8セルのうちゼロを外れるのは2つ ——
+          英語の P@3（+5.8pt、本番で使っている topk はこの3である）と日本語の P@10（+1.4pt）——
+          で、<strong>どちらも a25m 側。現行側に有意なセルはひとつもない。</strong>
+          AUC も両言語で a25m がプラスに出る（有意ではない）。</p>
+
+        <p>ただし過大に読まないための注意が2つ。<strong>点推定の符号は k によって揺れている</strong>
+          （日本語 P@5 と英語 P@10 はマイナス）。そして8セルを95%区間で見れば、
+          偶然だけでもゼロを外れるセルが出うる。<strong>「a25m が同等かわずかに上、
+          現行が上という証拠はない」</strong>——修理後の指標が言えるのはここまでで、
+          しかしここまでは言える。旧指標の「読み方次第でどちらとも言える」からは大きな前進である。</p>
+
+        <p class="note">hub spread は日本語で a25m が一貫して悪い（最大被推薦数 12→16 / 20→26 / 35→40）。
+          これは分母の影響を受けない量なので、そのまま読める。英語では topk によって前後する。</p>
+      </div>
+
+      <div class="col">
+
+      <h3>差の中身 —— タグはどちらの軸を向いているか</h3>
+      <p>数ポイントの差が何を指しているのかを、推薦を全件出力して確かめた。条件は同じ
+        （8,000 文字、topk=3）。タグの付いた記事同士のペアを取り出して1本ずつ突き合わせると、
+        <strong>タグの得点差の多くは「どちらが正しいか」ではなく
+        「タグがどちらの軸を向いているか」で決まっていた。</strong></p>
+
+      <div class="panel miss">
+        <div>
+          <p class="src">「homebrewを移動してiRubyが壊れたときに見直すポイント」<span class="note">categories: ruby</span></p>
+          <p class="dst">ruri → 「Pythonの環境構築を自分なりに整理してみる」<span class="note">categories: python</span></p>
+          <p class="dst">a25m → 「kawasaki.rb #008 を開催しました」<span class="note">categories: ruby</span></p>
+        </div>
+        <div>
+          <p class="src">「新しいPyPIでMarkdownのドキュメントを使う」<span class="note">categories: python</span></p>
+          <p class="dst">ruri → 「prelimsを使ってHugoの記事にレコメンドを追加する」<span class="note">tags: NLP, Python, Recommendation</span></p>
+          <p class="dst">a25m → 「mecab-python3を捨ててnatto-pyにしよう」<span class="note">tags: NLP</span></p>
+        </div>
+      </div>
+
+      <p>1件目は a25m に、2件目は ruri に点が入る。だが<strong>読みとしてはどちらも成立している。</strong>
+        iRuby の記事は Ruby の話でもあり環境構築の話でもあるのに、ラベルは <code>ruby</code> ひとつ
+        しかないので、主題を拾った側だけが得点する。PyPI の記事も、両方 Python がらみなのに
+        ラベルが <code>python</code> と <code>NLP</code> に分かれているために差がつく。</p>
+
+      <p class="note">この6本のラベルは <code>categories</code> と <code>tags</code> に分かれて
+        入っている。指標は両者を統合して小文字化しているので当たるが、<strong>同じ語がどちらの
+        フィールドに書かれるかは書き手の癖</strong>で決まる。2件目のマッチも
+        <code>categories: python</code> と <code>tags: Python</code> を跨いでいる。</p>
+
+      <p class="note"><strong>審判が見ているのは「話題が合っているか」ではなく
+        「同じ語がタグに書かれているか」である。</strong>記事が複数の軸を持つとき、タグはそのうち
+        1つしか記録していない。人手タグを正解に据える以上、この歪みは避けられない。</p>
+
+      <div class="panel flag">
+        <p><strong>旧指標では、正解を多く見つけたほうが低く出ることすらあった。</strong>
+          「機械学習工学研究会キックオフシンポジウムに登壇しました」では、ruri が採点対象1件を
+          1件的中させたのに対し、a25m は3件中2件を的中させている。
+          <strong>的中数は a25m が上なのに、比率では ruri が上になる。</strong>
+          固定プールではこの逆転は起こらない —— 両モデルとも分母は3で共通になる。</p>
+      </div>
+
+      <p><strong>目で見た限り、どちらも壊れた推薦は出していない。</strong>差は数十本の記事における
+        拾い方の癖 —— エンティティ検出の a25m、トピック純度の現行 —— の違いであって、
+        優劣として集計すると偶然と区別がつかなくなる規模である。
+        <strong>この読みが正しいかどうかは、次節で系統的に検証する。</strong></p>
+    </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><p class="eyebrow">4 · 人手評価</p><h2>代理指標の答え合わせ</h2></div>
+    <div class="col">
+      <p>指標を直しても順位は決まらなかった。ここまでで未解決なのは、実はもっと手前の問いである
+        —— <strong>この代理指標は、読者にとっての「関連している」をどれだけ捉えているのか。</strong>
+        指標の内側では答えられないので、推薦そのものを人手で判定して突き合わせた。</p>
+
+      <p>対象は推薦の顔ぶれが変わった 389 記事。専用の判定ツールを書き、2つの推薦リストを
+        並べて「関連記事として妥当だ」と思うものにチェックを付けていく形にした。設計で気をつけたのは
+        3点である。</p>
+
+      <ul>
+        <li><strong>ブラインドを既定にした。</strong>どちらの列がどのモデルかを記事ごとに
+          シャッフルして伏せ、<strong>タグとタグ一致の印も隠した</strong>。タグはモデルを選ぶ根拠に
+          した指標そのものなので、見えたまま判定すると「指標が正しいか」を指標自身で検証することに
+          なってしまう</li>
+        <li><strong>同じ推薦は1回だけ判定する。</strong>両モデルが同じ記事を推薦している場合は
+          片方をチェックすればもう片方にも反映される。同一ペアに矛盾した判定が付かない</li>
+        <li><strong>層を混ぜない。</strong>判定したのは「シード固定の無作為 40 件」と
+          「総入れ替え群（共通推薦がゼロ＝2モデルが最も食い違う 64 件）」を中心とする 162 記事。<strong>英語は変化した 19 件すべてを判定した。</strong>
+          <strong>総入れ替え群は差が最大になるように選んだ群なので、全体の推定には使えない。</strong>
+          不偏な推定値は無作為 40 件のほうだけである</li>
+      </ul>
+
+      <p class="note">判定 162 記事 / 827 ペア（日本語 143・英語 19）、「関連」とした推薦 458 件、
+        「どれも関連しない」とした記事 19 件。判定者は著者1名。</p>
+
+      <h3>結果1 —— モデル差は、やはり検出できない</h3>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <caption>人手判定による precision@3（推薦のうち「関連」と判定された割合）。
+          <strong>無作為40件が不偏推定</strong>、他の層は参考値</caption>
+        <thead>
+          <tr><th class="lbl">層</th><th>n</th><th>現行</th><th>a25m</th>
+            <th>差</th><th>95%区間</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">無作為40件<br><span class="note">不偏推定</span></th><td class="num">40</td>
+            <td class="num">0.758<br><span class="note">91/120</span></td>
+            <td class="num hold">0.775<br><span class="note">93/120</span></td>
+            <td class="num">+1.7</td><td class="num">[−9.2, +12.5]</td></tr>
+          <tr><th scope="row">総入れ替え<br><span class="note">差が最大の群</span></th><td class="num">57</td>
+            <td class="num">0.439<br><span class="note">75/171</span></td>
+            <td class="num hold">0.497<br><span class="note">85/171</span></td>
+            <td class="num">+5.8</td><td class="num">[−4.7, +16.4]</td></tr>
+          <tr><th scope="row">その他</th><td class="num">65</td>
+            <td class="num">0.615<br><span class="note">120/195</span></td>
+            <td class="num hold">0.621<br><span class="note">121/195</span></td>
+            <td class="num">+0.5</td><td class="num">[−5.6, +6.7]</td></tr>
+          <tr><th scope="row">全判定<br><span class="note">混合・参考値</span></th><td class="num">162</td>
+            <td class="num">0.588<br><span class="note">286/486</span></td>
+            <td class="num hold">0.615<br><span class="note">299/486</span></td>
+            <td class="num">+2.7</td><td class="num">[−2.5, +7.8]</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p><strong>4つの層すべてで a25m が非負、現行が上回る層はひとつもない。</strong>
+        記事単位の勝敗も a25m 46勝・現行 36勝・引き分け 80（符号検定 p = 0.32）。
+        方向は一貫しているのに、<strong>どの層も区間はゼロを跨ぐ。</strong>
+        不偏推定である無作為 40 件の +1.7pt は、実数でいえば<strong>120 枠のうち 2 件多い</strong>だけである。</p>
+
+      <div class="panel flag">
+        <p><strong>そして、判定を続けても決着しないことが判定によって分かった。</strong>
+          無作為標本の標準誤差は 5.5pt。同じ効果量のまま判定数を増やしたときの区間はこうなる。</p>
+        <p class="note">n=100 → [−5.2, +8.5] ／ n=200 → [−3.2, +6.5] ／
+          <strong>n=389（変化した記事すべて）→ [−1.8, +5.1]</strong>。
+          +1.7pt を有意にするには約 1,700 記事が必要で、<strong>そもそも変化した記事が 389 本しかない。</strong>
+          このコーパスでは、人手評価を全数やっても順位は決まらない。</p>
+      </div>
+
+      <div class="panel flag">
+        <p><strong>英語では、唯一「有意」だったセルが再現しなかった。</strong>
+          修理後の指標が本レポートで a25m 優位をゼロから外して示したのは1箇所だけ ——
+          英語の固定プール P@3、<strong>+5.8pt [+1.4, +11.6]</strong> である。
+          変化した英語記事 19 件すべてを人手で判定した結果は、
+          <strong>40/57 対 40/57、差 +0.0pt [−14.0, +14.0]</strong> ——
+          完全な引き分けだった。記事単位でも a25m 7勝・現行 6勝・引き分け 6。</p>
+        <p class="note">英語のタグ付き記事は 23 本しかない。その規模で有意になったセルは、
+          <strong>指標が見ている狭い断面での差</strong>であって、読者から見た差ではなかった
+          —— というのがいちばん素直な読み方になる。
+          <strong>この検証で唯一の「有意」を、人手評価が打ち消した。</strong></p>
+      </div>
+
+      <h3>結果2 —— 代理指標は、関連性の 9% しか見ていなかった</h3>
+      <p>本題はこちらである。判定済み 827 ペアについて、<strong>タグ一致を人手判定の予測器として
+        評価する</strong>と、指標が何を測っていたのかが数字で出る。</p>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <caption>タグ一致 対 人手判定（判定済み 827 ペア）</caption>
+        <thead>
+          <tr><th class="lbl"></th><th>人手: 関連</th><th>人手: 無関係</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row" class="lbl">タグ一致</th>
+            <td class="num win">40</td><td class="num">13</td></tr>
+          <tr><th scope="row" class="lbl">タグ不一致</th>
+            <td class="num hold">418<br><span class="note">見落とし</span></td><td class="num">356</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p><strong>適合率 0.755、再現率 0.087。</strong>タグが一致していれば人手もほぼ関連と認める
+        —— その向きは信頼できる。だが人手が「関連」とした 458 件のうち、
+        <strong>タグが拾えたのは 40 件だけ</strong>である。</p>
+
+      <p>理由は単純で、<strong>判定済みペアの 86%（714/827）は少なくとも片側にタグがなく、
+        指標からは最初から見えていない。</strong>そしてその見えない領域で、
+        人手は 392 件を「関連」と判定している。</p>
+
+      <p>言語で分けると、同じ指標がまったく違う壊れ方をしているのが見える。</p>
+      <div class="scroll">
+        <table>
+          <caption>タグ一致を人手判定の予測器として見たときの性能（言語別）</caption>
+          <thead>
+            <tr><th class="lbl">コーパス</th><th>ペア</th><th>再現率</th><th>適合率</th>
+              <th>片側が無タグ</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">ja</th><td class="num">745</td>
+              <td class="num">0.061</td><td class="num hold">0.862</td><td class="num">91%</td></tr>
+            <tr><th scope="row">en</th><td class="num">82</td>
+              <td class="num hold">0.294</td><td class="num">0.625</td><td class="num">46%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note"><strong>日本語は「当たれば正しいが、ほとんど何も見えない」</strong>
+        （適合率 0.86・再現率 0.06）。<strong>英語は「かなり見えるが、当たっても外れることがある」</strong>
+        （再現率 0.29・適合率 0.63）。タグ付き率が 23%（ja）と 70%（en）で違うためで、
+        タグが厚い英語では今度はタグ一致が緩くなり、人手が無関係と判断するペアを 9 件拾っている。
+        <strong>どちらの側に倒しても、代理指標が人手判定の代わりにはならない。</strong></p>
+
+      <div class="panel">
+        <p><strong>推薦の実力は、指標が示していたよりずっと高い。</strong>
+          無作為 40 件では、<strong>両モデルとも推薦の 76% 前後が妥当</strong>と判定された。
+          同じ推薦を固定プール precision@3 で測ると 0.37 前後である。
+          <strong>低く出ていたのは推薦が悪いからではなく、正解データが薄いからだった。</strong></p>
+      </div>
+
+      <p>この非対称性は、実験の読み方をそのまま決める。</p>
+      <ul>
+        <li><strong>「タグが一致した推薦は妥当」</strong>—— この向きの推論は概ね安全（適合率 0.755）</li>
+        <li><strong>「タグが一致しない推薦は妥当でない」</strong>—— この向きは完全に誤り（再現率 0.087）</li>
+        <li>そして<strong>モデル比較で効いていたのは後者の推論である。</strong>
+          2モデルの違いはほとんど無タグ領域で起きており、指標はそこを一切見ていなかった</li>
+      </ul>
+
+      <p class="note">つまり実験1・実験2の数値は「壊れていた」のではなく、
+        <strong>関連性のごく一部の断面を、その断面としては正確に測っていた。</strong>
+        断面が狭すぎてモデルの優劣を語れなかった、というのが正しい表現になる。</p>
+
+      <h3>指標に写らない差 —— 具体例</h3>
+      <p>タグの外側で何が起きているかは、判定中に読んだ個別の例に出ている。
+        <strong>a25m の勝ちパターンは同一エンティティの検出</strong>で、これはタグには
+        まず書かれていない類の一致である。</p>
+
+      <div class="panel">
+        <p><strong>The Real Group の新譜紹介</strong> → a25m は<strong>同じアーティスト</strong>の
+          旧譜レビュー2件を並べる。現行は別アーティストのライブ告知を返した。</p>
+        <p><strong>石田衣良「うつくしい子ども」の書評</strong> → a25m は<strong>同じ著者</strong>の
+          「アキハバラ＠DEEP」「愛がいない部屋」を並べる。現行は著者一致1件。</p>
+        <p><strong>川崎Ruby会議01 の開催報告</strong> → a25m は<strong>姉妹イベント</strong>の
+          神奈川Ruby会議を最上位に。現行は毎月のミートアップ報告を返した。</p>
+        <p class="note">アーティスト名・著者名・イベント名はタグになっていないので、
+          この差はどの指標にも加点されない。逆方向の失敗もある —— MeCab の記事で a25m は
+          Thinkpad 移行記事を混ぜ、現行は NLP 記事で固めた。
+          <strong>現行の勝ちパターンはトピックの純度</strong>である。</p>
+      </div>
+
+      <p><strong>2つの癖はどちらも壊れていない。</strong>どちらを好むかは設計の選択であって、
+        測定で決まる問題ではなかった —— というのが、162 記事を読んだ後の実感でもある。</p>
+
+      <h3>結果3 —— では記事ごとに使い分けるべきか</h3>
+      <p>癖が違うなら、次の問いは自然に出てくる。<strong>「この記事にはこちら」が
+        決まっているのではないか。</strong>もしそうなら、記事ごとに良い方を選ぶ仕組みが
+        両モデルを上回れる。</p>
+
+      <p>ただしこれは、勝敗表を眺めても答えられない。<strong>互角の2モデルでも、
+        推薦する記事が違えば勝敗はばらつく</strong>からで、「記事ごとに勝ち負けがある」ことは
+        構造の証拠にならない。問うべきは<strong>その勝敗が予測可能か</strong>である。3通りで測った。</p>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <caption>「良いモデルは記事によって決まる」の検定。すべて a25m 有利の向きだが、
+          どれも有意ではない</caption>
+        <thead>
+          <tr><th class="lbl">検定</th><th class="lbl">問い</th><th>結果</th><th>p</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">分割半信頼性</th>
+            <td class="lbl">1位での優劣と 2–3位での優劣が一致するか</td>
+            <td class="num">r = +0.147</td><td class="num">0.082</td></tr>
+          <tr><th scope="row">層別（年代）</th>
+            <td class="lbl">2005–12 / 2013–19 / 2020–</td>
+            <td class="num">+1.4 / +3.6 / +11.1pt</td><td class="num">0.301</td></tr>
+          <tr><th scope="row">オラクル</th>
+            <td class="lbl">記事ごとに勝った方を採れば、雑音以上に得をするか</td>
+            <td class="num">+9.5pt<br><span class="note">雑音のみ +7.9</span></td><td class="num">0.076</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p>オラクルの行が分かりやすい。<strong>記事ごとに勝った方を採用すれば 0.603 → 0.698 まで
+        上がる（+9.5pt）。</strong>ただし「勝った方を選ぶ」という操作は、2つのモデルが完全に互角でも
+        <strong>雑音の上澄みを取るだけで +7.9pt [+5.7, +10.0] 稼げてしまう。</strong>
+        観測された +9.5pt はその分布の端に乗っているだけで、
+        <strong>構造があるとしても雑音とほぼ同じ大きさ</strong>である。</p>
+
+      <p>年代の傾向 —— 新しい技術記事ほど a25m 有利 —— は点推定では綺麗に並ぶが、
+        2020年以降は n=15 で区間が [−6.7, +26.7]。年との相関そのものは r = +0.086、p = 0.301 で、
+        <strong>並びの綺麗さは標本の細さで説明がつく。</strong></p>
+
+      <div class="panel flag">
+        <p><strong>3つとも同じ向きを指し、3つとも有意に届かない。</strong>
+          言えるのはここまで —— <strong>癖が違うことは確実に観測できるのに、
+          「この記事ならこちら」が予測できるとは示せなかった。</strong>
+          使い分ける仕組みを作る根拠は、このデータにはない。</p>
+        <p class="note">この2つは別の主張である。前者は毎回の差分に目で見えるが、
+          後者は<strong>予測可能性</strong>の主張で、検定を通さないと言えない。
+          今回は通らなかった。</p>
+      </div>
+
+      <p>結局、<strong>「どちらが好きか」という水準に落ち着く。</strong>
+        測定でも目視でも順位はつかず、記事ごとの使い分けも支持されない。
+        残るのは、どちらの癖を自分のブログに置きたいかという選好である。</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><p class="eyebrow">5 · 考察</p><h2>多言語モデル2候補の比較</h2></div>
+    <div class="col">
+      <p>統合先を1つに絞る以上、多言語候補2つのどちらを採るかは決めなければならない。
+        しかも効いてくるのは主に<strong>日英以外で記事を書いたとき</strong>で、そこは測れていない。
+        この2言語での実測に加えて、公開されたカバレッジ情報に頼ることになる。</p>
+
+      <p><strong>どちらも「学習した言語」は広い。</strong>bekko は100以上の言語を含むデータで
+        言語横断検索ができるように学習されており、翻訳を挟まずに日本語のクエリから英語の文書を
+        引ける。granite はベースのエンコーダが200以上の言語で事前学習されている。
+        <strong>違いは学習範囲ではなく、言語ごとの数字がどこまで公開されているかにある。</strong></p>
+    </div>
+
+    <div class="col">
+      <h3>bekko が言語別に評価している14言語</h3>
+      <p>学習範囲の上限ではなく、<strong>実測スコアが公開されている範囲</strong>である。
+        英語 NanoBEIR と、コミュニティが公開した13言語の翻訳版で測られている。</p>
+      <p><strong>英語 · スペイン語 · イタリア語 · ポルトガル語 · ドイツ語 · ベトナム語 ·
+        日本語 · フランス語 · スウェーデン語 · ノルウェー語 · 韓国語</strong>、
+        そして下位3言語の <strong>アラビア語 · セルビア語 · タイ語</strong>。</p>
+
+      <h3>granite-97m-multilingual が強化サポートする52言語</h3>
+      <p>ベースのエンコーダは200以上の言語で事前学習されており、どの言語でも汎用の埋め込みは
+        得られる。そのうえで、<strong>検索ペアと cross-lingual の学習データを明示的に与えた52言語</strong>で
+        品質が高いとされている。</p>
+      <p class="note">モデルカードの表記のまま引用する。</p>
+      <pre><code>sq  Albanian     ar  Arabic       az  Azerbaijani  bn  Bengali
+bg  Bulgarian    ca  Catalan      zh  Chinese      hr  Croatian
+cs  Czech        da  Danish       nl  Dutch        en  English
+et  Estonian     fi  Finnish      fr  French       ka  Georgian
+de  German       el  Greek        he  Hebrew       hi  Hindi
+hu  Hungarian    is  Icelandic    id  Indonesian   it  Italian
+ja  Japanese     kk  Kazakh       km  Khmer        ko  Korean
+lv  Latvian      lt  Lithuanian   ms  Malay        mr  Marathi
+no  Norwegian    fa  Persian      pl  Polish       pt  Portuguese
+ro  Romanian     ru  Russian      sr  Serbian      sk  Slovak
+sl  Slovenian    es  Spanish      sw  Swahili      sv  Swedish
+tl  Tagalog      te  Telugu       th  Thai         tr  Turkish
+uk  Ukrainian    ur  Urdu         uz  Uzbek        vi  Vietnamese</code></pre>
+      <p class="note">加えて Python · Go · Java · JavaScript · PHP · Ruby · SQL · C · C++ の
+        コードで学習されており、コードの cross-lingual 検索にも対応するとされる。</p>
+
+      <p><strong>宣言の粒度が違うので、カバレッジの広さで優劣はつけられない。</strong>
+        granite の52言語は検索ペアと cross-lingual データを明示的に与えた言語の一覧であって、
+        言語ごとのスコアではない。bekko の100以上は学習に含まれた言語であって、こちらも
+        言語ごとのスコアではない。<strong>どちらも「この言語なら大丈夫」と言える形の情報を
+        出していない。</strong></p>
+
+      <p>実際に差があるのは1点だけ、<strong>言語別の実測値が公開されているかどうか</strong>である。
+        bekko は14言語について数字がある。granite は言語別の数字を公開していない。
+        統合先を選ぶ材料としては、この14言語だけが根拠らしい根拠になる。</p>
+
+      <h3>公開ベンチマークでの位置</h3>
+      <p>この2モデルは <a href="https://secon.dev/entry/2026/07/29/080000-bekko-embedding/">bekko の公開記事</a>で直接比較されている。
+        言語別ではないが、第三者の測定として参照できる唯一の数字なので引く。</p>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <caption>出典: <a href="https://secon.dev/entry/2026/07/29/080000-bekko-embedding/">Bekko Embedding の公開記事</a>より抜粋。<strong>色付きが優位</strong></caption>
+        <thead>
+          <tr><th class="lbl">モデル</th><th>active params</th>
+            <th>MMTEB (ALL)</th><th>MMTEB (Ret)</th><th>MNanoBEIR</th>
+            <th>NanoRTEB</th><th>NanoCoIR</th><th>NanoLongEmbed</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">bekko-a25m</th><td class="num">24.9M</td>
+            <td class="num win">58.3</td><td class="num">57.5</td><td class="num win">54.9</td>
+            <td class="num win">59.4</td><td class="num win">78.6</td><td class="num win">70.6</td></tr>
+          <tr><th scope="row">granite-97m-multilingual</th><td class="num">28.3M</td>
+            <td class="num">51.9</td><td class="num win">60.3</td><td class="num">50.5</td>
+            <td class="num">56.7</td><td class="num">78.0</td><td class="num">65.9</td></tr>
+          <tr><th scope="row">bekko-a8m</th><td class="num">7.67M</td>
+            <td class="num">56.7</td><td class="num">56.2</td><td class="num">52.6</td>
+            <td class="num">55.0</td><td class="num">74.7</td><td class="num">68.2</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p><strong>6項目中5項目で bekko-a25m が上、granite が上回るのは MMTEB の検索タスク
+        （60.3 対 57.5）だけ。</strong>アクティブパラメータは a25m のほうが少ない
+        （24.9M 対 28.3M）。</p>
+
+      <p>関連記事推薦は<strong>記事同士の対称的な類似度</strong>を扱うので、query → document の
+        検索タスクより、全131タスク平均の MMTEB (ALL) のほうが近い。そこでは 58.3 対 51.9 で
+        6.4pt の開きがある。<strong>ただしこれは言語別の数字ではない</strong>ので、
+        「専用モデルのない特定の言語でどちらが良いか」には答えていない。</p>
+    </div>
+
+
+    <div class="col">
+      <div class="panel flag">
+        <p><strong>タイ語・セルビア語・アラビア語が下位。</strong>採用したうえで、
+          これらの言語で書いたときの推薦は割り引いて見る必要がある。</p>
+        <p class="note">bekko-a8m は bge-m3 に一貫して勝ってはいない。ベトナム語・セルビア語・タイ語・
+          韓国語・スウェーデン語では bge-m3 が上。a8m の売りは 1/41 のアクティブパラメータで同等圏という
+          効率であって、絶対性能ではない。a25m はほぼ全言語で bge-m3 を上回る。</p>
+      </div>
+      <p class="note">granite 側は IBM 自身が「枝刈りモデルは低リソース言語での劣化がより顕著」と
+        書いている。フォールバックは主に低リソース言語に使うので、ここは正面から効く。日本語という
+        高リソース言語ですら a25m に4〜5pt 負けている点も、その注記と整合して見える。</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><p class="eyebrow">5 · 考察</p><h2>結論</h2></div>
+    <div class="col">
+      <p><strong>多言語モデル1つに統合し、入力長も変更する。</strong>
+        検証の途中で判断が二度ひっくり返っている。指標を修理する前は「置き換えるだけの
+        品質改善が測れない」。修理後は「品質は同等かわずかに上だが、その差がコスト増に届かない」。
+        そして人手評価とコストの実測を経て、<strong>「品質は同等。順位は原理的に決められず、
+        記事ごとの使い分けも支持されない。ならば残るのは選好とコストで、そのコストが
+        思ったより小さかった」</strong>——これが最終形である。</p>
+
+      <pre><code>ja  → bekko-embedding-v1-a25m    199 MB  変更（← ruri-v3 + "トピック: "）
+en  → bekko-embedding-v1-a25m    199 MB  変更（← granite-small-english）
+他  → 同じモデルで動く
+
+max_content_chars  2,000 → 8,000          変更</code></pre>
+
+      <ul>
+        <li><strong>品質は判断材料から外れた。</strong>固定プールでは日本語 P@3 が同点、
+          P@10 で a25m が +1.4pt、AUC +1.8pt（n.s.）。人手評価では無作為 40 件で
+          +1.7pt [−9.2, +12.5]、記事単位 41勝32敗74分（p = 0.35）。
+          英語は変化した 19 件すべてを判定して <strong>完全な引き分け</strong>（40/57 対 40/57）。
+          <strong>すべての層で a25m が非負、現行が上回る層はひとつもない</strong>のに、
+          ひとつも有意にならない。そして 389 件すべてを判定しても有意にならないことまで分かっている
+          （「人手評価」）。<strong>測れないものを判断根拠にはできない</strong></li>
+        <li><strong>決め手は癖の選好。</strong>a25m は同一エンティティ —— 同じアーティスト、
+          同じ著者、姉妹イベント —— を拾い、現行はトピックの純度を保つ。
+          記事ごとに使い分ける根拠は検定で否定されたので（結果3）、
+          <strong>どちらか一方の癖を選ぶことになる。</strong>個人ブログでは、
+          タグにも指標にも現れないエンティティのつながりのほうが読者に効くと判断した</li>
+        <li><strong>コストは実測して小さかった。</strong>本番の GitHub Actions で
+          <strong>初回 3分29秒</strong>（452記事を全再埋め込み、モデルDL込み）。内訳は
+          埋め込み 3分8秒・モデルDL 17秒で、<strong>199 MB という数字ほどには効かない</strong>
+          —— アクティブパラメータ 25M の MoE なので1記事あたり約0.4秒で済む。
+          2回目以降は新規記事だけなので定常コストは変わらない。
+          同じ重みで2度回して推薦がバイト単位で一致することも確認した</li>
+        <li><strong>副次的な利得。</strong>言語判定による切り替えが消え、設定が単純になる。
+          日英以外を書いたときも同じモデルが動く —— 元々の動機だった多言語カバレッジが、
+          品質を落とさずに手に入る</li>
+        <li><strong><code>max_content_chars</code> を 2,000 から 8,000 へ。</strong>
+          この検証でいちばん確度の高い結果になった。固定プールと AUC の8セルすべてで
+          点推定が非負、負のセルはゼロ。両腕が同じモデルなので旧指標の欠陥の影響も受けていない。
+          「わずかに増えて、外しても損しない」で入れる</li>
+        <li><strong>入力長を動かす前に、コーパスの長さ分布を見るべきだった。</strong>
+          入力が実際に変わったのは日本語 420本中93本、英語 33本中15本。
+          残りは上限を上げても1文字も変わらない。<strong>設定が届く範囲は、
+          モデルではなくコーパスが決めている</strong></li>
+        <li><strong>日英以外での品質は、依然として未検証のまま採用する。</strong>測ったのは
+          日本語と英語だけで、どちらも専用モデルが存在する言語である。他言語で a25m が
+          どう振る舞うかは分からない —— ただし<strong>これは以前より良い状態である。</strong>
+          専用モデルを持たない言語に対して、これまでは英語モデルを流用するしかなく、
+          プローブの分離幅ではフランス語 0.139・日本語 0.055 と守備範囲外で分離がほぼ消えていた。
+          未検証の多言語モデルのほうが、守備範囲外と分かっている専用モデルよりましだと判断した</li>
+        <li class="note">対抗馬だった granite-97m-multilingual は落選した。実用になるのは fp32 のみで
+          （int8 版は英語で AUC が 0.747 → 0.680 と崩れる）、その fp32 でも英語 AUC は
+          a25m を下回り、公開ベンチマークでも 6項目中5項目で a25m が上だった</li>
+      </ul>
+
+      <div class="panel">
+        <p><strong>この結論に至る前に、4つの実験のうち3つが不発だったことは書き留めておきたい。</strong>
+          実験1（モデル比較）は指標の欠陥で順位が逆転し、修理後も有意にならなかった。
+          結果3（使い分け）は否定された。人手評価も順位をつけられなかった。
+          <strong>決め手になったのは、測定ではなく実測コストと選好である。</strong></p>
+        <p class="note">それでも測った意味はあった。「差があるとしてもこの範囲」という上限が引けたからこそ、
+          品質を判断根拠から外して選好で決める、という筋の通った選び方ができた。
+          <strong>測定は勝者を決められなかったが、勝者を決める必要がないことを示した。</strong></p>
+      </div>
+
+      <h3>代理指標について</h3>
+      <p>最初の指標は、粗い問いには答えられた。「置き換えるべきか」に対して
+        「置き換えるだけの改善は測れない」と返す —— 上限を知るだけならそれで足りた。
+        壊れたのは一段細かいことを訊いたときで、「どちらのモデルが良いか」を数ポイントの差で
+        決めようとした瞬間に、<strong>採点対象をモデル自身に選ばせている</strong>という設計が表面化し、
+        読み方によって順位が逆転した。</p>
+
+      <p>修理は2つの操作でできた。<strong>分母をモデルから取り上げる</strong>（候補をタグ付き記事に固定）、
+        <strong>閾値を捨てて順位全体を使う</strong>（ペアワイズ AUC）。どちらも情報検索では
+        不完全な正解データへの定石で、新しい発明ではない。修理後は区間が ±5pt から
+        1〜4pt 台に縮み、初めてゼロを外れるセルが出た。<strong>指標の設計を直すことは、
+        データを増やすのと同じくらい分解能に効いた。</strong></p>
+
+      <p><strong>それでも残っていた欠陥は、指標の内側からは見えなかった。</strong>
+        修理後の指標は、分母こそ公平になったものの、依然として<strong>関連性の 9% しか
+        見ていなかった</strong>（人手評価）。適合率は 0.755 と比較的高いので「タグが当たれば妥当」は
+        言えるのに、モデル間の差はほとんど無タグ領域で起きていて、そこは測定の外だった。
+        <strong>正しく設計された指標が、正しく狭い断面を測っていた</strong>というのが最終的な診断になる。</p>
+
+      <p>そして<strong>この検証で見つかった誤りは、どれも指標を睨んで見つかったものではない。</strong></p>
+      <ul>
+        <li>審判が TF-IDF 由来の語を含んでいた —— <strong>審判を差し替えて</strong>気づいた</li>
+        <li>本番と違うテキストで測っていた —— <strong>本番の実行ログ</strong>と数字を突き合わせて気づいた</li>
+        <li>比率が分母の大きさに引きずられていた —— <strong>個別の記事を1本ずつ読んで</strong>気づいた</li>
+        <li>その分母の効果が、入力長の見かけの結論を作っていた ——
+          <strong>率を的中数と分母に分解して</strong>気づいた</li>
+        <li>分母をモデルが動かせるのは設計そのものの欠陥だった ——
+          <strong>同じデータを2つの読み方で並べて順位が逆転して</strong>確定した</li>
+        <li>修理後も指標が関連性のごく一部しか見ていなかった ——
+          <strong>推薦そのものを人手で判定して</strong>初めて分かった</li>
+      </ul>
+      <p>いずれも指標の外にあるもの、あるいは指標同士の突き合わせで出てきた。
+        <strong>代理指標は単独では検証できない。</strong>代理指標は「何を正解とみなすか」
+        だけでなく<strong>「分母を誰が決めるか」で壊れ、直した後も「どれだけの範囲を見ているか」で
+        限界が決まる。</strong>3つ目で「副作用がある」と注記を書いた後も、自分の結論がその副作用で
+        できていることにはしばらく気づかなかった。注記は免罪符にならない ——
+        設計を直すまで、誤りは結論に居座り続けた。</p>
+
+      <p class="note">代理指標を作るなら、<strong>小さくてよいので人手判定の標本を先に取り、
+        代理指標をその予測器として評価しておく</strong>のが安い保険になる。今回それを最後にやったせいで、
+        「指標が低い＝推薦が悪い」という誤読を長く抱えたままだった。実際には推薦の 76% は妥当だった。</p>
+
+      <p class="note">今回いちばん大きかった発見も、指標が出したものではない。入力長が英語で効いて
+        日本語で効かない理由は、420本中 327本が 2,000 文字に届いていないという<strong>コーパスの
+        長さ分布</strong>にあった。指標はそれを追認しただけで、説明はデータの側にあった。</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><p class="eyebrow">5 · 考察</p><h2>この結論が及ばない範囲</h2></div>
+    <div class="col">
+      <p>この検証で測ったのは<strong>日本語と英語の2言語だけ</strong>で、どちらも高リソース言語、
+        どちらも専用モデルが存在する言語である。<strong>フォールバックが必要になるのは、
+        まさにその条件を満たさない言語だ。</strong>結論で a25m を「第一候補」と呼ぶにとどめ、
+        採用を決めなかったのは、この非対称性のためである。</p>
+
+      <p>仮に決めようとすると、推論はこう組む必要がある。</p>
+      <ol>
+        <li>公開ベンチマークが複数言語の<strong>相対順位</strong>を与える（第三者の測定）</li>
+        <li>このコーパスが、その順位が関連記事推薦でも通用することを<strong>2点だけ</strong>確認する</li>
+        <li>未測定の言語は、1のスコアが日本語と同程度なら2も同程度だろう、と外挿する</li>
+      </ol>
+
+      <p>3が飛躍にあたる。渡っているのは「別の言語」という距離だけではなく、
+        <strong>リソース量という軸を渡っている。</strong>低リソース言語は cross-lingual transfer に
+        頼る領域で、どのモデルも最も劣化しやすい。IBM が granite について
+        「枝刈りモデルは低リソース言語での劣化がより顕著」と明記しているのは、
+        まさにこの領域についてである。</p>
+
+      <div class="panel flag">
+        <p><strong>外挿が効きそうな範囲と、効かない範囲。</strong>公開ベンチマークで日本語は
+          14言語中の中位（約54.5、最高61・最低47.5）にあり、bekko が日本語だけ得意なわけではない。
+          同水準の言語 — イタリア語・ポルトガル語・ドイツ語・ベトナム語・フランス語 — への外挿は
+          比較的もっともらしい。逆にタイ語（47.5）・セルビア語（49）・アラビア語（49.5）は日本語より
+          5〜7pt 下で、<strong>2点の測定から言えることはない</strong>。</p>
+      </div>
+
+      <p><strong>確かめる方法は1つしかない。</strong>対象言語の記事を数十本用意して、同じ手順を
+        そのまま回すこと。この検証の道具立ては言語に依存しないので、コーパスさえあれば同じ指標で
+        測れる。対訳記事があれば、推薦の顔ぶれが言語をまたいで保たれるかも見られる。
+        chezo.uno には日本語と英語しかないので、現状では実施できない。</p>
+
+      <p class="note">そのほかの限界として、審判が人手タグである以上、タグの付け方の癖が
+        そのまま指標に入る。採点対象は topk に応じて58〜536ペアしかない。1つのブログの2言語で
+        測った結果であることも含め、ここで出た差はいずれもこの範囲でのものである。</p>
+
+      <p class="note">人手評価にも同じ種類の限界がある。<strong>判定者は著者1名で、
+        一致率を測る第二の判定者がいない。</strong>ブラインド化（モデル名・タグ・タグ一致印を
+        すべて伏せ、左右を記事ごとにシャッフル）でモデルへの偏りは断ったが、
+        「関連している」の基準そのものが著者の感覚に依存している点は残る。
+        判定したのは変化した 389 件のうち 162 件で、日本語は標本、英語は全数である。</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><p class="eyebrow">付録</p><h2>量子化の影響</h2></div>
+    <div class="col">
+      <p>ruri と granite は int8 の <code>model_quantized.onnx</code>、bekko は fp32 の
+        <code>model.onnx</code> で測っていた（bekko の量子化版は作者が非推奨としている）。
+        bekko だけ有利な条件ではないかを確かめるため、3モデルを int8 と fp32 の両方で回した。</p>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <caption>量子化の影響を修理後の指標で見る。ヒット差は固定プールの fp32 − int8
+          （プラスなら量子化で取りこぼしていた）。本番の2モデルは本番と同じ 8,000 文字、
+          候補の granite-97m は実験1と同じ 2,000 文字で測っている</caption>
+        <thead>
+          <tr>
+            <th class="lbl">モデル</th><th class="lbl">コーパス</th>
+            <th>AUC int8 → fp32</th>
+            <th>ヒット差 k=3</th><th>k=5</th><th>k=10</th>
+            <th>最大被推薦 k=10</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">ruri-v3-30m<br><span class="note">本番</span></th><td class="lbl">ja</td>
+            <td class="num">0.826 → 0.832</td>
+            <td class="num">+2</td><td class="num">−2</td><td class="num">±0</td>
+            <td class="num">35 → 35</td></tr>
+          <tr><th scope="row">granite-small-english<br><span class="note">本番</span></th><td class="lbl">en</td>
+            <td class="num">0.767 → 0.763</td>
+            <td class="num">±0</td><td class="num">−1</td><td class="num">+2</td>
+            <td class="num">25 → 23</td></tr>
+          <tr><th scope="row" rowspan="2">granite-97m-multilingual<br><span class="note">候補</span></th>
+            <td class="lbl">en</td>
+            <td class="num win">0.680 → 0.747</td>
+            <td class="num win">+3</td><td class="num win">+7</td><td class="num win">+11</td>
+            <td class="num">21 → 23</td></tr>
+          <tr><td class="lbl">ja</td>
+            <td class="num">0.809 → 0.813</td>
+            <td class="num">−5</td><td class="num">+2</td><td class="num">+12</td>
+            <td class="num win">47 → 39</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p><strong>本番の2モデルは量子化で壊れていない。</strong>AUC の差は ruri +0.6pt
+        [−0.2, +1.5]、granite −0.4pt [−3.2, +3.2] とどちらもゼロを跨ぎ、固定プールのヒット差も
+        ±2件にとどまる。<strong>int8 のままでよい</strong>
+        ——ruri を 120 MB に、granite を fp32 に置き換える理由は出なかった。</p>
+
+      <p><strong>壊れていたのは候補の granite-97m-multilingual だけで、しかも被害の出方が言語で違う。</strong>
+        英語では AUC が 0.747 → 0.680 と 6.7pt 崩れ、固定プールでも全モデル中で唯一、
+        現行に有意に届かないセルを作った（実験1）。日本語では AUC がほぼ動かないのに、
+        ハブ集中は int8 が明確に悪い（最大被推薦数 47 対 39）。
+        同じ量子化が、英語では順位の質に、日本語ではハブ集中に出ている。</p>
+
+      <p>このモデルは 311m からの枝刈り版（22層→12層）で、冗長性が削られているぶん量子化に
+        回せる余地も残っていない、という説明が自然に見える。<strong>量子化耐性はモデル固有の
+        性質であり、1モデルでの測定を他モデルに一般化できない。</strong>実際、同じ検証の中で
+        3モデルが無傷、1モデルだけが壊れた。</p>
+
+      <p class="note">したがって granite-97m-multilingual を比較するときは fp32 の値を使う。
+        int8 の数値を「このモデルの性能」として並べると、量子化の劣化をモデルの品質と取り違える。</p>
+
+      <p class="note">副産物として、<strong>タグ審判が推薦の入れ替わりに対してかなり鈍い</strong>ことも
+        見えた。ruri の int8 と fp32 では日本語 420本中 319本の推薦が変わっているのに、
+        固定プールのヒットは2件、AUC は 0.6pt しか動かない。顔ぶれが大きく変わっても、
+        タグで測れる範囲では同水準ということが起こりうる。</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><p class="eyebrow">付録</p><h2>再現手順</h2></div>
+    <div class="col">
+      <p>いずれも prelims-cli の <code>scripts/</code> にある。</p>
+      <ul>
+        <li><a href="https://github.com/chezou/prelims-cli/pull/11/changes#diff-22d8c619507c277eded3ef3ba611ff9692eaf30ffbe93632a4d037fd5e5830de"><code>check_onnx_model.py</code></a> — ONNX の入出力、必要入力の充足、出力ランク、
+          モデル自身の文ベクトルと突き合わせた pooling の確定、プローブの分離幅</li>
+        <li><a href="https://github.com/chezou/prelims-cli/pull/11/changes#diff-d5fab2804f6350ec2994ad5b91d24a38995e97bf7a753dd09e3bbd2c90f8049b"><code>compare_embedding_variants.py</code></a> — 2設定でコーパスを回して差分と指標を出す。
+          タグ一致率・ハブ集中度に加えて、<strong>固定プール precision@k とペアワイズ AUC を
+          paired bootstrap の95%区間つきで出力する</strong>（<code>--bootstrap</code>、既定1,000回・seed固定）。
+          <code>--vary config</code> で任意のモデル同士を比較でき、<code>--cache-dir</code> で
+          埋め込みを再利用するので topk スイープは1回分の計算で済む</li>
+        <li><code>rerun_all.sh</code> — 本レポートの全比較（モデル×2言語×topk 3水準、入力長、
+          量子化、審判の差し替え、per-article diff）を1コマンドで再実行し、出力をファイルに残す。
+          本レポートの数値はすべてこの出力から取っている</li>
+        <li><code>judgments/</code> — 人手評価のラベル（162記事・827ペア）と集計スクリプト。
+          層別の precision@3、ブートストラップ区間、タグ指標との混同表がそのまま再現できる</li>
+      </ul>
+      <pre><code>bash scripts/rerun_all.sh          # 全比較の再実行（キャッシュ済みなら数分）
+
+# 単発で1比較だけ回す場合:
+python scripts/compare_embedding_variants.py ../chezo.uno/content/post \
+    --language ja --permalink-base /post --topk 5 --vary config \
+    --tag-keys tags categories --cache-dir ~/.cache/prelims-compare \
+    --a "language=ja,prefix=トピック: " \
+    --b "model_name=hotchpotch/bekko-embedding-v1-a25m,\
+model_file=onnx/model.onnx,pooling=mean"</code></pre>
+      <p class="note">埋め込みキャッシュは記事本文だけをキーにしているので、front matter の
+        タグを直してもキャッシュは温かいまま。審判（タグ）の修正後の再計測が数分で済むのは
+        この性質による。</p>
+    </div>
+  </section>
+
+
+
+
+  <footer>
+    <p>審判・スクリプト・コーパスはいずれも公開されている。
+      <a href="https://github.com/chezou/prelims-cli">prelims-cli</a> の
+      <code>scripts/</code> にある2本を、記事ディレクトリに向けて実行すれば同じ数字が出る。
+      対象言語の記事さえあれば、この検証はそのまま他言語へ拡張できる。</p>
+    <p class="note">Multilingual NanoBEIR は検索タスク（query → document）の指標である一方、
+      関連記事推薦は記事同士の対称的な類似度を扱う。公開ベンチマークの順位がこの用途でも
+      同じになる保証はない。また言語別のスコア（日本語 約54.5 など）は公開チャートからの
+      目視読み取りで、論文の Appendix には到達できていない。</p>
+  </footer>
+
+</div>
