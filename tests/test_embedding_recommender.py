@@ -54,6 +54,44 @@ def test_process_basic(MockEmbedder: MagicMock, tmp_path: Path) -> None:
 
 
 @patch("prelims_cli.embedding.recommender.OnnxEmbedder")
+def test_embed_posts_matches_process_and_keeps_cache(
+    MockEmbedder: MagicMock, tmp_path: Path
+) -> None:
+    """embed_posts returns the vectors process() ranks with, without pruning.
+
+    It must be callable on a subset of the corpus without deleting the other
+    articles' cached embeddings — that is the point of having it.
+    """
+    embedder_instance = MockEmbedder.return_value
+    embedder_instance.embed_all.side_effect = _fake_embeddings
+
+    posts = [
+        _make_post("/posts/a.md", "Python machine learning"),
+        _make_post("/posts/b.md", "Python deep learning"),
+        _make_post("/posts/c.md", "Cooking recipes for dinner"),
+    ]
+    rec = EmbeddingRecommender(
+        permalink_base="/blog",
+        topk=2,
+        cache_db=str(tmp_path / "cache.db"),
+    )
+    rec.process(posts)
+
+    MockEmbedder.reset_mock()
+    matrix = rec.embed_posts(posts)
+    MockEmbedder.assert_not_called()  # every row comes from the cache
+    assert matrix.shape[0] == 3
+    expected = _fake_embeddings([p.content for p in posts])
+    np.testing.assert_allclose(matrix, expected)
+
+    # A subset call must not prune the missing article's cache row.
+    rec.embed_posts(posts[:2])
+    MockEmbedder.reset_mock()
+    rec.process(posts)
+    MockEmbedder.assert_not_called()
+
+
+@patch("prelims_cli.embedding.recommender.OnnxEmbedder")
 def test_permalink_generation(MockEmbedder: MagicMock, tmp_path: Path) -> None:
     embedder_instance = MockEmbedder.return_value
     embedder_instance.embed_all.side_effect = _fake_embeddings

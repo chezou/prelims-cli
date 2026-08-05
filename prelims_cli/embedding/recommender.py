@@ -142,12 +142,51 @@ class EmbeddingRecommender(BaseFrontMatterProcessor):
         finally:
             cache.close()
 
+    def embed_posts(self, posts: list) -> np.ndarray:
+        """Return the L2-normalized embedding matrix for ``posts``.
+
+        Row ``i`` is the vector ``process()`` would rank post ``i`` with —
+        same cache, same truncation — but nothing is written back to the
+        posts and the cache is not pruned, so this is safe to call on a
+        subset of a corpus without invalidating the rest.
+        """
+        cache = EmbeddingCache(self.cache_db)
+        try:
+            return self._embedding_matrix(posts, cache)
+        finally:
+            cache.close()
+
     def _process_with_cache(
         self,
         posts: list,
         cache: EmbeddingCache,
         allow_overwrite: bool,
     ) -> None:
+        matrix = self._embedding_matrix(posts, cache)
+        # Vectors are L2-normalized, so dot product = cosine similarity
+        similarities = matrix @ matrix.T
+
+        # Generate recommendations
+        for i in range(len(posts)):
+            sim_scores = similarities[i]
+            # Exclude self (similarity=1.0)
+            top_indices = np.argsort(sim_scores, kind="stable")[::-1][
+                1 : (self.topk + 1)
+            ]
+            recommend_permalinks = [
+                self._path_to_permalink(posts[j].path) for j in top_indices
+            ]
+            posts[i].update_all(
+                {"recommendations": recommend_permalinks}, allow_overwrite
+            )
+
+        # Prune deleted articles
+        active = {str(post.path) for post in posts}
+        pruned = cache.prune(active)
+        if pruned:
+            logger.info(f"Pruned {pruned} stale entries from cache")
+
+    def _embedding_matrix(self, posts: list, cache: EmbeddingCache) -> np.ndarray:
         contents = [post.content[: self.max_content_chars] for post in posts]
         paths = [str(post.path) for post in posts]
         # Cached vectors are only reusable when they were produced by the same
@@ -199,30 +238,7 @@ class EmbeddingRecommender(BaseFrontMatterProcessor):
                 cache_entries.append((paths[idx], hashes[idx], emb))
             cache.put_batch(cache_entries)
 
-        # Build matrix and compute similarities
-        matrix = np.stack(embeddings)  # type: ignore[arg-type]
-        # Vectors are L2-normalized, so dot product = cosine similarity
-        similarities = matrix @ matrix.T
-
-        # Generate recommendations
-        for i in range(len(posts)):
-            sim_scores = similarities[i]
-            # Exclude self (similarity=1.0)
-            top_indices = np.argsort(sim_scores, kind="stable")[::-1][
-                1 : (self.topk + 1)
-            ]
-            recommend_permalinks = [
-                self._path_to_permalink(posts[j].path) for j in top_indices
-            ]
-            posts[i].update_all(
-                {"recommendations": recommend_permalinks}, allow_overwrite
-            )
-
-        # Prune deleted articles
-        active = set(paths)
-        pruned = cache.prune(active)
-        if pruned:
-            logger.info(f"Pruned {pruned} stale entries from cache")
+        return np.stack(embeddings)  # type: ignore[arg-type]
 
     def _path_to_permalink(self, path: Path) -> str:
         """Convert a file path into a permalink."""

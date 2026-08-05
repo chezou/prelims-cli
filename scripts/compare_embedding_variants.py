@@ -33,6 +33,21 @@ Metrics, when the front matter carries tags/categories/keywords:
                wording. Re-run with --tag-keys tags categories to check a
                result against curated tags only, and --max-df to drop filler
                terms that match everywhere.
+  judged pool  the metrics to compare models on. Tag overlap above judges
+               whatever the model recommends, so the model controls its own
+               denominator: recommending untagged articles is free, and two
+               models are not scored against the same pairs. These two are:
+
+               precision@k with candidates restricted to tagged articles
+               (the condensed-list treatment of incomplete judgments) — a
+               fixed denominator of k slots per tagged source, identical for
+               every variant; and pairwise AUC — the probability that a
+               same-label pair of tagged articles is ranked more similar
+               than a different-label pair, which uses the full similarity
+               ordering instead of a top-k cutoff and therefore resolves
+               smaller differences on a small corpus. Both come with paired
+               bootstrap 95% CIs on the b−a difference (--bootstrap).
+
   hub spread   how concentrated recommendations are on a few articles. A
                generic post that attaches to everything shows up as a high
                max in-degree and a high top-5 share. Lower is better.
@@ -55,6 +70,7 @@ from collections.abc import Sequence
 from contextlib import AbstractContextManager, nullcontext
 from pathlib import Path
 
+import numpy as np
 from prelims.post import Post as PrelimsPost  # type: ignore
 
 from prelims_cli.embedding.recommender import EmbeddingRecommender
@@ -197,7 +213,7 @@ def run_variant(
     args: argparse.Namespace,
     value: str,
     cache_db: str,
-) -> dict[str, list[str]]:
+) -> tuple[dict[str, list[str]], np.ndarray]:
     kwargs: dict[str, object] = {
         "permalink_base": args.permalink_base,
         "topk": args.topk,
@@ -210,8 +226,12 @@ def run_variant(
         kwargs[args.vary] = value
 
     posts = [Post(p, bodies[p]) for p in paths]
-    EmbeddingRecommender(**kwargs).process(posts)  # type: ignore[arg-type]
-    return {str(p.path): p.recommendations for p in posts}
+    recommender = EmbeddingRecommender(**kwargs)
+    recommender.process(posts)  # type: ignore[arg-type]
+    # Row i embeds paths[i]; every entry was just cached by process(), so
+    # this is a cache read, not a second inference pass.
+    matrix = recommender.embed_posts(posts)  # type: ignore[arg-type]
+    return {str(p.path): p.recommendations for p in posts}, matrix
 
 
 def tag_overlap(
@@ -249,6 +269,120 @@ def hub_spread(recs: dict[str, list[str]]) -> tuple[int, float]:
         return 0, 0.0
     top5 = sum(c for _, c in counts.most_common(5))
     return counts.most_common(1)[0][1], top5 / total
+
+
+class JudgedPool:
+    """The tagged articles of a corpus, as a self-contained evaluation pool.
+
+    The any-tag metrics above judge whatever the model happens to recommend,
+    which lets the model pick its own denominator: recommending untagged
+    articles is free under one reading and costly under the other, and the
+    two readings can rank two models in opposite orders. Everything in this
+    class fixes that by restricting both candidates and sources to the tagged
+    articles, so every variant answers the same question on the same pool.
+    """
+
+    def __init__(self, paths: list[Path], tagged: dict[Path, set[str]]) -> None:
+        self.indices = [i for i, p in enumerate(paths) if p in tagged]
+        labels = [tagged[paths[i]] for i in self.indices]
+        n = len(labels)
+        self.same = np.zeros((n, n), dtype=bool)
+        for a in range(n):
+            for b in range(a + 1, n):
+                self.same[a, b] = self.same[b, a] = bool(labels[a] & labels[b])
+        self.pair_i, self.pair_j = np.triu_indices(n, k=1)
+
+    def __len__(self) -> int:
+        return len(self.indices)
+
+    def similarities(self, matrix: np.ndarray) -> np.ndarray:
+        judged = matrix[self.indices]
+        return judged @ judged.T
+
+    def condensed_hits(self, sims: np.ndarray, topk: int) -> np.ndarray:
+        """Per-source count of top-k tagged candidates sharing a label.
+
+        The condensed-list treatment of incomplete judgments: rank only the
+        judged articles, so the denominator is topk per source for every
+        variant, no matter what it would have recommended in production.
+        """
+        sims = sims.copy()
+        np.fill_diagonal(sims, -np.inf)
+        hits = np.zeros(len(self), dtype=int)
+        for a in range(len(self)):
+            top = np.argsort(sims[a], kind="stable")[::-1][:topk]
+            hits[a] = int(self.same[a, top].sum())
+        return hits
+
+    def ceiling(self, topk: int) -> int:
+        """Best condensed hit count any ranking could reach."""
+        partners = self.same.sum(axis=1)
+        return int(np.minimum(partners, min(topk, len(self) - 1)).sum())
+
+    def auc(self, sims: np.ndarray) -> float:
+        """P(same-label pair ranks above different-label pair), ties at 0.5.
+
+        Uses the whole similarity ordering over the pool's pairs instead of a
+        top-k cutoff, so with a few hundred labelled pairs it resolves
+        differences that hit counts cannot. 0.5 is chance.
+        """
+        return _auc(sims[self.pair_i, self.pair_j], self.same[self.pair_i, self.pair_j])
+
+    def bootstrap_auc_diff(
+        self, sims_a: np.ndarray, sims_b: np.ndarray, n_boot: int, seed: int = 0
+    ) -> tuple[float, float]:
+        """95% CI for auc(b) − auc(a), resampling articles, not pairs.
+
+        Pairs sharing an article are correlated, so resampling pairs directly
+        would understate the interval. Articles are resampled with
+        replacement and the pair set is rebuilt from the sample; pairs whose
+        two positions drew the same original article are dropped, since a
+        duplicated article is trivially similar to itself.
+        """
+        rng = np.random.default_rng(seed)
+        diffs = np.empty(n_boot)
+        for t in range(n_boot):
+            sample = rng.integers(0, len(self), len(self))
+            oi, oj = sample[self.pair_i], sample[self.pair_j]
+            keep = oi != oj
+            oi, oj = oi[keep], oj[keep]
+            pos = self.same[oi, oj]
+            diffs[t] = _auc(sims_b[oi, oj], pos) - _auc(sims_a[oi, oj], pos)
+        low, high = np.percentile(diffs[~np.isnan(diffs)], [2.5, 97.5])
+        return float(low), float(high)
+
+
+def _auc(sims: np.ndarray, positive: np.ndarray) -> float:
+    n_pos = int(positive.sum())
+    n_neg = len(positive) - n_pos
+    if not n_pos or not n_neg:
+        return float("nan")
+    ranks = _average_ranks(sims)
+    return float((ranks[positive].sum() - n_pos * (n_pos + 1) / 2) / (n_pos * n_neg))
+
+
+def _average_ranks(values: np.ndarray) -> np.ndarray:
+    """1-based ranks, ties averaged — what the Mann-Whitney U statistic needs."""
+    _, inverse, counts = np.unique(values, return_inverse=True, return_counts=True)
+    ends = np.cumsum(counts)
+    starts = ends - counts + 1
+    return ((starts + ends) / 2.0)[inverse]
+
+
+def bootstrap_hits_diff(
+    hits_a: np.ndarray, hits_b: np.ndarray, topk: int, n_boot: int, seed: int = 0
+) -> tuple[float, float]:
+    """95% CI for the condensed precision difference, resampling sources.
+
+    Paired: each draw takes the same sources from both variants, so the
+    interval is on the difference itself, not on two noisy levels.
+    """
+    rng = np.random.default_rng(seed)
+    per_source = (hits_b - hits_a) / topk
+    n = len(per_source)
+    diffs = np.array([per_source[rng.integers(0, n, n)].mean() for _ in range(n_boot)])
+    low, high = np.percentile(diffs, [2.5, 97.5])
+    return float(low), float(high)
 
 
 def label_of(value: str, width: int = 22) -> str:
@@ -307,6 +441,13 @@ def main() -> None:
         action="store_true",
         help="skip the per-article diff, print only the summary and metrics",
     )
+    parser.add_argument(
+        "--bootstrap",
+        type=int,
+        default=1000,
+        help="bootstrap resamples for the 95%% CIs on the judged-pool "
+        "metrics (0 = skip the intervals)",
+    )
     args = parser.parse_args()
 
     # Without this the spec is passed through as a pooling method and the error
@@ -338,10 +479,10 @@ def main() -> None:
 
     with cache_home as home:
         print(f"{len(paths)} articles, varying {args.vary}: {args.a!r} -> {args.b!r}\n")
-        before = run_variant(
+        before, matrix_a = run_variant(
             paths, bodies, args, args.a, cache_db_for(home, args, args.a)
         )
-        after = run_variant(
+        after, matrix_b = run_variant(
             paths, bodies, args, args.b, cache_db_for(home, args, args.b)
         )
 
@@ -416,6 +557,62 @@ def main() -> None:
             "  pairs = recommendations where both articles are tagged; "
             "a difference smaller than a few pairs is noise"
         )
+        print(
+            "  caveat: the model picks what gets judged here — recommending "
+            "an untagged article\n  costs nothing, so two models are not "
+            "scored on the same denominator. The judged-pool\n  metrics "
+            "below fix the pool and are the ones to compare models on."
+        )
+
+        pool = JudgedPool(paths, tagged)
+        slots_per_source = min(args.topk, len(pool) - 1)
+        if len(pool) < 3 or slots_per_source < 1:
+            print("\ntoo few tagged articles for the judged-pool metrics")
+        else:
+            sims_a = pool.similarities(matrix_a)
+            sims_b = pool.similarities(matrix_b)
+            slots = len(pool) * slots_per_source
+            ceiling = pool.ceiling(args.topk)
+
+            print(
+                f"\njudged-pool precision@{args.topk} (candidates restricted "
+                f"to the {len(pool)} tagged articles;\nfixed denominator "
+                f"{slots} = {len(pool)} sources x {slots_per_source} slots; "
+                f"best any ranking could do: {ceiling} hits)"
+            )
+            print(f"{'variant':<24}{'precision':>11}{'hits':>7}")
+            all_hits = {}
+            for value, sims in ((args.a, sims_a), (args.b, sims_b)):
+                hits = pool.condensed_hits(sims, args.topk)
+                all_hits[value] = hits
+                total = int(hits.sum())
+                print(f"{label_of(value):<24}{total / slots:>11.3f}{total:>7}")
+            diff = (all_hits[args.b].sum() - all_hits[args.a].sum()) / slots
+            line = f"  b - a: {diff:+.3f}"
+            if args.bootstrap:
+                low, high = bootstrap_hits_diff(
+                    all_hits[args.a], all_hits[args.b], args.topk, args.bootstrap
+                )
+                line += f", 95% CI [{low:+.3f}, {high:+.3f}] (bootstrap over sources)"
+            print(line)
+
+            n_pos = int(pool.same[pool.pair_i, pool.pair_j].sum())
+            n_neg = len(pool.pair_i) - n_pos
+            print(
+                f"\npairwise AUC over the {len(pool.pair_i)} tagged pairs "
+                f"({n_pos} same-label, {n_neg} different;\n0.500 = chance; "
+                "uses the full similarity ranking, so it resolves smaller "
+                "differences\nthan any top-k count and does not depend on topk)"
+            )
+            print(f"{'variant':<24}{'AUC':>11}")
+            for value, sims in ((args.a, sims_a), (args.b, sims_b)):
+                print(f"{label_of(value):<24}{pool.auc(sims):>11.3f}")
+            diff = pool.auc(sims_b) - pool.auc(sims_a)
+            line = f"  b - a: {diff:+.3f}"
+            if args.bootstrap:
+                low, high = pool.bootstrap_auc_diff(sims_a, sims_b, args.bootstrap)
+                line += f", 95% CI [{low:+.3f}, {high:+.3f}] (bootstrap over articles)"
+            print(line)
 
     print("\nhub spread (lower is better)")
     print(f"{'variant':<24}{'max in-deg':>12}{'top-5 share':>14}")

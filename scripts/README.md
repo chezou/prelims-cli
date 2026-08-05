@@ -48,6 +48,17 @@ wording. `--tag-keys tags categories` restricts it to curated tags (at the cost
 of coverage) and `--max-df 0.05` drops filler terms; running both is the way to
 tell whether a result survives.
 
+To compare two *models*, read the judged-pool section rather than the overlap
+table. The overlap metric judges whatever each model recommends, so the model
+controls its own denominator — recommending untagged articles is free — and
+two models are not scored against the same pairs; precision- and recall-style
+readings of it can rank the same two models in opposite orders. The judged-pool
+metrics restrict both sources and candidates to the tagged articles: a
+precision@k with a fixed denominator (k slots per tagged source), and a
+pairwise AUC that uses the full similarity ordering — on a small corpus the
+AUC resolves differences that top-k hit counts cannot. Both come with paired
+bootstrap 95% CIs on the difference (`--bootstrap`, default 1000 resamples).
+
 `rerun_all.sh` drives this script over a whole evaluation in one go.
 
 ## rerun_all.sh
