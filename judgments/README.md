@@ -44,11 +44,12 @@ Collection conditions, which are what make the labels usable:
 
 One judge (the corpus author), so there is no inter-annotator agreement figure.
 
-## report.html
+## report.html, report.en.html
 
 The full writeup these labels belong to — the model comparison, the metric that
 had to be repaired mid-way, the human evaluation, and how the decision was
-actually made. Written in Japanese. Open it in a browser; it is self-contained.
+actually made. `report.html` is the Japanese original and `report.en.html` an
+English translation of it; both are self-contained, so open either in a browser.
 
 Read it before reusing any number from here, because most of the report is about
 why the obvious readings of those numbers are wrong.

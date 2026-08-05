@@ -1,0 +1,2343 @@
+<title>Comparing embedding models for related-article recommendation</title>
+
+<style>
+  :root {
+    --paper: #eef1f4;
+    --surface: #ffffff;
+    --ink: #131c24;
+    --ink-2: #3d4c59;
+    --muted: #5c6b78;
+    --line: #d4dce4;
+    --line-soft: #e4eaf0;
+    --incumbent: #2563eb;
+    --candidate: #b4530a;
+    --good: #1d6f42;
+    --warn: #8a5a00;
+
+    --ref: #5c6b78;
+    --s1: #b4530a;
+    --s2: #a21caf;
+    --s3: #2563eb;
+
+    --serif: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino,
+      "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui,
+      "Hiragino Sans", "Noto Sans JP", "Yu Gothic", Meiryo, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+      "Noto Sans Mono CJK JP", monospace;
+
+    --prose: 40rem;
+    --wide: 60rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #0c1218;
+      --surface: #141d25;
+      --ink: #e4ebf1;
+      --ink-2: #b7c4cf;
+      --muted: #8c9ba8;
+      --line: #26333f;
+      --line-soft: #1c2731;
+      --incumbent: #4a8cf0;
+      --candidate: #d07f2e;
+      --good: #5fb383;
+      --warn: #d2a24a;
+      --ref: #8c9ba8;
+      --s1: #d07f2e;
+      --s2: #be5bc8;
+      --s3: #4a8cf0;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #0c1218;
+    --surface: #141d25;
+    --ink: #e4ebf1;
+    --ink-2: #b7c4cf;
+    --muted: #8c9ba8;
+    --line: #26333f;
+    --line-soft: #1c2731;
+    --incumbent: #4a8cf0;
+    --candidate: #d07f2e;
+    --good: #5fb383;
+    --warn: #d2a24a;
+    --ref: #8c9ba8;
+    --s1: #d07f2e;
+    --s2: #be5bc8;
+    --s3: #4a8cf0;
+  }
+
+  :root[data-theme="light"] {
+    --paper: #eef1f4;
+    --surface: #ffffff;
+    --ink: #131c24;
+    --ink-2: #3d4c59;
+    --muted: #5c6b78;
+    --line: #d4dce4;
+    --line-soft: #e4eaf0;
+    --incumbent: #2563eb;
+    --candidate: #b4530a;
+    --good: #1d6f42;
+    --warn: #8a5a00;
+    --ref: #5c6b78;
+    --s1: #b4530a;
+    --s2: #a21caf;
+    --s3: #2563eb;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: var(--wide);
+    margin: 0 auto;
+    padding: 4rem 1.5rem 6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+  }
+
+  .col {
+    max-width: var(--prose);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--serif);
+    font-weight: 600;
+    text-wrap: balance;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  h1 { font-size: clamp(2rem, 5vw, 2.9rem); letter-spacing: -0.01em; }
+  h2 { font-size: 1.6rem; }
+  h3 { font-size: 1.1rem; font-family: var(--sans); font-weight: 650; }
+
+  p { margin: 0; }
+  a { color: inherit; text-decoration-color: var(--muted); }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--candidate);
+    outline-offset: 3px;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .lede { font-size: 1.12rem; color: var(--ink-2); }
+  .note { font-size: 0.9rem; color: var(--muted); }
+
+  /* ---- masthead ---- */
+  .masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 2.5rem;
+  }
+  .masthead dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 1rem 2rem;
+    margin: 0.5rem 0 0;
+    font-size: 0.85rem;
+  }
+  .masthead dt {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .masthead dd { margin: 0.2rem 0 0; font-family: var(--mono); font-size: 0.82rem; }
+
+  .verdict {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    align-self: flex-start;
+    padding: 0.45rem 0.9rem;
+    border: 1px solid var(--candidate);
+    border-radius: 2px;
+    color: var(--candidate);
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+  }
+
+  /* ---- sections ---- */
+  section { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 1rem;
+    border-top: 2px solid var(--ink);
+    padding-top: 0.9rem;
+  }
+  /* Which experiment this section belongs to, on its own row above the
+     heading, so the two-experiment spine is visible while scrolling. */
+  .head .eyebrow { flex-basis: 100%; margin-bottom: -0.5rem; }
+  .head .num {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--candidate);
+    letter-spacing: 0.08em;
+  }
+
+  /* ---- tables ---- */
+  .scroll { overflow-x: auto; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.88rem;
+    font-variant-numeric: tabular-nums;
+    background: var(--surface);
+  }
+  caption {
+    caption-side: top;
+    text-align: left;
+    font-size: 0.85rem;
+    color: var(--muted);
+    padding-bottom: 0.6rem;
+  }
+  th, td {
+    text-align: right;
+    padding: 0.6rem 0.85rem;
+    border-bottom: 1px solid var(--line-soft);
+    white-space: nowrap;
+  }
+  thead th {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    border-bottom: 1px solid var(--line);
+  }
+  th[scope="row"], td.lbl, th.lbl { text-align: left; font-weight: 500; }
+  td.num { font-family: var(--mono); }
+  td.win { color: var(--candidate); font-weight: 650; }
+  td.hold { color: var(--incumbent); font-weight: 650; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  /* ---- charts ---- */
+  figure { margin: 0; display: flex; flex-direction: column; gap: 1rem; }
+  figcaption { font-size: 0.85rem; color: var(--muted); }
+
+  .legend { display: flex; gap: 1.25rem; font-size: 0.82rem; flex-wrap: wrap; }
+  .legend span { display: inline-flex; align-items: center; gap: 0.45rem; }
+  .swatch { width: 10px; height: 10px; border-radius: 2px; }
+  .sw-a { background: var(--ref); }
+  .sw-b { background: var(--candidate); }
+
+  .bars { display: flex; flex-direction: column; gap: 1.4rem; }
+  .bars .group { display: flex; flex-direction: column; gap: 0.4rem; }
+  .bars .glabel { font-size: 0.85rem; color: var(--ink-2); }
+  .bars .bar {
+    display: grid;
+    grid-template-columns: 9.5rem 1fr;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .bars .bname { font-size: 0.8rem; color: var(--muted); }
+  .bars .fill {
+    height: 14px;
+    border-radius: 0 4px 4px 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 0.5rem;
+    color: var(--surface);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+  }
+  .fill-a { background: var(--ref); }
+  .fill-b { background: var(--candidate); }
+
+  /* ---- callouts ---- */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+    gap: 1.75rem 2rem;
+  }
+  .panel-chart { gap: 0.5rem; }
+  .panel-chart svg { width: 100%; height: auto; overflow: visible; }
+  .panel-chart .grid { stroke: var(--line); stroke-width: 1; }
+  .panel-chart .tick {
+    fill: var(--muted);
+    font-family: var(--mono);
+    font-size: 9px;
+  }
+  .panel-chart .axis-name { letter-spacing: 0.08em; }
+  .panel-chart .ln { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .panel-chart .pt { stroke: var(--surface); stroke-width: 2; }
+  .ln.ref { stroke: var(--ref); stroke-dasharray: 5 4; }
+  .pt.ref { fill: var(--ref); }
+  .ln.s1, .pt.s1 { stroke: var(--s1); }
+  .pt.s1 { fill: var(--s1); stroke: var(--surface); }
+  .ln.s2, .pt.s2 { stroke: var(--s2); }
+  .pt.s2 { fill: var(--s2); stroke: var(--surface); }
+  .ln.s3, .pt.s3 { stroke: var(--s3); }
+  .pt.s3 { fill: var(--s3); stroke: var(--surface); }
+  .key { width: 16px; height: 3px; border-radius: 2px; }
+  .key.ref { background: repeating-linear-gradient(90deg, var(--ref) 0 5px, transparent 5px 9px); }
+  .key.s1 { background: var(--s1); }
+  .key.s2 { background: var(--s2); }
+  .key.s3 { background: var(--s3); }
+
+  /* Input-length series. Own class names rather than reusing s1/s3, because
+     in this chart the colour means the character budget, not the model. */
+  .ln.len-a { stroke: var(--s1); stroke-dasharray: 5 4; }
+  .pt.len-a { fill: var(--s1); stroke: var(--surface); }
+  .ln.len-b { stroke: var(--s3); }
+  .pt.len-b { fill: var(--s3); stroke: var(--surface); }
+  .key.len-a { background: repeating-linear-gradient(90deg, var(--s1) 0 5px, transparent 5px 9px); }
+  .key.len-b { background: var(--s3); }
+  .panel-chart .zero { stroke: var(--ink-2); stroke-width: 1.5; }
+  .panel-chart .dlabel {
+    font-family: var(--mono);
+    font-size: 8px;
+    fill: var(--ink-2);
+  }
+
+
+  /* Formulas are MathML: rendered natively by the browser, no library to
+     load (an artifact cannot fetch one anyway). */
+  .eq {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  .eq math { font-size: 1.05rem; }
+  .eq .where { font-size: 0.82rem; color: var(--muted); }
+
+
+  /* Length histogram. Two classes rather than two identities: whether the
+     2,000-character cap was cutting the article or not. The neutral is
+     deliberate — it marks "nothing changed here". */
+  .panel-chart .bar-lo { fill: var(--ref); }
+  .panel-chart .bar-hi { fill: var(--candidate); }
+  .panel-chart .cut { stroke: var(--ink-2); stroke-width: 1.5; stroke-dasharray: 3 3; }
+  .key.lo { height: 10px; background: var(--ref); }
+  .key.hi { height: 10px; background: var(--candidate); }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 1.25rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .panel.flag { border-left: 3px solid var(--warn); }
+  .panel.ok { border-left: 3px solid var(--good); }
+
+  ul { margin: 0; padding-left: 1.15rem; display: flex; flex-direction: column; gap: 0.45rem; }
+  li::marker { color: var(--muted); }
+
+  pre {
+    margin: 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    line-height: 1.65;
+  }
+  code { font-family: var(--mono); font-size: 0.88em; }
+  pre code { font-size: 1em; }
+
+  .miss { display: flex; flex-direction: column; gap: 0.9rem; }
+  .miss div { display: flex; flex-direction: column; gap: 0.15rem; }
+  .miss .src { font-size: 0.85rem; }
+  .miss .dst { font-family: var(--mono); font-size: 0.78rem; color: var(--candidate); }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding-top: 1.5rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  @media (max-width: 34rem) {
+    .bars .bar { grid-template-columns: 7rem 1fr; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <p class="eyebrow">chezo.uno / prelims-cli</p>
+    <h1>Comparing embedding models for related-article recommendation</h1>
+    <p class="lede">
+      Across 420 Japanese and 33 English blog posts, two experiments measured the quality of
+      related-article recommendations. <strong>Experiment 1</strong> compares five embedding
+      models; <strong>experiment 2</strong> compares how much of the article body the model is
+      given. The metric used at the start had a design fault — <strong>the model could move its
+      own denominator</strong> — and the two natural readings of it ranked the models in opposite
+      orders. Rebuilding it with a fixed set of judged items still did not settle the ranking, and
+      what finally came out of <strong>judging the recommendations by hand</strong> was that
+      <strong>this proxy metric could see only 9% of what relevance actually meant</strong>, and
+      that <strong>76% of both models' recommendations were sound, the gap being 2 slots out of
+      120</strong>. With quality unable to separate them, the decision moved to taste and cost, and
+      landed on <strong>consolidating to a single multilingual model.</strong>
+    </p>
+    <p>There is no ground truth for this, so agreement with the hand-written tags on each
+      article stands in for it. This is not an off-the-shelf benchmark, so
+      <strong>the metric is defined, its chance level established and its validity tested first;
+      then the two experiments; then a human evaluation of the proxy metric itself.</strong>
+      Finding and repairing the metric's fault happens along that same route.</p>
+    <p class="verdict"><strong>Verdict</strong>
+      <span>Consolidate to one multilingual model (quality equal — decided on taste and cost) · raise the input to 8,000 characters</span></p>
+    <dl>
+      <div><dt>Corpus</dt><dd>ja 420 posts / en 33 posts</dd></div>
+      <div><dt>Referee</dt><dd>Hand tags (fixed-pool P@k, AUC) + 162 articles judged by hand</dd></div>
+      <div><dt>topk</dt><dd>3 / 5 / 10, checking the sign holds</dd></div>
+      <div><dt>Varied</dt><dd>5 models / input length / and the metric itself</dd></div>
+    </dl>
+    <p class="note">Quality in other languages was not measured. These are results for Japanese and English.</p>
+  </header>
+
+
+  <section>
+    <div class="head"><p class="eyebrow">Premise</p><h2>The system and its constraints</h2></div>
+    <div class="col">
+      <p>chezo.uno is a personal blog built with Hugo, and the related articles at the foot of
+        each post are written into the front matter by
+        <a href="https://github.com/chezou/prelims-cli">prelims-cli</a>. It embeds each article
+        and recommends the nearest neighbours by cosine similarity.</p>
+
+      <p><strong>This runs on GitHub Actions</strong>, which is what sets the constraints.</p>
+
+      <ul>
+        <li><strong>No GPU.</strong> Inference is CPU-only, so the model has to run under ONNX Runtime</li>
+        <li><strong>Limited memory.</strong> A standard runner has 16 GB on a public repository and
+          7 GB on a private one. Not just the model has to fit — so does peak memory while embedding</li>
+        <li><strong>It runs on every new post.</strong> Run time is time before the post is live</li>
+      </ul>
+
+      <p>Under these conditions only <strong>small embedding models</strong> are available. Today
+        there are two, one per language (ruri-v3-30m for Japanese, granite-small-english for
+        English), switched on a language setting.</p>
+
+      <p>This started as curiosity about
+        <a href="https://secon.dev/entry/2026/07/29/080000-bekko-embedding/">Bekko Embedding</a>,
+        a small multilingual model
+        (<a href="https://huggingface.co/hotchpotch/bekko-embedding-v1-a25m">a25m model card</a>).
+        It would be interesting if 8M / 25M active parameters were enough for this job — and from
+        that came two hopes: that it might
+        <strong>replace both current models</strong>, and that even if it did not,
+        <strong>it might extend coverage past Japanese and English</strong>.</p>
+
+      <p>So both Bekko sizes, plus granite-embedding-97m-multilingual-r2 as another small
+        multilingual model, were put on the same footing as the two current ones.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><p class="eyebrow">1 · The metric</p><h2>Defining the metric</h2></div>
+    <div class="col">
+      <p>There is no ground truth for "a good related article". Instead the
+        <strong>hand-written tags</strong> on each article act as the referee: if two articles
+        sharing a tag get recommended to each other, the topics are taken to match. The tags were
+        not written for recommendation, so as a referee they are at least independent.</p>
+
+      <p>What follows defines every number in this report. None of it is an off-the-shelf
+        benchmark — these are proxy metrics written for this investigation — so the arithmetic is
+        recorded. The implementation is
+        <a href="https://github.com/chezou/prelims-cli/pull/11/changes#diff-d5fab2804f6350ec2994ad5b91d24a38995e97bf7a753dd09e3bbd2c90f8049b"><code>scripts/compare_embedding_variants.py</code></a>.
+        The first metric (tag agreement) turned out to have the design fault described below, so
+        <strong>model comparisons use the two after it: fixed-pool precision@k and pairwise AUC.</strong></p>
+
+      <h3>Tag agreement (any-tag@k)</h3>
+      <p>Let T(a) be the tag set of article <em>a</em> and R<sub>k</sub>(a) its top k
+        recommendations. <strong>Only pairs tagged on both ends are scored</strong>; if either
+        side is untagged, the pair does not count.</p>
+      <div class="eq">
+<math display="block"><mi>P</mi><mo>=</mo><mo>{</mo><mo>(</mo><mi>a</mi><mo>,</mo><mi>r</mi><mo>)</mo><mo>&#x2223;</mo><mi>r</mi><mo>&#x2208;</mo><msub><mi>R</mi><mi>k</mi></msub><mo>(</mo><mi>a</mi><mo>)</mo><mo>,</mo><mi>T</mi><mo>(</mo><mi>a</mi><mo>)</mo><mo>&#x2260;</mo><mi>&#x2205;</mi><mo>,</mo><mi>T</mi><mo>(</mo><mi>r</mi><mo>)</mo><mo>&#x2260;</mo><mi>&#x2205;</mi><mo>}</mo></math>
+<math display="block"><mtext>any-tag@k</mtext><mo>=</mo><mfrac><mrow><mo>|</mo><mo>{</mo><mo>(</mo><mi>a</mi><mo>,</mo><mi>r</mi><mo>)</mo><mo>&#x2208;</mo><mi>P</mi><mo>:</mo><mi>T</mi><mo>(</mo><mi>a</mi><mo>)</mo><mo>&#x2229;</mo><mi>T</mi><mo>(</mo><mi>r</mi><mo>)</mo><mo>&#x2260;</mo><mi>&#x2205;</mi><mo>}</mo><mo>|</mo></mrow><mrow><mo>|</mo><mi>P</mi><mo>|</mo></mrow></mfrac></math>
+<math display="block"><msub><mtext>avg</mtext><mtext>shared</mtext></msub><mo>=</mo><mfrac><mrow><munder><mo>&#x2211;</mo><mrow><mo>(</mo><mi>a</mi><mo>,</mo><mi>r</mi><mo>)</mo><mo>&#x2208;</mo><mi>P</mi></mrow></munder><mo>|</mo><mi>T</mi><mo>(</mo><mi>a</mi><mo>)</mo><mo>&#x2229;</mo><mi>T</mi><mo>(</mo><mi>r</mi><mo>)</mo><mo>|</mo></mrow><mrow><mo>|</mo><mi>P</mi><mo>|</mo></mrow></mfrac></math>
+<p class="where">P is the set of scored pairs, T(·) a tag set, R<sub>k</sub>(a) the top k recommendations for article a.</p>
+      </div>
+      <p>T(a) is the union of <code>tags</code>, <code>categories</code> and
+        <code>keywords</code> from the front matter, lowercased. Which keys count is set by
+        <code>--tag-keys</code>. Every headline number here uses <code>tags</code> and
+        <code>categories</code> only.</p>
+      <p class="note">This definition is faulty. <strong>The model chooses P, the set of scored pairs</strong>
+        — it decides which articles to recommend, so the denominator differs per model.
+        Recommending an untagged article drops out of the denominator entirely and costs nothing,
+        so two models are not being asked the same question. What that leads to is shown in
+        "the ranking flips with the reading". The two below are the repaired version, and
+        <strong>every model ranking in this report is decided with them.</strong></p>
+
+      <h3>Fixed-pool precision@k (judged pool)</h3>
+      <p><strong>Restrict the candidates to tagged articles first</strong>, then take the top k.
+        This is the condensed-list treatment used in information retrieval for incomplete
+        relevance judgments. Sources are restricted to tagged articles too, so
+        <strong>the denominator is fixed at "sources × k"</strong> and every model is made to pick
+        the same number from the same pool. With S the set of tagged articles:</p>
+      <div class="eq">
+<math display="block"><msub><mtext>prec</mtext><mtext>pool</mtext></msub><mo>@</mo><mi>k</mi><mo>=</mo><mfrac><mrow><munder><mo>&#x2211;</mo><mrow><mi>a</mi><mo>&#x2208;</mo><mi>S</mi></mrow></munder><mo>|</mo><mo>{</mo><mi>r</mi><mo>&#x2208;</mo><msubsup><mi>R</mi><mi>k</mi><mi>S</mi></msubsup><mo>(</mo><mi>a</mi><mo>)</mo><mo>:</mo><mi>T</mi><mo>(</mo><mi>a</mi><mo>)</mo><mo>&#x2229;</mo><mi>T</mi><mo>(</mo><mi>r</mi><mo>)</mo><mo>&#x2260;</mo><mi>&#x2205;</mi><mo>}</mo><mo>|</mo></mrow><mrow><mo>|</mo><mi>S</mi><mo>|</mo><mo>&#x00D7;</mo><mi>k</mi></mrow></mfrac></math>
+<p class="where">R<sub>k</sub><sup>S</sup>(a) is the top k with candidates restricted to S. The denominator does not depend on the model.</p>
+      </div>
+      <p class="note">The theoretical ceiling — the highest hit count any ranking could reach — is reported
+        alongside. An article with fewer than k same-label partners cannot fill all k slots, so for
+        Japanese at k=3 the ceiling is 203 of 285 slots, and for English 53 of 69.</p>
+
+      <h3>Pairwise AUC</h3>
+      <p>Over all pairs of tagged articles, <strong>the probability that a same-label pair ranks
+        as more similar than a different-label pair</strong>. 0.5 is chance. It uses the whole
+        similarity ordering rather than a top-k cutoff, so it
+        <strong>resolves differences that a change in hit count cannot show</strong>, and it does
+        not depend on topk.</p>
+      <div class="eq">
+<math display="block"><mtext>AUC</mtext><mo>=</mo><mi>P</mi><mo>(</mo><mi>sim</mi><mo>(</mo><msub><mi>p</mi><mo>+</mo></msub><mo>)</mo><mo>&gt;</mo><mi>sim</mi><mo>(</mo><msub><mi>p</mi><mo>&#x2212;</mo></msub><mo>)</mo><mo>)</mo><mo>+</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mi>P</mi><mo>(</mo><mi>sim</mi><mo>(</mo><msub><mi>p</mi><mo>+</mo></msub><mo>)</mo><mo>=</mo><mi>sim</mi><mo>(</mo><msub><mi>p</mi><mo>&#x2212;</mo></msub><mo>)</mo><mo>)</mo></math>
+<p class="where">p<sub>+</sub> is drawn uniformly from same-label pairs, p<sub>−</sub> from different-label ones. Japanese has 212 same-label against 4,253 different; English 53 against 200.</p>
+      </div>
+      <p>The implementation does not enumerate the probability; it computes the Mann-Whitney U
+        statistic. Rank every pair by similarity (ties take the average rank) and take the rank sum
+        over the same-label pairs:</p>
+      <div class="eq">
+<math display="block"><mtext>AUC</mtext><mo>=</mo><mfrac><mrow><munder><mo>&#x2211;</mo><mrow><mi>p</mi><mo>&#x2208;</mo><msub><mi>P</mi><mo>+</mo></msub></mrow></munder><mi>rank</mi><mo>(</mo><mi>p</mi><mo>)</mo><mo>&#x2212;</mo><mfrac><mrow><msub><mi>n</mi><mo>+</mo></msub><mo>(</mo><msub><mi>n</mi><mo>+</mo></msub><mo>+</mo><mn>1</mn><mo>)</mo></mrow><mn>2</mn></mfrac></mrow><mrow><msub><mi>n</mi><mo>+</mo></msub><mo>&#x00D7;</mo><msub><mi>n</mi><mo>&#x2212;</mo></msub></mrow></mfrac></math>
+<p class="where">rank is the 1-based position in ascending similarity over all pairs (ties averaged), and n<sub>+</sub> / n<sub>−</sub> are the counts of same-label and different-label pairs. Averaging tied ranks is what corresponds to the 1/2 term above.</p>
+      </div>
+      <p class="note">In this form the rank sum is maximal — 1.0 — when every same-label pair sits above every
+        other, and 0.0 when they all sit below. <strong>No pairwise comparison loop is needed</strong>,
+        so even the 4,465 Japanese pairs come out instantly.</p>
+      <p class="note">Both metrics report a paired bootstrap 95% interval on the difference. Precision
+        resamples source articles; AUC resamples articles rather than pairs, because pairs sharing
+        an endpoint are correlated and resampling them directly makes the interval too narrow.
+        1,000 resamples, fixed seed.</p>
+
+      <h3>Hub concentration</h3>
+      <p>Count how many articles recommend article x (its in-degree), then look at the maximum
+        and at the share of all recommendation slots taken by the top 5 articles. N is the article count.</p>
+      <div class="eq">
+<math display="block"><mi>indeg</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mo>|</mo><mo>{</mo><mi>a</mi><mo>&#x2223;</mo><mi>x</mi><mo>&#x2208;</mo><msub><mi>R</mi><mi>k</mi></msub><mo>(</mo><mi>a</mi><mo>)</mo><mo>}</mo><mo>|</mo></math>
+<math display="block"><msub><mtext>max</mtext><mtext>indeg</mtext></msub><mo>=</mo><munder><mo movablelimits="false">max</mo><mi>x</mi></munder><mi>indeg</mi><mo>(</mo><mi>x</mi><mo>)</mo></math>
+<math display="block"><msub><mtext>top5</mtext><mtext>share</mtext></msub><mo>=</mo><mfrac><mrow><munder><mo>&#x2211;</mo><mrow><mi>x</mi><mo>&#x2208;</mo><msub><mtext>top</mtext><mn>5</mn></msub></mrow></munder><mi>indeg</mi><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mrow><mi>N</mi><mo>&#x00D7;</mo><mi>k</mi></mrow></mfrac></math>
+<p class="where">N is the article count, k the number of recommendations. top<sub>5</sub> is the five articles with the highest in-degree.</p>
+      </div>
+      <p>Lower is better. It catches an article that attaches itself everywhere regardless of
+        topic. It sometimes moves before tag agreement does, which is why it is kept as a separate
+        view.</p>
+
+      <h3>Probe separation</h3>
+      <p>Embed three sentences translated into three languages — two on one topic, one unrelated —
+        and take the difference in cosine similarity. Implemented in
+        <a href="https://github.com/chezou/prelims-cli/pull/11/changes#diff-22d8c619507c277eded3ef3ba611ff9692eaf30ffbe93632a4d037fd5e5830de"><code>scripts/check_onnx_model.py</code></a>.</p>
+      <div class="eq">
+<math display="block"><mi>margin</mi><mo>=</mo><mi>cos</mi><mo>(</mo><msub><mi>e</mi><mn>0</mn></msub><mo>,</mo><msub><mi>e</mi><mn>1</mn></msub><mo>)</mo><mo>&#x2212;</mo><mo movablelimits="false">max</mo><mo>(</mo><mi>cos</mi><mo>(</mo><msub><mi>e</mi><mn>0</mn></msub><mo>,</mo><msub><mi>e</mi><mn>2</mn></msub><mo>)</mo><mo>,</mo><mi>cos</mi><mo>(</mo><msub><mi>e</mi><mn>1</mn></msub><mo>,</mo><msub><mi>e</mi><mn>2</mn></msub><mo>)</mo><mo>)</mo></math>
+<p class="where">e<sub>0</sub> and e<sub>1</sub> are the same-topic sentences, e<sub>2</sub> the unrelated one.</p>
+      </div>
+      <p class="note">That this metric does not measure ranking quality is shown under "Is the metric valid?".</p>
+
+      <h3>Membership changes and order-only changes</h3>
+      <p>When comparing two settings, count separately whether the <strong>set</strong> of top k
+        changed or only the order did. A reordering shows up in the front matter diff, but the
+        reader sees the same articles.</p>
+      <div class="eq">
+<math display="block"><mtext>membership</mtext><mo>=</mo><mo>|</mo><mo>{</mo><mi>a</mi><mo>&#x2223;</mo><mi>set</mi><mo>(</mo><msubsup><mi>R</mi><mi>k</mi><mi>A</mi></msubsup><mo>(</mo><mi>a</mi><mo>)</mo><mo>)</mo><mo>&#x2260;</mo><mi>set</mi><mo>(</mo><msubsup><mi>R</mi><mi>k</mi><mi>B</mi></msubsup><mo>(</mo><mi>a</mi><mo>)</mo><mo>)</mo><mo>}</mo><mo>|</mo></math>
+<math display="block"><msub><mtext>order</mtext><mtext>only</mtext></msub><mo>=</mo><mo>|</mo><mo>{</mo><mi>a</mi><mo>&#x2223;</mo><msubsup><mi>R</mi><mi>k</mi><mi>A</mi></msubsup><mo>(</mo><mi>a</mi><mo>)</mo><mo>&#x2260;</mo><msubsup><mi>R</mi><mi>k</mi><mi>B</mi></msubsup><mo>(</mo><mi>a</mi><mo>)</mo><mo>&#x2227;</mo><mtext>same set</mtext><mo>}</mo><mo>|</mo></math>
+<p class="where">A and B are the two settings being compared.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><p class="eyebrow">1 · The metric</p><h2>The chance level</h2></div>
+    <div class="col">
+      <p>The agreement rates below land between 0.3 and 0.5. Whether that is high or low is not
+        determined by the number alone. To give it a scale, here is the probability that
+        <strong>two randomly chosen articles</strong> from the same corpus share a tag — the floor
+        you would get by recommending nothing at all.</p>
+    </div>
+
+<div class="scroll">
+      <table>
+        <caption>Probability that two random articles share at least one tag, and how far the observed
+          values sit above it. Observed values are the spread across all models at topk=5</caption>
+        <thead>
+          <tr><th class="lbl">Corpus</th><th class="lbl">Referee</th><th>Tagged</th><th>All pairs</th>
+            <th>Chance</th><th>Observed k=5</th><th>Ratio</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row" rowspan="2">ja</th><td class="lbl">hand tags only</td>
+            <td class="num">95</td><td class="num">4,465</td>
+            <td class="num">0.047</td><td class="num">0.384〜0.428</td><td class="num hold">~8–9×</td></tr>
+          <tr><td class="lbl">with keywords</td><td class="num">418</td><td class="num">87,153</td>
+            <td class="num">0.047</td><td class="num">0.460〜0.536</td><td class="num">~10–11×</td></tr>
+          <tr><th scope="row" rowspan="2">en</th><td class="lbl">hand tags only</td>
+            <td class="num">23</td><td class="num">253</td>
+            <td class="num">0.209</td><td class="num">0.356〜0.465</td><td class="num">~1.7–2.2×</td></tr>
+          <tr><td class="lbl">with keywords</td><td class="num">33</td><td class="num">528</td>
+            <td class="num">0.225</td><td class="num">0.564〜0.570</td><td class="num">~2.5×</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p>In Japanese the observed values sit 8–9× above chance, so the metric is picking up
+        signal. <strong>In English, chance reaches 21%.</strong> Only 23 articles are tagged and the
+        vocabulary concentrates on python / oss / machine learning, so even a random pick often
+        hits.</p>
+
+      <p>This is part of why English resolves differences so poorly: <strong>a high chance level
+        compresses the range left for models to differ in.</strong> It is not only about article
+        count. The int8 build of granite-97m-multilingual reaches 0.294 at topk=10, just 1.4× chance.</p>
+
+      <div class="panel">
+        <p><strong>Swapping the referee does not move the Japanese chance level at all</strong>
+          (0.047 either way). Adding keywords is not stretching the scale. And yet the winner
+          changes — with keywords, bekko-a8m is ahead by +7.6pt; with hand tags it loses by 2.3pt.
+          In ratio terms too: with keywords ruri is 9.8× against bekko's 11.5×, with hand tags ruri
+          9.0× against bekko's 8.5×, and the order reverses.
+          <strong>This is not a question of scale — the ordering itself changes.</strong> The next
+          section takes it up.</p>
+      </div>
+
+      <div class="panel flag">
+        <p><strong>0.40 in Japanese and 0.40 in English do not mean the same thing.</strong> With
+          chance at 0.047 against 0.209, a factor of four, absolute agreement rates cannot be
+          compared across languages. Everything compared across languages in this report is limited
+          to the ordering and sign of the differences between models.</p>
+        <p class="note">Pairwise AUC differs here. By construction, chance is 0.500 in every language, so a
+          comparison like ja 0.83 against en 0.77 does at least share a scale (which is not the
+          same as sharing a meaning). Fixed-pool precision@k, like agreement, depends on how easy
+          the labels are to hit, so it cannot be compared.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><p class="eyebrow">1 · The metric</p><h2>Is the metric valid?</h2></div>
+    <div class="col">
+      <p>Since this is a proxy, what it can and cannot measure has to be settled first. Four
+        things were checked.</p>
+
+      <h3>The winner changes with where the tags come from</h3>
+      <p>Besides the hand-written <code>tags</code> and <code>categories</code>, the front matter
+        carries <strong><code>keywords</code> extracted automatically by TF-IDF</strong>
+        (on 405 of 420 articles, 2,350 distinct terms, the most common being <span lang="ja">こと</span>, a semantically empty formal noun). Including
+        those in the referee means measuring "topical agreement" as agreement with the very method
+        the embeddings are meant to replace. Swap the referee and the winner does change.</p>
+    </div>
+
+<figure>
+      <div class="legend">
+        <span><i class="swatch sw-a"></i>Per-language models (ruri-v3 / granite)</span>
+        <span><i class="swatch sw-b"></i>bekko-a8m</span>
+      </div>
+      <div class="bars">
+        <div class="group">
+          <p class="glabel">Japanese — referee: with TF-IDF keywords (418 articles, 2,090 pairs)</p>
+          <div class="bar"><span class="bname">ruri-v3 + prefix</span><div class="fill fill-a" style="width:46.0%">0.460</div></div>
+          <div class="bar"><span class="bname">bekko-a8m</span><div class="fill fill-b" style="width:53.6%">0.536</div></div>
+        </div>
+        <div class="group">
+          <p class="glabel">Japanese — referee: hand tags only (95 articles, 271 pairs)</p>
+          <div class="bar"><span class="bname">ruri-v3 + prefix</span><div class="fill fill-a" style="width:42.8%">0.428</div></div>
+          <div class="bar"><span class="bname">bekko-a8m</span><div class="fill fill-b" style="width:40.5%">0.405</div></div>
+        </div>
+        <div class="group">
+          <p class="glabel">English — referee: with keywords (33 articles, 165 pairs)</p>
+          <div class="bar"><span class="bname">granite</span><div class="fill fill-a" style="width:57.0%">0.570</div></div>
+          <div class="bar"><span class="bname">bekko-a8m</span><div class="fill fill-b" style="width:56.4%">0.564</div></div>
+        </div>
+        <div class="group">
+          <p class="glabel">English — referee: hand tags only (23 articles, 103 pairs)</p>
+          <div class="bar"><span class="bname">granite</span><div class="fill fill-a" style="width:44.7%">0.447</div></div>
+          <div class="bar"><span class="bname">bekko-a8m</span><div class="fill fill-b" style="width:44.9%">0.449</div></div>
+        </div>
+      </div>
+      <figcaption>Share of recommendations sharing at least one tag (topk=5, scale 0–1). In Japanese,
+        swapping the referee turns bekko's +7.6pt into −2.3pt. In English neither referee separates them.</figcaption>
+    </figure>
+
+    <div class="col">
+      <p><strong>In Japanese, bekko's +7.6pt becomes −2.3pt.</strong> The chance level does not
+        move at all (0.047 either way), so this is not the scale stretching — the ordering itself
+        changes. <strong>Every number in this report is measured with hand-written
+        <code>tags</code> / <code>categories</code> only.</strong></p>
+
+      <p class="note">In English the referee makes no difference (−0.6pt and +0.2pt). The contamination shows
+        up only in Japanese because <code>keywords</code> coverage differs sharply — 405/420 in
+        Japanese against 29/33 in English — and because the hand tags cover only 95 Japanese
+        articles. <strong>Swapping the referee inflates the scored set from 271 pairs to 2,090, and
+        every one of those added pairs is TF-IDF derived.</strong></p>
+
+      <p class="note">Measured again with the repaired metric, the shape of the contamination is visible.
+        Under the keywords referee, fixed-pool precision@5 puts a8m ahead by a significant
+        +7.6pt [+5.6, +9.6], while <strong>under the same keywords referee the AUC gap is only
+        +1.1pt [−0.4, +2.5].</strong> a8m's advantage is concentrated in the top few results rather
+        than spread through the ranking, which fits the explanation that articles sharing TF-IDF
+        terms at the surface rise to the top.</p>
+
+      <h3>Absolute values cannot be compared across languages</h3>
+      <p>Chance is 0.047 in Japanese against 0.209 in English, a factor of four.
+        <strong>0.40 in Japanese and 0.40 in English do not carry the same meaning.</strong>
+        Everything compared across languages here is limited to the ordering and sign of the
+        differences between models.</p>
+
+      <h3>Probe separation does not measure ranking quality</h3>
+      <p>This metric takes the similarity gap between a same-topic pair and an unrelated sentence,
+        over three-language probes of identical content.
+        <strong>bekko-a25m separates less than a8m (0.173 against 0.379 in Japanese) yet
+        recommends better.</strong> What it captures is how spread out the embedding space is, not
+        which model ranks better.</p>
+    </div>
+
+<div class="scroll">
+      <table>
+        <caption>Same topic − unrelated (higher means better separated)</caption>
+        <thead>
+          <tr><th class="lbl">Model</th><th>Japanese</th><th>English</th><th>French</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">bekko-a8m</th><td class="num win">0.379</td><td class="num win">0.588</td><td class="num win">0.509</td></tr>
+          <tr><th scope="row">ruri-v3 + prefix</th><td class="num">0.168</td><td class="num">0.154</td><td class="num">0.072</td></tr>
+          <tr><th scope="row">granite (cls)</th><td class="num">0.055</td><td class="num">0.179</td><td class="num">0.139</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p>The two current models return 0.72–0.85 even for unrelated sentences, compressing every
+        value into a narrow band. ruri's 0.072 in French and granite-english's 0.055 in Japanese
+        show separation all but vanishing outside their range.
+        <strong>This metric is only good for asking "is it broken?" and "can a threshold be set?".</strong>
+        It does work as evidence that a per-language model cannot be reused for other languages.</p>
+
+    </div>
+
+    <div class="legend">
+      <span><i class="key hi"></i>Only one article — cannot form a pair</span>
+      <span><i class="key lo"></i>Two or more — can be scored</span>
+    </div>
+
+    <div class="chart-grid">
+      <figure class="panel-chart">
+        <figcaption><strong>Japanese — breakdown of the 69 labels</strong>
+          <span class="note">vertical axis is the number of distinct labels</span></figcaption>
+        <svg viewBox="0 0 316 195" role="img"
+             aria-label="Japanese label frequency. 39 of the 69 labels appear on a single article">
+            <line class="grid" x1="50" x2="300" y1="140.4" y2="140.4" />
+            <text class="tick" x="44" y="143.9" text-anchor="end">0</text>
+            <line class="grid" x1="50" x2="300" y1="102.1" y2="102.1" />
+            <text class="tick" x="44" y="105.6" text-anchor="end">15</text>
+            <line class="grid" x1="50" x2="300" y1="63.9" y2="63.9" />
+            <text class="tick" x="44" y="67.4" text-anchor="end">30</text>
+            <line class="grid" x1="50" x2="300" y1="25.6" y2="25.6" />
+            <text class="tick" x="44" y="29.1" text-anchor="end">45</text>
+            <rect class="bar-hi" x="52.0" y="40.9" width="37.7" height="99.5" rx="2" />
+            <text class="tick" x="70.8" y="152" text-anchor="middle">1</text>
+            <text class="dlabel" x="70.8" y="37.9" text-anchor="middle">39</text>
+            <rect class="bar-lo" x="93.7" y="112.3" width="37.7" height="28.1" rx="2" />
+            <text class="tick" x="112.5" y="152" text-anchor="middle">2</text>
+            <text class="dlabel" x="112.5" y="109.3" text-anchor="middle">11</text>
+            <rect class="bar-lo" x="135.3" y="117.4" width="37.7" height="23.0" rx="2" />
+            <text class="tick" x="154.2" y="152" text-anchor="middle">3</text>
+            <text class="dlabel" x="154.2" y="114.4" text-anchor="middle">9</text>
+            <rect class="bar-lo" x="177.0" y="130.2" width="37.7" height="10.2" rx="2" />
+            <text class="tick" x="195.8" y="152" text-anchor="middle">4–5</text>
+            <text class="dlabel" x="195.8" y="127.2" text-anchor="middle">4</text>
+            <rect class="bar-lo" x="218.7" y="127.6" width="37.7" height="12.8" rx="2" />
+            <text class="tick" x="237.5" y="152" text-anchor="middle">6–9</text>
+            <text class="dlabel" x="237.5" y="124.6" text-anchor="middle">5</text>
+            <rect class="bar-lo" x="260.3" y="137.8" width="37.7" height="2.6" rx="2" />
+            <text class="tick" x="279.2" y="152" text-anchor="middle">10+</text>
+            <text class="dlabel" x="279.2" y="134.8" text-anchor="middle">1</text>
+            <text class="tick axis-name" x="175" y="188" text-anchor="middle">Articles carrying that label</text>
+        </svg>
+      </figure>
+      <figure class="panel-chart">
+        <figcaption><strong>English — breakdown of the 26 labels</strong>
+          <span class="note">vertical axis is the number of distinct labels</span></figcaption>
+        <svg viewBox="0 0 316 195" role="img"
+             aria-label="English label frequency. 19 of the 26 labels appear on a single article">
+            <line class="grid" x1="50" x2="300" y1="140.4" y2="140.4" />
+            <text class="tick" x="44" y="143.9" text-anchor="end">0</text>
+            <line class="grid" x1="50" x2="300" y1="102.1" y2="102.1" />
+            <text class="tick" x="44" y="105.6" text-anchor="end">8</text>
+            <line class="grid" x1="50" x2="300" y1="63.9" y2="63.9" />
+            <text class="tick" x="44" y="67.4" text-anchor="end">16</text>
+            <line class="grid" x1="50" x2="300" y1="25.6" y2="25.6" />
+            <text class="tick" x="44" y="29.1" text-anchor="end">24</text>
+            <rect class="bar-hi" x="52.0" y="49.6" width="37.7" height="90.8" rx="2" />
+            <text class="tick" x="70.8" y="152" text-anchor="middle">1</text>
+            <text class="dlabel" x="70.8" y="46.6" text-anchor="middle">19</text>
+            <rect class="bar-lo" x="93.7" y="126.1" width="37.7" height="14.3" rx="2" />
+            <text class="tick" x="112.5" y="152" text-anchor="middle">2</text>
+            <text class="dlabel" x="112.5" y="123.1" text-anchor="middle">3</text>
+            <rect class="bar-lo" x="135.3" y="135.6" width="37.7" height="4.8" rx="2" />
+            <text class="tick" x="154.2" y="152" text-anchor="middle">3</text>
+            <text class="dlabel" x="154.2" y="132.6" text-anchor="middle">1</text>
+            <rect class="bar-lo" x="177.0" y="130.8" width="37.7" height="9.6" rx="2" />
+            <text class="tick" x="195.8" y="152" text-anchor="middle">4–5</text>
+            <text class="dlabel" x="195.8" y="127.8" text-anchor="middle">2</text>
+            <rect class="bar-lo" x="218.7" y="135.6" width="37.7" height="4.8" rx="2" />
+            <text class="tick" x="237.5" y="152" text-anchor="middle">6–9</text>
+            <text class="dlabel" x="237.5" y="132.6" text-anchor="middle">1</text>
+            <rect class="bar-lo" x="260.3" y="139.8" width="37.7" height="0.6" rx="2" />
+            <text class="tick" x="279.2" y="152" text-anchor="middle">10+</text>
+            <text class="tick axis-name" x="175" y="188" text-anchor="middle">Articles carrying that label</text>
+        </svg>
+      </figure>
+    </div>
+
+    <div class="col">
+      <p><strong>39 of the 69 Japanese labels and 19 of the 26 English ones appear on a single
+        article.</strong> A label used once cannot form a pair by definition, so
+        <strong>more than half the vocabulary contributes nothing to the metric.</strong> What is
+        left forms only 212 same-label pairs in Japanese and 53 in English.</p>
+
+      <p>Set that against the total and the ceiling appears. <strong>Of the 4,465 pairs formed
+        by the 95 tagged Japanese articles, only 212 (4.7%) share a label</strong> — that is the
+        entire supply of "correct answers". In the fixed pool at topk=3, no ranking can exceed 203
+        hits out of 285 slots, and the current model takes 103 (51% of the ceiling). That is not a
+        bad number, but with a supply this size it is hard to make a few points of hit-count
+        difference mean anything.</p>
+
+      <p class="note">English had <code>machine_learning</code> and <code>machine-learning</code> as separate
+        labels. Tags were normalised partway through this investigation, and every number in this
+        report was re-measured afterwards.</p>
+    </div>
+
+    <div class="col">
+      <h3>Resolution — how small a difference can this metric see?</h3>
+      <p>The resolution of tag agreement depends on |P|, the number of recommendation pairs
+        tagged on both ends — and |P| is small. Japanese produces 1,260 recommendations
+        (420 articles × topk=3), yet <strong>only 174 of them, 14%, can be scored.</strong>
+        The reason is not a low agreement rate. <strong>Agreement itself is 49%, ten times chance,
+        so the signal is clearly there.</strong> What binds is <strong>tag coverage</strong>: 95 of
+        420 articles carry hand tags, and since <strong>both ends of a pair need tags</strong>,
+        that 23% enters squared.</p>
+
+      <p>So does a two-point difference between models mean anything? Measured with paired
+        bootstrap 95% intervals, the three metrics differ sharply in resolution.</p>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <caption>95% intervals on the difference, current model against bekko-a25m (8,000 characters,
+          hand tags). Interval width — that is, resolution — depends on the metric</caption>
+        <thead>
+          <tr><th class="lbl">Metric</th><th class="lbl">Resampling unit</th>
+            <th>ja interval width</th><th>en interval width</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Tag agreement (old — model-dependent denominator)</th><td class="lbl">source article</td>
+            <td class="num">±5pt</td><td class="num">±6pt</td></tr>
+          <tr><th scope="row">Fixed-pool precision@3</th><td class="lbl">source article</td>
+            <td class="num hold">±3.7pt</td><td class="num">±5.1pt</td></tr>
+          <tr><th scope="row">Pairwise AUC</th><td class="lbl">article</td>
+            <td class="num hold">±3.9pt</td><td class="num">±8.5pt</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p>Fixed-pool precision tightens as k grows, reaching <strong>±1.3pt</strong> at k=10 in
+        Japanese. <strong>Where the old metric could only say "any difference is within ±7pt",
+        the repaired one produces cells that can judge differences of 1–2pt.</strong>
+        Cells that actually cleared zero appear in the experiment sections.</p>
+
+      <div class="panel">
+        <p><strong>Even a blunt metric could answer some questions.</strong> The question asked was
+          "should this be replaced", and the old metric returned an <strong>upper bound</strong>:
+          any difference is within ±7pt. For deciding whether to turn 37 MB into 199 MB, knowing
+          the bound was enough to start with.
+          <strong>But talking about a ranking needed the denominator fault fixed and the resolution
+          raised.</strong> Fixed-pool precision and AUC do both.</p>
+      </div>
+
+      <p class="note">The other way to raise resolution is to tag more articles. With all 420 tagged, the
+        same-label pair count would grow considerably and the intervals would tighten further.
+        AUC is wider than k=10 precision in English because resampling articles takes the full
+        force of a 23-article sample's variance.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><p class="eyebrow">2 · Experiment 1: choosing a model</p><h2>The models</h2></div>
+    <div class="scroll">
+      <table>
+        <caption>All ONNX. Each ran from a single added config entry, with no code changes</caption>
+        <thead>
+          <tr><th class="lbl">Model</th><th class="lbl">Role</th><th>Dim</th><th>Size</th>
+            <th class="lbl">pooling</th><th class="lbl">prefix</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">ruri-v3-30m</th><td class="lbl">Japanese, current</td><td class="num">256</td>
+            <td class="num">37 MB</td><td class="lbl">mean</td><td class="lbl">"トピック: "</td></tr>
+          <tr><th scope="row">granite-small-english-r2</th><td class="lbl">English, current</td><td class="num">384</td>
+            <td class="num">52 MB</td><td class="lbl">cls</td><td class="lbl">—</td></tr>
+          <tr><th scope="row">bekko-v1-a8m</th><td class="lbl">multilingual, candidate</td><td class="num">384</td>
+            <td class="num">130 MB</td><td class="lbl">mean</td><td class="lbl">—</td></tr>
+          <tr><th scope="row">bekko-v1-a25m</th><td class="lbl">multilingual, candidate</td><td class="num">384</td>
+            <td class="num">199 MB</td><td class="lbl">mean</td><td class="lbl">—</td></tr>
+          <tr><th scope="row">granite-97m-multilingual-r2</th><td class="lbl">multilingual, candidate</td><td class="num">384</td>
+            <td class="num">98 MB</td><td class="lbl">cls</td><td class="lbl">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col">
+      <p class="note">Get the pooling wrong and nothing raises — the recommendations just get worse. ruri and
+        granite-english ship their own sentence vectors inside the ONNX, so the right pooling was
+        settled by measurement, matching ours against theirs. bekko and granite-multilingual ship
+        none, so each was confirmed from its 1_Pooling/config.json.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><p class="eyebrow">2 · Experiment 1: choosing a model</p><h2>Results</h2></div>
+    <div class="col">
+      <p>Models are judged with <strong>fixed-pool precision@k and pairwise AUC</strong> (how it
+        looked under the old, model-dependent-denominator metric is kept later in this section for
+        the record). Precision is checked for a consistent sign at topk 3 / 5 / 10. AUC does not
+        depend on topk.</p>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <caption>Experiment 1, 2,000-character input, hand tags. Scores in the fixed pool, candidates
+          restricted to tagged articles (ja 95 / en 23). Small figures are hit counts (slots are
+          ja 285/475/950, en 69/115/230). Colour marks the best in each column;
+          <strong>the pale cell is one whose 95% interval against the current model clears zero on the wrong side</strong></caption>
+        <thead>
+          <tr><th class="lbl">Corpus</th><th class="lbl">Model</th>
+            <th>AUC</th><th>P@3</th><th>P@5</th><th>P@10</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row" rowspan="5">ja</th><td class="lbl">ruri-v3 + prefix (current)</td>
+            <td class="num">0.818</td><td class="num">0.361<br><span class="note">103</span></td>
+            <td class="num">0.316<br><span class="note">150</span></td><td class="num">0.245<br><span class="note">233</span></td></tr>
+          <tr><td class="lbl">bekko-a8m</td>
+            <td class="num">0.821</td><td class="num win">0.368<br><span class="note">105</span></td>
+            <td class="num win">0.326<br><span class="note">155</span></td><td class="num">0.249<br><span class="note">237</span></td></tr>
+          <tr><td class="lbl">bekko-a25m</td>
+            <td class="num win">0.835</td><td class="num">0.365<br><span class="note">104</span></td>
+            <td class="num">0.320<br><span class="note">152</span></td><td class="num win">0.258<br><span class="note">245</span></td></tr>
+          <tr><td class="lbl">granite-97m-multi（fp32）</td>
+            <td class="num">0.813</td><td class="num">0.351<br><span class="note">100</span></td>
+            <td class="num">0.314<br><span class="note">149</span></td><td class="num">0.256<br><span class="note">243</span></td></tr>
+          <tr><td class="lbl">same, int8</td>
+            <td class="num">0.809</td><td class="num win">0.368<br><span class="note">105</span></td>
+            <td class="num">0.309<br><span class="note">147</span></td><td class="num">0.243<br><span class="note">231</span></td></tr>
+          <tr><th scope="row" rowspan="5">en</th><td class="lbl">granite-small-english (current)</td>
+            <td class="num">0.759</td><td class="num">0.449<br><span class="note">31</span></td>
+            <td class="num">0.426<br><span class="note">49</span></td><td class="num">0.335<br><span class="note">77</span></td></tr>
+          <tr><td class="lbl">bekko-a8m</td>
+            <td class="num win">0.798</td><td class="num">0.449<br><span class="note">31</span></td>
+            <td class="num">0.426<br><span class="note">49</span></td><td class="num win">0.357<br><span class="note">82</span></td></tr>
+          <tr><td class="lbl">bekko-a25m</td>
+            <td class="num">0.791</td><td class="num win">0.478<br><span class="note">33</span></td>
+            <td class="num win">0.443<br><span class="note">51</span></td><td class="num">0.339<br><span class="note">78</span></td></tr>
+          <tr><td class="lbl">granite-97m-multi（fp32）</td>
+            <td class="num">0.747</td><td class="num">0.464<br><span class="note">32</span></td>
+            <td class="num">0.409<br><span class="note">47</span></td><td class="num">0.326<br><span class="note">75</span></td></tr>
+          <tr><td class="lbl">same, int8</td>
+            <td class="num">0.680</td><td class="num">0.420<br><span class="note">29</span></td>
+            <td class="num hold">0.348<br><span class="note">40</span></td><td class="num hold">0.278<br><span class="note">64</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure>
+      <div class="legend">
+        <span><i class="swatch sw-a"></i>Per-language model (current)</span>
+        <span><i class="swatch sw-b"></i>Multilingual candidate</span>
+      </div>
+      <div class="bars">
+        <div class="group">
+          <p class="glabel">Japanese — pairwise AUC (bars show the excess over chance, 0.500)</p>
+          <div class="bar"><span class="bname">ruri-v3 + prefix</span><div class="fill fill-a" style="width:63.6%">0.818</div></div>
+          <div class="bar"><span class="bname">bekko-a8m</span><div class="fill fill-b" style="width:64.2%">0.821</div></div>
+          <div class="bar"><span class="bname">bekko-a25m</span><div class="fill fill-b" style="width:67.0%">0.835</div></div>
+          <div class="bar"><span class="bname">granite-97m fp32</span><div class="fill fill-b" style="width:62.6%">0.813</div></div>
+          <div class="bar"><span class="bname">granite-97m int8</span><div class="fill fill-b" style="width:61.8%">0.809</div></div>
+        </div>
+        <div class="group">
+          <p class="glabel">English — pairwise AUC</p>
+          <div class="bar"><span class="bname">granite-small</span><div class="fill fill-a" style="width:51.8%">0.759</div></div>
+          <div class="bar"><span class="bname">bekko-a8m</span><div class="fill fill-b" style="width:59.6%">0.798</div></div>
+          <div class="bar"><span class="bname">bekko-a25m</span><div class="fill fill-b" style="width:58.2%">0.791</div></div>
+          <div class="bar"><span class="bname">granite-97m fp32</span><div class="fill fill-b" style="width:49.4%">0.747</div></div>
+          <div class="bar"><span class="bname">granite-97m int8</span><div class="fill fill-b" style="width:36.0%">0.680</div></div>
+        </div>
+      </div>
+      <figcaption>Probability of ranking a same-label pair above a different-label one. 0.500 is chance.
+        In both languages the two bekko models land at or above the current one, but no 95% interval clears zero.</figcaption>
+    </figure>
+
+    <div class="col">
+      <p><strong>At 2,000 characters the only cell clearing zero is granite-97m int8 in English,
+        and in the wrong direction</strong> (P@5 −7.8pt [−13.9, −1.7], P@10 −5.7pt [−10.4, −1.3]).
+        That is quantization damage, not the model's ability (see the appendix).
+        <strong>The two bekko models overlap the current one in every cell of every language</strong>
+        — though the point estimates lean one way: AUC gives a25m +1.7pt in Japanese and a8m +3.8pt
+        / a25m +3.2pt in English, <strong>positive for bekko in all four comparisons</strong>.</p>
+      <p class="note">"Equal, possibly slightly better, but this sample cannot say so" — that is the
+        fixed-pool reading of experiment 1. Re-measurement under production conditions (8,000
+        characters), and the cells that do reach significance, come after "the ranking flips with
+        the reading".</p>
+    </div>
+
+    <div class="col">
+      <h3>How it looked under the old metric (for the record)</h3>
+      <p>What follows is the reading from before the denominator fault was found. The
+        per-language model is the dashed baseline, with the three multilingual candidates over it.
+        The numbers themselves are correct, but
+        <strong>the ranking between models cannot be read from them</strong>.</p>
+    </div>
+
+    <div class="legend">
+      <span><i class="key ref"></i>Per-language model (baseline)</span>
+      <span><i class="key s1"></i>bekko-a8m</span>
+      <span><i class="key s2"></i>bekko-a25m</span>
+      <span><i class="key s3"></i>granite-97m-multilingual（fp32）</span>
+    </div>
+
+    <div class="chart-grid">
+      <figure class="panel-chart">
+        <figcaption><strong>Japanese, 420 posts · tag agreement</strong> <span class="note">higher is better</span></figcaption>
+        <svg viewBox="0 0 316 190" role="img" aria-label="Japanese, 420 articles, tag agreement rate">
+          <line class="grid" x1="50" x2="300" y1="132.7" y2="132.7" />
+          <text class="tick" x="44" y="136.2" text-anchor="end">0.26</text>
+          <line class="grid" x1="50" x2="300" y1="109.8" y2="109.8" />
+          <text class="tick" x="44" y="113.3" text-anchor="end">0.32</text>
+          <line class="grid" x1="50" x2="300" y1="86.8" y2="86.8" />
+          <text class="tick" x="44" y="90.3" text-anchor="end">0.38</text>
+          <line class="grid" x1="50" x2="300" y1="63.9" y2="63.9" />
+          <text class="tick" x="44" y="67.4" text-anchor="end">0.44</text>
+          <line class="grid" x1="50" x2="300" y1="40.9" y2="40.9" />
+          <text class="tick" x="44" y="44.4" text-anchor="end">0.50</text>
+          <text class="tick" x="50" y="170" text-anchor="middle">3</text>
+          <text class="tick" x="175" y="170" text-anchor="middle">5</text>
+          <text class="tick" x="300" y="170" text-anchor="middle">10</text>
+          <text class="tick axis-name" x="175" y="188" text-anchor="middle">topk</text>
+          <polyline class="ln ref" points="50,45.1 175,68.5 300,104.8" />
+          <circle class="pt ref" cx="50" cy="45.1" r="4" />
+          <circle class="pt ref" cx="175" cy="68.5" r="4" />
+          <circle class="pt ref" cx="300" cy="104.8" r="4" />
+          <polyline class="ln s1" points="50,62.7 175,77.3 300,104.0" />
+          <circle class="pt s1" cx="50" cy="62.7" r="4" />
+          <circle class="pt s1" cx="175" cy="77.3" r="4" />
+          <circle class="pt s1" cx="300" cy="104.0" r="4" />
+          <polyline class="ln s2" points="50,58.5 175,76.5 300,102.1" />
+          <circle class="pt s2" cx="50" cy="58.5" r="4" />
+          <circle class="pt s2" cx="175" cy="76.5" r="4" />
+          <circle class="pt s2" cx="300" cy="102.1" r="4" />
+          <polyline class="ln s3" points="50,60.8 175,85.3 300,109.0" />
+          <circle class="pt s3" cx="50" cy="60.8" r="4" />
+          <circle class="pt s3" cx="175" cy="85.3" r="4" />
+          <circle class="pt s3" cx="300" cy="109.0" r="4" />
+        </svg>
+      </figure>
+      <figure class="panel-chart">
+        <figcaption><strong>English, 33 posts · tag agreement</strong> <span class="note">higher is better</span></figcaption>
+        <svg viewBox="0 0 316 190" role="img" aria-label="English, 33 articles, tag agreement rate">
+          <line class="grid" x1="50" x2="300" y1="132.7" y2="132.7" />
+          <text class="tick" x="44" y="136.2" text-anchor="end">0.26</text>
+          <line class="grid" x1="50" x2="300" y1="109.8" y2="109.8" />
+          <text class="tick" x="44" y="113.3" text-anchor="end">0.32</text>
+          <line class="grid" x1="50" x2="300" y1="86.8" y2="86.8" />
+          <text class="tick" x="44" y="90.3" text-anchor="end">0.38</text>
+          <line class="grid" x1="50" x2="300" y1="63.9" y2="63.9" />
+          <text class="tick" x="44" y="67.4" text-anchor="end">0.44</text>
+          <line class="grid" x1="50" x2="300" y1="40.9" y2="40.9" />
+          <text class="tick" x="44" y="44.4" text-anchor="end">0.50</text>
+          <text class="tick" x="50" y="170" text-anchor="middle">3</text>
+          <text class="tick" x="175" y="170" text-anchor="middle">5</text>
+          <text class="tick" x="300" y="170" text-anchor="middle">10</text>
+          <text class="tick axis-name" x="175" y="188" text-anchor="middle">topk</text>
+          <polyline class="ln ref" points="50,47.4 175,61.2 300,93.7" />
+          <circle class="pt ref" cx="50" cy="47.4" r="4" />
+          <circle class="pt ref" cx="175" cy="61.2" r="4" />
+          <circle class="pt ref" cx="300" cy="93.7" r="4" />
+          <polyline class="ln s1" points="50,37.8 175,60.4 300,80.7" />
+          <circle class="pt s1" cx="50" cy="37.8" r="4" />
+          <circle class="pt s1" cx="175" cy="60.4" r="4" />
+          <circle class="pt s1" cx="300" cy="80.7" r="4" />
+          <polyline class="ln s2" points="50,31.3 175,54.3 300,94.5" />
+          <circle class="pt s2" cx="50" cy="31.3" r="4" />
+          <circle class="pt s2" cx="175" cy="54.3" r="4" />
+          <circle class="pt s2" cx="300" cy="94.5" r="4" />
+          <polyline class="ln s3" points="50,40.9 175,63.5 300,99.5" />
+          <circle class="pt s3" cx="50" cy="40.9" r="4" />
+          <circle class="pt s3" cx="175" cy="63.5" r="4" />
+          <circle class="pt s3" cx="300" cy="99.5" r="4" />
+        </svg>
+      </figure>
+      <figure class="panel-chart">
+        <figcaption><strong>Japanese · max in-degree</strong> <span class="note">lower is better</span></figcaption>
+        <svg viewBox="0 0 316 190" role="img" aria-label="Japanese, maximum times recommended">
+          <line class="grid" x1="50" x2="300" y1="150.0" y2="150.0" />
+          <text class="tick" x="44" y="153.5" text-anchor="end">0</text>
+          <line class="grid" x1="50" x2="300" y1="111.7" y2="111.7" />
+          <text class="tick" x="44" y="115.2" text-anchor="end">20</text>
+          <line class="grid" x1="50" x2="300" y1="73.5" y2="73.5" />
+          <text class="tick" x="44" y="77.0" text-anchor="end">40</text>
+          <text class="tick" x="50" y="170" text-anchor="middle">3</text>
+          <text class="tick" x="175" y="170" text-anchor="middle">5</text>
+          <text class="tick" x="300" y="170" text-anchor="middle">10</text>
+          <text class="tick axis-name" x="175" y="188" text-anchor="middle">topk</text>
+          <polyline class="ln ref" points="50,125.1 175,111.7 300,83.0" />
+          <circle class="pt ref" cx="50" cy="125.1" r="4" />
+          <circle class="pt ref" cx="175" cy="111.7" r="4" />
+          <circle class="pt ref" cx="300" cy="83.0" r="4" />
+          <polyline class="ln s1" points="50,121.3 175,102.2 300,54.3" />
+          <circle class="pt s1" cx="50" cy="121.3" r="4" />
+          <circle class="pt s1" cx="175" cy="102.2" r="4" />
+          <circle class="pt s1" cx="300" cy="54.3" r="4" />
+          <polyline class="ln s2" points="50,119.4 175,98.3 300,63.9" />
+          <circle class="pt s2" cx="50" cy="119.4" r="4" />
+          <circle class="pt s2" cx="175" cy="98.3" r="4" />
+          <circle class="pt s2" cx="300" cy="63.9" r="4" />
+          <polyline class="ln s3" points="50,115.6 175,102.2 300,75.4" />
+          <circle class="pt s3" cx="50" cy="115.6" r="4" />
+          <circle class="pt s3" cx="175" cy="102.2" r="4" />
+          <circle class="pt s3" cx="300" cy="75.4" r="4" />
+        </svg>
+      </figure>
+      <figure class="panel-chart">
+        <figcaption><strong>English · max in-degree</strong> <span class="note">lower is better</span></figcaption>
+        <svg viewBox="0 0 316 190" role="img" aria-label="English, maximum times recommended">
+          <line class="grid" x1="50" x2="300" y1="150.0" y2="150.0" />
+          <text class="tick" x="44" y="153.5" text-anchor="end">0</text>
+          <line class="grid" x1="50" x2="300" y1="111.7" y2="111.7" />
+          <text class="tick" x="44" y="115.2" text-anchor="end">10</text>
+          <line class="grid" x1="50" x2="300" y1="73.5" y2="73.5" />
+          <text class="tick" x="44" y="77.0" text-anchor="end">20</text>
+          <line class="grid" x1="50" x2="300" y1="35.2" y2="35.2" />
+          <text class="tick" x="44" y="38.7" text-anchor="end">30</text>
+          <text class="tick" x="50" y="170" text-anchor="middle">3</text>
+          <text class="tick" x="175" y="170" text-anchor="middle">5</text>
+          <text class="tick" x="300" y="170" text-anchor="middle">10</text>
+          <text class="tick axis-name" x="175" y="188" text-anchor="middle">topk</text>
+          <polyline class="ln ref" points="50,111.7 175,92.6 300,50.5" />
+          <circle class="pt ref" cx="50" cy="111.7" r="4" />
+          <circle class="pt ref" cx="175" cy="92.6" r="4" />
+          <circle class="pt ref" cx="300" cy="50.5" r="4" />
+          <polyline class="ln s1" points="50,115.6 175,104.1 300,73.5" />
+          <circle class="pt s1" cx="50" cy="115.6" r="4" />
+          <circle class="pt s1" cx="175" cy="104.1" r="4" />
+          <circle class="pt s1" cx="300" cy="73.5" r="4" />
+          <polyline class="ln s2" points="50,119.4 175,96.4 300,62.0" />
+          <circle class="pt s2" cx="50" cy="119.4" r="4" />
+          <circle class="pt s2" cx="175" cy="96.4" r="4" />
+          <circle class="pt s2" cx="300" cy="62.0" r="4" />
+          <polyline class="ln s3" points="50,119.4 175,107.9 300,62.0" />
+          <circle class="pt s3" cx="50" cy="119.4" r="4" />
+          <circle class="pt s3" cx="175" cy="107.9" r="4" />
+          <circle class="pt s3" cx="300" cy="62.0" r="4" />
+        </svg>
+      </figure>
+    </div>
+
+    <div class="col">
+      <p class="note">Measured with hand-written <code>tags</code> / <code>categories</code> only.</p>
+
+      <p><strong>The same data returns opposite rankings depending on how it is read.</strong>
+        On Japanese agreement, the current ruri is best at topk=3 and 5; on recall, bekko-a25m is
+        best at all three. <strong>Neither is the correct one — they differ in how the denominator
+        is taken.</strong></p>
+
+      <p>The denominator of agreement is "pairs that could be scored", and <strong>the model can
+        move it</strong>. A model more inclined to recommend tagged articles gets a larger
+        denominator and a lower rate. And indeed a25m always has more scored pairs than ruri
+        (194 against 174, 307 against 271, 564 against 513). The denominator of recall is "correct
+        answers available", which the corpus alone fixes and no model can move.</p>
+
+      <p><strong>In English both readings point the same way.</strong> On agreement and on
+        recall, the bekko models lead at topk=3 and 5, and the current granite-small-english is
+        never best in any column. But there are only 58–199 scored pairs.</p>
+
+      <p class="note">The int8 build of granite-97m-multilingual pushes Japanese in-degree up to 47 (the
+        current ruri is 35). Quantization is covered in the appendix.</p>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <caption>Experiment 1, 2,000-character input. <strong>Agreement</strong> is the reading whose
+          denominator the model can move; <strong>recall</strong> is the reading with it fixed.
+          <strong>In-degree</strong> is the maximum in-degree (lower is better). Colour marks the
+          best value in each column</caption>
+        <thead>
+          <tr>
+            <th class="lbl">Corpus</th><th class="lbl">Model</th>
+            <th>agreement k=3</th><th>k=5</th><th>k=10</th>
+            <th>recall k=3</th><th>k=5</th><th>k=10</th>
+            <th>in-degree k=3</th><th>k=5</th><th>k=10</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row" rowspan="5">ja 420 posts</th><td class="lbl">ruri-v3 + prefix (current)</td>
+            <td class="num win">0.489</td><td class="num win">0.428</td><td class="num">0.333</td><td class="num">41.9</td><td class="num">38.3</td><td class="num">41.7</td><td class="num win">13</td><td class="num win">20</td><td class="num win">35</td></tr>
+          <tr><td class="lbl">bekko-a8m</td>
+            <td class="num">0.443</td><td class="num">0.405</td><td class="num">0.335</td><td class="num">41.9</td><td class="num">38.9</td><td class="num">44.1</td><td class="num">15</td><td class="num">25</td><td class="num">50</td></tr>
+          <tr><td class="lbl">bekko-a25m</td>
+            <td class="num">0.454</td><td class="num">0.407</td><td class="num win">0.340</td><td class="num hold">43.3</td><td class="num hold">41.3</td><td class="num hold">46.8</td><td class="num">16</td><td class="num">27</td><td class="num">45</td></tr>
+          <tr><td class="lbl">granite-97m-multi（fp32）</td>
+            <td class="num">0.448</td><td class="num">0.384</td><td class="num">0.322</td><td class="num">37.9</td><td class="num">35.6</td><td class="num">40.2</td><td class="num">18</td><td class="num">25</td><td class="num">39</td></tr>
+          <tr><td class="lbl">same, int8</td>
+            <td class="num">0.488</td><td class="num">0.405</td><td class="num">0.319</td><td class="num">40.4</td><td class="num">35.3</td><td class="num">36.8</td><td class="num">23</td><td class="num">33</td><td class="num">47</td></tr>
+          <tr><th scope="row" rowspan="5">en 33 posts</th><td class="lbl">granite-small-english (current)</td>
+            <td class="num">0.483</td><td class="num">0.447</td><td class="num">0.362</td><td class="num">54.7</td><td class="num hold">59.7</td><td class="num">64.2</td><td class="num">10</td><td class="num">15</td><td class="num">26</td></tr>
+          <tr><td class="lbl">bekko-a8m</td>
+            <td class="num">0.508</td><td class="num">0.449</td><td class="num win">0.396</td><td class="num">56.6</td><td class="num">57.1</td><td class="num hold">69.8</td><td class="num">9</td><td class="num">12</td><td class="num win">20</td></tr>
+          <tr><td class="lbl">bekko-a25m</td>
+            <td class="num win">0.525</td><td class="num win">0.465</td><td class="num">0.360</td><td class="num hold">58.5</td><td class="num hold">59.7</td><td class="num">64.2</td><td class="num win">8</td><td class="num">14</td><td class="num">23</td></tr>
+          <tr><td class="lbl">granite-97m-multi（fp32）</td>
+            <td class="num">0.500</td><td class="num">0.441</td><td class="num">0.347</td><td class="num">56.6</td><td class="num">58.4</td><td class="num">65.1</td><td class="num win">8</td><td class="num win">11</td><td class="num">23</td></tr>
+          <tr><td class="lbl">same, int8</td>
+            <td class="num">0.419</td><td class="num">0.356</td><td class="num">0.294</td><td class="num">49.1</td><td class="num">48.1</td><td class="num">54.7</td><td class="num">9</td><td class="num">12</td><td class="num">21</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section>
+    <div class="head"><p class="eyebrow">3 · Experiment 2: input length</p><h2>The effect of input length</h2></div>
+    <div class="col">
+      <p>All five models so far were compared under one fixed condition —
+        <strong>embedding only the first 2,000 characters of the body</strong>. Experiment 2 varies
+        what experiment 1 held fixed.</p>
+
+      <p>2,000 is the default for <code>max_content_chars</code>, put there to keep memory down.
+        It was not chosen for quality. The first question is how much it throws away.</p>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <caption>Body length as handed to the embedder, and how much a 2,000-character cut discards</caption>
+        <thead>
+          <tr><th class="lbl">Corpus</th><th>Median</th><th>Max</th>
+            <th>Over 2,000</th><th>Body discarded</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">ja 420 posts</th><td class="num">776</td><td class="num">8,890</td>
+            <td class="num">93 (22%)</td><td class="num">25% of the total</td></tr>
+          <tr><th scope="row">en 33 posts</th><td class="num">1,854</td><td class="num">15,581</td>
+            <td class="num win">15 (45%)</td><td class="num win">55% of the total</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p class="note">The counting needs care. prelims <strong>strips HTML tags, code fences, math and
+        URLs</strong> before embedding, so counting the raw Markdown badly overstates what the
+        model sees. This corpus holds many posts migrated from Medium, heavy with HTML and URLs:
+        on the raw files the Japanese median looked like 1,205 characters with 154 posts over
+        2,000. The table above is post-filter, and it matches the production log exactly
+        (93 Japanese and 15 English posts re-embedded when the limit went 2,000 → 8,000).</p>
+
+      <p><strong>English was embedding less than half of each body.</strong> With a median of
+        1,854 characters, longer posts were being compared on their introductions alone. The
+        distribution makes it plainer.</p>
+    </div>
+
+    <div class="legend">
+      <span><i class="key lo"></i>Up to 2,000 characters — raising the limit changes nothing</span>
+      <span><i class="key hi"></i>Over 2,000 characters — was being truncated</span>
+    </div>
+
+    <div class="chart-grid">
+      <figure class="panel-chart">
+        <figcaption><strong>Japanese, 420 posts</strong> <span class="note">share of articles · 78% are under 2,000 characters</span></figcaption>
+        <svg viewBox="0 0 316 195" role="img"
+             aria-label="Distribution of Japanese body length. 36 percent are under 500 characters and 78 percent under 2,000">
+            <line class="grid" x1="50" x2="300" y1="140.4" y2="140.4" />
+            <text class="tick" x="44" y="143.9" text-anchor="end">0%</text>
+            <line class="grid" x1="50" x2="300" y1="111.7" y2="111.7" />
+            <text class="tick" x="44" y="115.2" text-anchor="end">10%</text>
+            <line class="grid" x1="50" x2="300" y1="83.0" y2="83.0" />
+            <text class="tick" x="44" y="86.5" text-anchor="end">20%</text>
+            <line class="grid" x1="50" x2="300" y1="54.3" y2="54.3" />
+            <text class="tick" x="44" y="57.8" text-anchor="end">30%</text>
+            <line class="grid" x1="50" x2="300" y1="25.6" y2="25.6" />
+            <text class="tick" x="44" y="29.1" text-anchor="end">40%</text>
+            <rect class="bar-lo" x="52.0" y="37.4" width="27.2" height="103.0" rx="2" />
+            <text class="tick" x="65.6" y="152" text-anchor="middle">0.5k</text>
+            <rect class="bar-lo" x="83.2" y="73.2" width="27.2" height="67.2" rx="2" />
+            <text class="tick" x="96.9" y="152" text-anchor="middle">1k</text>
+            <rect class="bar-lo" x="114.5" y="87.6" width="27.2" height="52.8" rx="2" />
+            <text class="tick" x="128.1" y="152" text-anchor="middle">2k</text>
+            <rect class="bar-hi" x="145.8" y="107.4" width="27.2" height="33.0" rx="2" />
+            <text class="tick" x="159.4" y="152" text-anchor="middle">3k</text>
+            <rect class="bar-hi" x="177.0" y="126.1" width="27.2" height="14.4" rx="2" />
+            <text class="tick" x="190.6" y="152" text-anchor="middle">4k</text>
+            <rect class="bar-hi" x="208.2" y="128.1" width="27.2" height="12.3" rx="2" />
+            <text class="tick" x="221.9" y="152" text-anchor="middle">6k</text>
+            <rect class="bar-hi" x="239.5" y="137.0" width="27.2" height="3.4" rx="2" />
+            <text class="tick" x="253.1" y="152" text-anchor="middle">8k</text>
+            <rect class="bar-hi" x="270.8" y="139.8" width="27.2" height="0.6" rx="2" />
+            <text class="tick" x="284.4" y="152" text-anchor="middle">8k+</text>
+            <line class="cut" x1="143.8" x2="143.8" y1="20" y2="140.4" />
+            <text class="dlabel" x="143.8" y="17" text-anchor="middle">2,000</text>
+            <text class="tick axis-name" x="175" y="188" text-anchor="middle">Body length (characters)</text>
+        </svg>
+      </figure>
+      <figure class="panel-chart">
+        <figcaption><strong>English, 33 posts</strong> <span class="note">share of articles · 55% are under 2,000 characters</span></figcaption>
+        <svg viewBox="0 0 316 195" role="img"
+             aria-label="Distribution of English body length. Only 55 percent are under 2,000 characters and 12 percent exceed 8,000">
+            <line class="grid" x1="50" x2="300" y1="140.4" y2="140.4" />
+            <text class="tick" x="44" y="143.9" text-anchor="end">0%</text>
+            <line class="grid" x1="50" x2="300" y1="111.7" y2="111.7" />
+            <text class="tick" x="44" y="115.2" text-anchor="end">10%</text>
+            <line class="grid" x1="50" x2="300" y1="83.0" y2="83.0" />
+            <text class="tick" x="44" y="86.5" text-anchor="end">20%</text>
+            <line class="grid" x1="50" x2="300" y1="54.3" y2="54.3" />
+            <text class="tick" x="44" y="57.8" text-anchor="end">30%</text>
+            <line class="grid" x1="50" x2="300" y1="25.6" y2="25.6" />
+            <text class="tick" x="44" y="29.1" text-anchor="end">40%</text>
+            <rect class="bar-lo" x="52.0" y="139.8" width="27.2" height="0.6" rx="2" />
+            <text class="tick" x="65.6" y="152" text-anchor="middle">0.5k</text>
+            <rect class="bar-lo" x="83.2" y="96.8" width="27.2" height="43.6" rx="2" />
+            <text class="tick" x="96.9" y="152" text-anchor="middle">1k</text>
+            <rect class="bar-lo" x="114.5" y="27.3" width="27.2" height="113.1" rx="2" />
+            <text class="tick" x="128.1" y="152" text-anchor="middle">2k</text>
+            <rect class="bar-hi" x="145.8" y="96.8" width="27.2" height="43.6" rx="2" />
+            <text class="tick" x="159.4" y="152" text-anchor="middle">3k</text>
+            <rect class="bar-hi" x="177.0" y="131.8" width="27.2" height="8.6" rx="2" />
+            <text class="tick" x="190.6" y="152" text-anchor="middle">4k</text>
+            <rect class="bar-hi" x="208.2" y="114.3" width="27.2" height="26.1" rx="2" />
+            <text class="tick" x="221.9" y="152" text-anchor="middle">6k</text>
+            <rect class="bar-hi" x="239.5" y="122.9" width="27.2" height="17.5" rx="2" />
+            <text class="tick" x="253.1" y="152" text-anchor="middle">8k</text>
+            <rect class="bar-hi" x="270.8" y="105.7" width="27.2" height="34.7" rx="2" />
+            <text class="tick" x="284.4" y="152" text-anchor="middle">8k+</text>
+            <line class="cut" x1="143.8" x2="143.8" y1="20" y2="140.4" />
+            <text class="dlabel" x="143.8" y="17" text-anchor="middle">2,000</text>
+            <text class="tick axis-name" x="175" y="188" text-anchor="middle">Body length (characters)</text>
+        </svg>
+      </figure>
+    </div>
+
+    <div class="col">
+      <p><strong>78% of Japanese posts fit inside 2,000 characters.</strong> The largest bucket
+        is under 500 characters, holding 150 of the 420. <strong>Raising the limit to 8,000 changes
+        the input for only 93 posts.</strong> English has only 55% under 2,000, and 12% of posts
+        run past 8,000.</p>
+      <p class="note">That difference is the whole explanation for why the same change helped English and did
+        nothing for Japanese. Only 1 Japanese post of 420 extends past 8,000 characters, so for
+        Japanese, 8,000 is effectively "the whole article".</p>
+    </div>
+
+
+    <div class="scroll">
+      <table>
+        <caption>Input limit against tag agreement (hand tags only, %). <strong>The small figures are
+          hits / scored pairs</strong>; colour marks the higher hit count</caption>
+        <thead>
+          <tr><th class="lbl">Corpus</th><th class="lbl">Input limit</th>
+            <th>k=3</th><th>k=5</th><th>k=10</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row" rowspan="2">ja 420 posts</th><th scope="row">2,000</th><td class="num">48.9<br><span class="note">85/174</span></td><td class="num win">42.8<br><span class="note">116/271</span></td><td class="num">33.3<br><span class="note">171/513</span></td></tr>
+          <tr><th scope="row">8,000</th><td class="num win">49.1<br><span class="note">86/175</span></td><td class="num win">42.3<br><span class="note">116/274</span></td><td class="num win">34.3<br><span class="note">177/516</span></td></tr>
+          <tr><th scope="row" rowspan="2">en 33 posts</th><th scope="row">2,000</th><td class="num">48.3<br><span class="note">29/60</span></td><td class="num">44.7<br><span class="note">46/103</span></td><td class="num">36.2<br><span class="note">68/188</span></td></tr>
+          <tr><th scope="row">8,000</th><td class="num win">51.7<br><span class="note">30/58</span></td><td class="num win">50.0<br><span class="note">48/96</span></td><td class="num win">36.8<br><span class="note">70/190</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p><strong>This is the one result in the whole investigation that points the same way
+        under either reading.</strong> Hits go +1 / ±0 / +6 in Japanese and +1 / +2 / +2 in
+        English. Five of six cells positive, the sixth flat, and <strong>not one negative.</strong></p>
+
+      <p>The reason this holds up where the model comparison did not is that
+        <strong>both arms are the same model</strong>. Whatever tendency a model has toward
+        recommending tagged articles is identical on both sides, so the denominator bias cancels.
+        <strong>The metric breaks across models, not across settings.</strong></p>
+
+      <p class="note">Read as agreement, English looks like the bigger gain (+3.4 / +5.3 / +0.6 against
+        Japanese +0.2 / −0.5 / +1.0) — but that is the English denominator shrinking (60→58,
+        103→96). <strong>By hit count both languages gain about equally.</strong></p>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <caption>The repaired metric points the same way. Fixed-pool hits and AUC, 2,000 → 8,000
+          (same model both sides; differences in pt, [ ] is the 95% interval)</caption>
+        <thead>
+          <tr><th class="lbl">Metric</th><th>ja 2,000</th><th>ja 8,000</th><th>Diff</th>
+            <th>en 2,000</th><th>en 8,000</th><th>Diff</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">P@3 hits</th><td class="num">103</td><td class="num">105</td>
+            <td class="num">+0.7 [−1.1, +2.5]</td>
+            <td class="num">31</td><td class="num">31</td><td class="num">+0.0 [−5.8, +5.8]</td></tr>
+          <tr><th scope="row">P@5 hits</th><td class="num">150</td><td class="num win">156</td>
+            <td class="num">+1.3 [−0.2, +2.7]</td>
+            <td class="num">49</td><td class="num win">51</td><td class="num">+1.7 [−2.6, +6.1]</td></tr>
+          <tr><th scope="row">P@10 hits</th><td class="num">233</td><td class="num win">240</td>
+            <td class="num">+0.7 [+0.0, +1.6]</td>
+            <td class="num">77</td><td class="num win">80</td><td class="num">+1.3 [+0.0, +2.6]</td></tr>
+          <tr><th scope="row">AUC</th><td class="num">0.818</td><td class="num win">0.826</td>
+            <td class="num">+0.8 [−0.4, +2.6]</td>
+            <td class="num">0.759</td><td class="num win">0.767</td><td class="num">+0.8 [−2.3, +5.9]</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p class="note">All eight cells have a non-negative point estimate and not one comes out negative. No
+        single cell reaches significance (the two at k=10 touch zero at the edge of the interval),
+        but <strong>the same direction holding across metrics, across languages and across k</strong>
+        is the strongest argument for this change. Unlike the model comparison, both arms are the
+        same model, so the old metric's denominator bias largely cancelled too — this is the one
+        experiment whose conclusion did not change when the metric was repaired.</p>
+
+      <p class="note">8,000 it is. Both languages gain correct pairs and neither gets worse. Post-filter the
+        cost is 1.33× the tokens and 2.5× the attention in Japanese; in English the absolute volume
+        is small.</p>
+
+      <h3>Past that point, unmeasured</h3>
+      <p>While the measurement still ran on raw text it went up to 20,000 characters
+        (effectively unlimited), and neither language moved beyond 8,000. That was not re-measured
+        after filtering. <strong>But the longest post-filter article is 8,890 characters in
+        Japanese and 15,581 in English</strong>, so what survives past 8,000 in Japanese is the tail
+        of a handful of articles.</p>
+
+      <h3>The two readings rank them in opposite orders</h3>
+      <p>Take the discrepancy experiment 1 exposed and pin it down on the dedicated model against
+        bekko-a25m. The same recommendations, scored two ways, with the
+        <strong>difference (bekko − dedicated model)</strong> overlaid. The zero line is the
+        dedicated model.</p>
+
+      <div class="legend">
+        <span><i class="key len-a"></i>agreement-rate difference (denominator set by the model)</span>
+        <span><i class="key len-b"></i>recall difference (denominator fixed)</span>
+      </div>
+      <div class="chart-grid">
+        <figure class="panel-chart">
+          <figcaption><strong>Japanese · bekko-a25m − ruri-v3+prefix</strong>
+            <span class="note">8,000-character input, pt, up favours bekko</span></figcaption>
+          <svg viewBox="0 0 316 190" role="img"
+               aria-label="Japanese. The bekko-a25m minus ruri difference under two readings. Negative on agreement rate, positive on recall — they point opposite ways">
+            <line class="grid" x1="50" x2="300" y1="44.7" y2="44.7" />
+            <text class="tick" x="44" y="48.2" text-anchor="end">+4</text>
+            <line class="grid" x1="50" x2="300" y1="63.9" y2="63.9" />
+            <text class="tick" x="44" y="67.4" text-anchor="end">+2</text>
+            <line class="zero" x1="50" x2="300" y1="83.0" y2="83.0" />
+            <text class="tick" x="44" y="86.5" text-anchor="end">0</text>
+            <line class="grid" x1="50" x2="300" y1="102.1" y2="102.1" />
+            <text class="tick" x="44" y="105.6" text-anchor="end">−2</text>
+            <line class="grid" x1="50" x2="300" y1="121.3" y2="121.3" />
+            <text class="tick" x="44" y="124.8" text-anchor="end">−4</text>
+            <text class="tick" x="50" y="170" text-anchor="middle">3</text>
+            <text class="tick" x="175" y="170" text-anchor="middle">5</text>
+            <text class="tick" x="300" y="170" text-anchor="middle">10</text>
+            <text class="tick axis-name" x="175" y="188" text-anchor="middle">topk</text>
+            <polyline class="ln len-a" points="50,119.4 175,106.0 300,82.0" />
+            <circle class="pt len-a" cx="50" cy="119.4" r="4" />
+            <circle class="pt len-a" cx="175" cy="106.0" r="4" />
+            <circle class="pt len-a" cx="300" cy="82.0" r="4" />
+            <polyline class="ln len-b" points="50,59.4 175,60.9 300,34.0" />
+            <circle class="pt len-b" cx="50" cy="59.4" r="4" />
+            <circle class="pt len-b" cx="175" cy="60.9" r="4" />
+            <circle class="pt len-b" cx="300" cy="34.0" r="4" />
+          </svg>
+        </figure>
+        <figure class="panel-chart">
+          <figcaption><strong>English · bekko-a25m − granite-small-english</strong>
+            <span class="note">8,000-character input, pt, up favours bekko</span></figcaption>
+          <svg viewBox="0 0 316 190" role="img"
+               aria-label="English. The bekko-a25m minus granite difference under two readings. topk=3 is positive under both">
+            <line class="grid" x1="50" x2="300" y1="44.7" y2="44.7" />
+            <text class="tick" x="44" y="48.2" text-anchor="end">+4</text>
+            <line class="grid" x1="50" x2="300" y1="63.9" y2="63.9" />
+            <text class="tick" x="44" y="67.4" text-anchor="end">+2</text>
+            <line class="zero" x1="50" x2="300" y1="83.0" y2="83.0" />
+            <text class="tick" x="44" y="86.5" text-anchor="end">0</text>
+            <line class="grid" x1="50" x2="300" y1="102.1" y2="102.1" />
+            <text class="tick" x="44" y="105.6" text-anchor="end">−2</text>
+            <line class="grid" x1="50" x2="300" y1="121.3" y2="121.3" />
+            <text class="tick" x="44" y="124.8" text-anchor="end">−4</text>
+            <text class="tick" x="50" y="170" text-anchor="middle">3</text>
+            <text class="tick" x="175" y="170" text-anchor="middle">5</text>
+            <text class="tick" x="300" y="170" text-anchor="middle">10</text>
+            <text class="tick axis-name" x="175" y="188" text-anchor="middle">topk</text>
+            <polyline class="ln len-a" points="50,51.4 175,87.8 300,90.7" />
+            <circle class="pt len-a" cx="50" cy="51.4" r="4" />
+            <circle class="pt len-a" cx="175" cy="87.8" r="4" />
+            <circle class="pt len-a" cx="300" cy="90.7" r="4" />
+            <polyline class="ln len-b" points="50,28.8 175,58.2 300,101.1" />
+            <circle class="pt len-b" cx="50" cy="28.8" r="4" />
+            <circle class="pt len-b" cx="175" cy="58.2" r="4" />
+            <circle class="pt len-b" cx="300" cy="101.1" r="4" />
+          </svg>
+        </figure>
+      </div>
+
+      <div class="scroll">
+        <table>
+          <caption>bekko-a25m − dedicated model (pt, positive favours bekko). 8,000-character input</caption>
+          <thead>
+            <tr><th class="lbl">Corpus</th><th class="lbl">Reading</th>
+              <th>k=3</th><th>k=5</th><th>k=10</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row" rowspan="2">ja, 420 articles</th><th scope="row">Agreement</th>
+              <td class="num">−3.8</td><td class="num">−2.4</td><td class="num">+0.1</td></tr>
+            <tr><th scope="row">Recall</th>
+              <td class="num win">+2.5</td><td class="num win">+2.3</td><td class="num win">+5.1</td></tr>
+            <tr><th scope="row" rowspan="2">en, 33 articles</th><th scope="row">Agreement</th>
+              <td class="num win">+3.3</td><td class="num">−0.5</td><td class="num">−0.8</td></tr>
+            <tr><th scope="row">Recall</th>
+              <td class="num win">+5.7</td><td class="num win">+2.6</td><td class="num">−1.9</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="col">
+        <p><strong>In Japanese the sign flips completely.</strong> Agreement rate puts ruri ahead at
+          two of the three k values; recall puts a25m ahead at all three.
+          <strong>Same recommendations, same tags — the only difference is the denominator.</strong></p>
+
+        <p>a25m finds more correct pairs (86→91, 116→123, 177→198). It also carries more scorable
+          pairs (175→201, 274→308, 516→576). One property — <strong>a tendency to recommend
+          articles that carry tags</strong> — shows up as a penalty in one formula and a reward in
+          the other.</p>
+
+        <div class="panel flag">
+          <p><strong>This comes from the referee's design.</strong> Of the 420 Japanese articles, 325
+            have no tags. Those articles are not "wrong answers", they are
+            <strong>unjudgeable</strong>. Recommending one drops it out of the agreement-rate
+            denominator, which helps; under recall it counts as something missed, which hurts.
+            <strong>The metric's denominator moves with the recommendations</strong> — this is
+            exactly the incomplete-relevance-judgment problem from information retrieval.</p>
+          <p class="note">A reading with a fixed denominator (recall, or a hit rate against "articles × k") is
+            immune to this. <strong>Within one corpus at one k these are just divisions by a
+            constant, so they rank identically</strong> — meaning there are only two options, a
+            metric whose denominator moves and one whose denominator does not. Mixing them, as an
+            F-measure does, does not help: it inherits the bias of the half it took.</p>
+        </div>
+
+        <p>That is the diagnosis. The repair is two metric definitions —
+          <strong>fixed-pool precision@k</strong>, which restricts candidates to tagged articles,
+          and <strong>pairwise AUC</strong>, which drops the top-k cutoff entirely. The same
+          embeddings, re-measured in a form that keeps the denominator out of the model's hands.</p>
+
+        <h3>Re-measuring with the denominator fixed</h3>
+      </div>
+
+      <div class="scroll">
+        <table>
+          <caption>Current model against bekko-a25m, 8,000-character input, hand-written tags, fixed pool.
+            Differences in pt (positive favours a25m), [ ] is the 95% interval.
+            <strong>Coloured cells exclude zero</strong></caption>
+          <thead>
+            <tr><th class="lbl">Corpus</th><th class="lbl">Metric</th>
+              <th>Current</th><th>a25m</th><th>Diff [95% CI]</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row" rowspan="4">ja</th><th scope="row">P@3</th>
+              <td class="num">0.368<br><span class="note">105</span></td><td class="num">0.368<br><span class="note">105</span></td>
+              <td class="num">+0.0 [−3.5, +3.9]</td></tr>
+            <tr><th scope="row">P@5</th>
+              <td class="num">0.328<br><span class="note">156</span></td><td class="num">0.318<br><span class="note">151</span></td>
+              <td class="num">−1.1 [−3.6, +1.3]</td></tr>
+            <tr><th scope="row">P@10</th>
+              <td class="num">0.253<br><span class="note">240</span></td><td class="num">0.266<br><span class="note">253</span></td>
+              <td class="num win">+1.4 [+0.1, +2.6]</td></tr>
+            <tr><th scope="row">AUC</th>
+              <td class="num">0.826</td><td class="num">0.844</td>
+              <td class="num">+1.8 [−2.3, +5.6]</td></tr>
+            <tr><th scope="row" rowspan="4">en</th><th scope="row">P@3</th>
+              <td class="num">0.449<br><span class="note">31</span></td><td class="num">0.507<br><span class="note">35</span></td>
+              <td class="num win">+5.8 [+1.4, +11.6]</td></tr>
+            <tr><th scope="row">P@5</th>
+              <td class="num">0.443<br><span class="note">51</span></td><td class="num">0.461<br><span class="note">53</span></td>
+              <td class="num">+1.7 [−0.9, +5.2]</td></tr>
+            <tr><th scope="row">P@10</th>
+              <td class="num">0.348<br><span class="note">80</span></td><td class="num">0.326<br><span class="note">75</span></td>
+              <td class="num">−2.2 [−6.1, +1.7]</td></tr>
+            <tr><th scope="row">AUC</th>
+              <td class="num">0.767</td><td class="num">0.793</td>
+              <td class="num">+2.6 [−5.8, +11.3]</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="col">
+        <p><strong>The rank reversal is gone.</strong> Two of the eight cells exclude zero —
+          English P@3 (+5.8pt; 3 is the topk actually in production) and Japanese P@10 (+1.4pt) —
+          and <strong>both favour a25m. Not one cell favours the current model significantly.</strong>
+          AUC also comes out positive for a25m in both languages (not significantly).</p>
+
+        <p>Two cautions against over-reading it. <strong>The sign of the point estimate wobbles
+          with k</strong> (Japanese P@5 and English P@10 are negative). And across eight cells at
+          95%, chance alone can produce a cell that excludes zero. <strong>"a25m is equal or
+          slightly ahead; there is no evidence the current model is ahead"</strong> — that is as far
+          as the repaired metric goes, but it does go that far. Compared with the old metric's
+          "either answer, depending how you read it", that is a large step.</p>
+
+        <p class="note">Hub spread is consistently worse for a25m in Japanese (maximum times recommended 12→16 /
+          20→26 / 35→40). That quantity is unaffected by the denominator, so it can be read as-is.
+          In English it moves either way depending on topk.</p>
+      </div>
+
+      <div class="col">
+
+      <h3>What the difference is made of — which axis do the tags point along?</h3>
+      <p>To find out what a few points of difference actually refers to, I dumped every
+        recommendation under the same conditions (8,000 characters, topk=3) and went through the
+        pairs where both ends carry tags, one at a time. <strong>Most of the tag-score difference
+        was decided not by which model was right, but by which axis the tags happened to point
+        along.</strong></p>
+
+      <div class="panel miss">
+        <div>
+          <p class="src">"Things to check when moving homebrew breaks iRuby"<span class="note">categories: ruby</span></p>
+          <p class="dst">ruri → "Organising my own take on setting up a Python environment"<span class="note">categories: python</span></p>
+          <p class="dst">a25m → "We held kawasaki.rb #008"<span class="note">categories: ruby</span></p>
+        </div>
+        <div>
+          <p class="src">"Using Markdown documentation on the new PyPI"<span class="note">categories: python</span></p>
+          <p class="dst">ruri → "Adding recommendations to Hugo articles with prelims"<span class="note">tags: NLP, Python, Recommendation</span></p>
+          <p class="dst">a25m → "Drop mecab-python3 for natto-py"<span class="note">tags: NLP</span></p>
+        </div>
+      </div>
+
+      <p>The first scores for a25m, the second for ruri. But <strong>both readings hold up.</strong>
+        The iRuby article is as much about Ruby as it is about environment setup, yet the only label
+        on it is <code>ruby</code>, so only the side that picked up that theme scores. The PyPI
+        article is the same: both candidates are Python-adjacent, but the labels split across
+        <code>python</code> and <code>NLP</code>, so a difference appears.</p>
+
+      <p class="note">The labels on these six articles are split between <code>categories</code> and
+        <code>tags</code>. The metric merges the two and lower-cases them, so the match still fires,
+        but <strong>which field a given word ends up in is a matter of the writer's habit</strong>.
+        The second match also crosses <code>categories: python</code> and <code>tags: Python</code>.</p>
+
+      <p class="note"><strong>What the referee looks at is not "are these about the same thing" but "is the
+        same word written in both tag lists".</strong> When an article has several axes, the tags
+        record only one of them. As long as hand-written tags are the ground truth, this distortion
+        is unavoidable.</p>
+
+      <div class="panel flag">
+        <p><strong>Under the old metric, finding more correct answers could even score lower.</strong>
+          On "I spoke at the Machine Learning Systems Engineering kickoff symposium", ruri hit 1 of
+          1 scorable recommendation while a25m hit 2 of 3. <strong>a25m has more hits, but ruri wins
+          on ratio.</strong> The fixed pool cannot produce that inversion — both models divide by 3.</p>
+      </div>
+
+      <p><strong>As far as the eye can tell, neither model produces broken recommendations.</strong>
+        The difference is a habit in what they pick up across a few dozen articles — entity
+        detection for a25m, topic purity for the current model — and aggregating that into a verdict
+        puts it at a scale indistinguishable from chance.
+        <strong>Whether that reading is correct is tested systematically in the next section.</strong></p>
+    </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><p class="eyebrow">4 · Human evaluation</p><h2>Checking the proxy metric's answers</h2></div>
+    <div class="col">
+      <p>Repairing the metric did not settle the ranking. What is actually still open is a
+        question one step earlier — <strong>how much of a reader's sense of "related" does this
+        proxy metric capture at all?</strong> That cannot be answered from inside the metric, so I
+        judged the recommendations themselves by hand and compared.</p>
+
+      <p>The subjects are the 389 articles whose recommendations changed. I wrote a dedicated
+        judging tool that puts the two recommendation lists side by side and lets you tick the ones
+        you consider genuinely related. Three things mattered in its design.</p>
+
+      <ul>
+        <li><strong>Blind by default.</strong> Which column is which model is shuffled per article
+          and hidden, and <strong>tags and tag-hit marks are hidden too</strong>. The tags are the
+          very metric being used to pick a model, so judging with them visible would mean validating
+          the metric with the metric itself</li>
+        <li><strong>Each recommendation is judged once.</strong> Where both models recommend the same
+          article, ticking one side applies to the other. No pair can carry contradictory labels</li>
+        <li><strong>Strata are not pooled.</strong> The 162 judged articles centre on a
+          seed-fixed random 40 and the total-swap group (zero shared recommendations — the 64
+          articles where the models disagree most). <strong>All 19 changed English articles were
+          judged.</strong> <strong>The total-swap group was selected to maximise the difference, so
+          it cannot be used for an overall estimate.</strong> The unbiased estimate is the random 40
+          alone</li>
+      </ul>
+
+      <p class="note">162 articles / 827 pairs judged (143 Japanese, 19 English), 458 recommendations marked
+        related, 19 articles marked "none of these are related". One judge, the author.</p>
+
+      <h3>Result 1 — the model difference still cannot be detected</h3>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <caption>precision@3 under human judgment (share of recommendations judged related).
+          <strong>The random 40 is the unbiased estimate</strong>; the other strata are reference
+          values</caption>
+        <thead>
+          <tr><th class="lbl">Stratum</th><th>n</th><th>Current</th><th>a25m</th>
+            <th>Diff</th><th>95% CI</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Random 40<br><span class="note">unbiased</span></th><td class="num">40</td>
+            <td class="num">0.758<br><span class="note">91/120</span></td>
+            <td class="num hold">0.775<br><span class="note">93/120</span></td>
+            <td class="num">+1.7</td><td class="num">[−9.2, +12.5]</td></tr>
+          <tr><th scope="row">Total swap<br><span class="note">maximum-difference group</span></th><td class="num">57</td>
+            <td class="num">0.439<br><span class="note">75/171</span></td>
+            <td class="num hold">0.497<br><span class="note">85/171</span></td>
+            <td class="num">+5.8</td><td class="num">[−4.7, +16.4]</td></tr>
+          <tr><th scope="row">Other</th><td class="num">65</td>
+            <td class="num">0.615<br><span class="note">120/195</span></td>
+            <td class="num hold">0.621<br><span class="note">121/195</span></td>
+            <td class="num">+0.5</td><td class="num">[−5.6, +6.7]</td></tr>
+          <tr><th scope="row">All judged<br><span class="note">mixed, reference</span></th><td class="num">162</td>
+            <td class="num">0.588<br><span class="note">286/486</span></td>
+            <td class="num hold">0.615<br><span class="note">299/486</span></td>
+            <td class="num">+2.7</td><td class="num">[−2.5, +7.8]</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p><strong>a25m is non-negative in all four strata and the current model leads in none of
+        them.</strong> Per article it is 46 wins for a25m, 36 for the current model, 80 ties (sign
+        test p = 0.32). The direction is consistent, yet <strong>every stratum's interval spans
+        zero.</strong> The +1.7pt from the unbiased random 40 is, in counts,
+        <strong>2 more hits out of 120 slots</strong>.</p>
+
+      <div class="panel flag">
+        <p><strong>And judging established that more judging would not settle it.</strong>
+          The standard error on the random sample is 5.5pt. Holding the effect size constant, the
+          interval as the sample grows looks like this.</p>
+        <p class="note">n=100 → [−5.2, +8.5] / n=200 → [−3.2, +6.5] /
+          <strong>n=389 (every changed article) → [−1.8, +5.1]</strong>.
+          Making +1.7pt significant would take roughly 1,700 articles, and
+          <strong>only 389 articles changed at all.</strong> On this corpus, judging everything by
+          hand still would not rank them.</p>
+      </div>
+
+      <div class="panel flag">
+        <p><strong>In English, the one "significant" cell did not replicate.</strong>
+          The repaired metric put a25m ahead with an interval clear of zero in exactly one place in
+          this report — English fixed-pool P@3, <strong>+5.8pt [+1.4, +11.6]</strong>. Judging all
+          19 changed English articles by hand gave
+          <strong>40/57 against 40/57, a difference of +0.0pt [−14.0, +14.0]</strong> —
+          an exact tie. Per article, a25m 7 wins, current 6, 6 ties.</p>
+        <p class="note">English has only 23 tagged articles. The most straightforward reading is that a cell
+          reaching significance at that scale reflects <strong>a difference in the narrow slice the
+          metric can see</strong>, not a difference a reader would notice.
+          <strong>Human judgment cancelled the only "significant" result in the study.</strong></p>
+      </div>
+
+      <h3>Result 2 — the proxy metric saw only 9% of relatedness</h3>
+      <p>This is the real point. Take the 827 judged pairs and <strong>evaluate tag agreement as a
+        predictor of the human labels</strong>, and what the metric was measuring comes out as a
+        number.</p>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <caption>Tag agreement against human judgment (827 judged pairs)</caption>
+        <thead>
+          <tr><th class="lbl"></th><th>Human: related</th><th>Human: unrelated</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row" class="lbl">Tag hit</th>
+            <td class="num win">40</td><td class="num">13</td></tr>
+          <tr><th scope="row" class="lbl">Tag miss</th>
+            <td class="num hold">418<br><span class="note">missed</span></td><td class="num">356</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p><strong>Precision 0.755, recall 0.087.</strong> If the tags agree, a human almost always
+        calls the pair related — that direction is trustworthy. But of the 458 recommendations a
+        human called related, <strong>the tags found 40</strong>.</p>
+
+      <p>The reason is simple: <strong>86% of judged pairs (714/827) have no tag on at least one
+        end and were invisible to the metric from the start.</strong> And in that invisible
+        territory, the human marked 392 pairs related.</p>
+
+      <p>Split by language, the same metric turns out to break in two different ways.</p>
+      <div class="scroll">
+        <table>
+          <caption>Tag agreement as a predictor of human judgment, by language</caption>
+          <thead>
+            <tr><th class="lbl">Corpus</th><th>Pairs</th><th>Recall</th><th>Precision</th>
+              <th>One end untagged</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">ja</th><td class="num">745</td>
+              <td class="num">0.061</td><td class="num hold">0.862</td><td class="num">91%</td></tr>
+            <tr><th scope="row">en</th><td class="num">82</td>
+              <td class="num hold">0.294</td><td class="num">0.625</td><td class="num">46%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note"><strong>Japanese is "right when it fires, almost blind otherwise"</strong>
+        (precision 0.86, recall 0.06). <strong>English is "sees a fair amount, but firing does not
+        mean right"</strong> (recall 0.29, precision 0.63). The tagged share differs — 23% (ja)
+        against 70% (en) — and where tags are dense, tag agreement turns loose enough to pick up 9
+        pairs a human called unrelated. <strong>Tilt it either way and the proxy still does not
+        stand in for a human.</strong></p>
+
+      <div class="panel">
+        <p><strong>The recommendations are far better than the metric suggested.</strong>
+          On the random 40, <strong>about 76% of both models' recommendations</strong> were judged
+          sound. The same recommendations score about 0.37 under fixed-pool precision@3.
+          <strong>The low number was not bad recommendations, it was thin ground truth.</strong></p>
+      </div>
+
+      <p>This asymmetry decides how the experiments should be read.</p>
+      <ul>
+        <li><strong>"A recommendation whose tags agree is sound"</strong> — this direction is broadly
+          safe (precision 0.755)</li>
+        <li><strong>"A recommendation whose tags disagree is unsound"</strong> — this direction is
+          flatly wrong (recall 0.087)</li>
+        <li>And <strong>the model comparison rode on the second inference.</strong>
+          Almost all of the difference between the two models happens in untagged territory, and the
+          metric was not looking there at all</li>
+      </ul>
+
+      <p class="note">So the numbers in experiments 1 and 2 were not "broken": <strong>they measured a narrow
+        slice of relatedness, accurately, as that slice.</strong> The slice was simply too narrow to
+        speak about which model is better.</p>
+
+      <h3>Differences the metric cannot see — some examples</h3>
+      <p>What happens outside the tags shows up in the individual cases I read while judging.
+        <strong>a25m's winning pattern is detecting the same entity</strong>, which is the kind of
+        match that essentially never appears in a tag.</p>
+
+      <div class="panel">
+        <p><strong>A new Real Group album write-up</strong> → a25m lines up two reviews of older
+          albums by <strong>the same artist</strong>. The current model returned a live announcement
+          for a different artist.</p>
+        <p><strong>A review of Ira Ishida's "Utsukushii Kodomo"</strong> → a25m lines up
+          "Akihabara@DEEP" and "Ai ga Inai Heya" by <strong>the same author</strong>. The current
+          model matched the author once.</p>
+        <p><strong>The Kawasaki Ruby Kaigi 01 report</strong> → a25m puts the
+          <strong>sister event</strong>, Kanagawa Ruby Kaigi, at the top. The current model returned
+          the monthly meetup reports.</p>
+        <p class="note">Artist names, author names and event names are not tags, so none of this scores under any
+          metric. The failure runs the other way too — on the MeCab article a25m mixed in a Thinkpad
+          migration post, while the current model kept it to NLP articles.
+          <strong>The current model's winning pattern is topic purity.</strong></p>
+      </div>
+
+      <p><strong>Neither habit is broken.</strong> Which one you prefer is a design choice, not
+        something measurement decides — which is also how it felt after reading 162 articles.</p>
+
+      <h3>Result 3 — so should the choice be made per article?</h3>
+      <p>If the habits differ, the next question follows naturally: <strong>maybe "this article
+        wants this model" is a real thing.</strong> If it is, a mechanism that picks the better model
+        per article would beat both.</p>
+
+      <p>But a win-loss table cannot answer that. <strong>Even two evenly matched models will
+        trade wins and losses when they recommend different articles</strong>, so "there are wins
+        and losses per article" is not evidence of structure. The question is
+        <strong>whether those wins are predictable</strong>. Three tests.</p>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <caption>Testing "the better model is determined by the article". All three point towards a25m;
+          none is significant</caption>
+        <thead>
+          <tr><th class="lbl">Test</th><th class="lbl">Question</th><th>Result</th><th>p</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Split-half reliability</th>
+            <td class="lbl">Does the winner at rank 1 agree with the winner at ranks 2–3?</td>
+            <td class="num">r = +0.147</td><td class="num">0.082</td></tr>
+          <tr><th scope="row">Stratified (by year)</th>
+            <td class="lbl">2005–12 / 2013–19 / 2020–</td>
+            <td class="num">+1.4 / +3.6 / +11.1pt</td><td class="num">0.301</td></tr>
+          <tr><th scope="row">Oracle</th>
+            <td class="lbl">Does taking the per-article winner gain more than noise would?</td>
+            <td class="num">+9.5pt<br><span class="note">noise alone +7.9</span></td><td class="num">0.076</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p>The oracle row is the clearest. <strong>Taking the per-article winner raises 0.603 to
+        0.698 (+9.5pt).</strong> But "pick the winner" is an operation that, on two perfectly equal
+        models, <strong>still earns +7.9pt [+5.7, +10.0] just by skimming noise.</strong>
+        The observed +9.5pt merely sits at the edge of that distribution — <strong>any structure
+        there is about the same size as the noise.</strong></p>
+
+      <p>The trend by year — a25m doing better on newer technical articles — lines up neatly in
+        the point estimates, but 2020 onwards is n=15 with an interval of [−6.7, +26.7]. The
+        correlation with year itself is r = +0.086, p = 0.301, so <strong>the neatness of the
+        ordering is explained by how thin the samples are.</strong></p>
+
+      <div class="panel flag">
+        <p><strong>All three point the same way and all three fall short of significance.</strong>
+          This is as far as it goes — <strong>the difference in habits is reliably observable, but
+          "this article wants this model" could not be shown to be predictable.</strong>
+          This data gives no grounds for building a per-article switch.</p>
+        <p class="note">These are two different claims. The first is visible by eye in every diff; the second is
+          a claim about <strong>predictability</strong>, and cannot be made without a test.
+          This time the test did not pass.</p>
+      </div>
+
+      <p>In the end it comes down to <strong>which one you prefer.</strong> Neither measurement
+        nor inspection produces a ranking, and switching per article is not supported. What is left
+        is a preference about which habit you want on your own blog.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><p class="eyebrow">5 · Discussion</p><h2>The two multilingual candidates, compared</h2></div>
+    <div class="col">
+      <p>Consolidating onto one model means choosing between the two multilingual candidates. And
+        what mostly matters is <strong>what happens when an article is written in a language other
+        than Japanese or English</strong> — exactly what was not measured. Beyond the two languages
+        measured here, that means leaning on published coverage information.</p>
+
+      <p><strong>Both were trained on a wide set of languages.</strong> bekko was trained on data
+        covering more than 100 languages so that it can search across languages, retrieving English
+        documents from a Japanese query without a translation step. granite's base encoder is
+        pre-trained on more than 200 languages. <strong>The difference is not the training range but
+        how far the per-language numbers are published.</strong></p>
+    </div>
+
+    <div class="col">
+      <h3>The 14 languages bekko evaluates individually</h3>
+      <p>Not the limit of the training range but <strong>the range with published measured
+        scores</strong>. Measured on English NanoBEIR plus community-published translations into 13
+        languages.</p>
+      <p><strong>English · Spanish · Italian · Portuguese · German · Vietnamese ·
+        Japanese · French · Swedish · Norwegian · Korean</strong>,
+        and the bottom three, <strong>Arabic · Serbian · Thai</strong>.</p>
+
+      <h3>The 52 languages granite-97m-multilingual lists as enhanced-support</h3>
+      <p>The base encoder is pre-trained on more than 200 languages, so a general-purpose
+        embedding is available for any of them. On top of that, quality is claimed for
+        <strong>the 52 languages given explicit retrieval-pair and cross-lingual training
+        data</strong>.</p>
+      <p class="note">Quoted as written on the model card.</p>
+      <pre><code>sq  Albanian     ar  Arabic       az  Azerbaijani  bn  Bengali
+bg  Bulgarian    ca  Catalan      zh  Chinese      hr  Croatian
+cs  Czech        da  Danish       nl  Dutch        en  English
+et  Estonian     fi  Finnish      fr  French       ka  Georgian
+de  German       el  Greek        he  Hebrew       hi  Hindi
+hu  Hungarian    is  Icelandic    id  Indonesian   it  Italian
+ja  Japanese     kk  Kazakh       km  Khmer        ko  Korean
+lv  Latvian      lt  Lithuanian   ms  Malay        mr  Marathi
+no  Norwegian    fa  Persian      pl  Polish       pt  Portuguese
+ro  Romanian     ru  Russian      sr  Serbian      sk  Slovak
+sl  Slovenian    es  Spanish      sw  Swahili      sv  Swedish
+tl  Tagalog      te  Telugu       th  Thai         tr  Turkish
+uk  Ukrainian    ur  Urdu         uz  Uzbek        vi  Vietnamese</code></pre>
+      <p class="note">It is also trained on Python · Go · Java · JavaScript · PHP · Ruby · SQL · C · C++ code,
+        and claimed to support cross-lingual code search.</p>
+
+      <p><strong>The declarations are at different granularities, so breadth of coverage cannot
+        rank them.</strong> granite's 52 is a list of languages given explicit retrieval-pair and
+        cross-lingual data, not per-language scores. bekko's 100+ is the set of languages included in
+        training, also not per-language scores. <strong>Neither publishes anything in the shape of
+        "this language will be fine".</strong></p>
+
+      <p>There is exactly one real difference: <strong>whether per-language measurements are
+        published</strong>. bekko has numbers for 14 languages. granite publishes no per-language
+        figures. As material for choosing what to consolidate onto, those 14 languages are the only
+        thing resembling evidence.</p>
+
+      <h3>Position on public benchmarks</h3>
+      <p>The two models are compared directly in <a href="https://secon.dev/entry/2026/07/29/080000-bekko-embedding/">bekko's announcement post</a>.
+        Not per language, but it is the only third-party measurement available, so here it is.</p>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <caption>Source: excerpted from the <a href="https://secon.dev/entry/2026/07/29/080000-bekko-embedding/">Bekko Embedding announcement</a>. <strong>Coloured is ahead</strong></caption>
+        <thead>
+          <tr><th class="lbl">Model</th><th>active params</th>
+            <th>MMTEB (ALL)</th><th>MMTEB (Ret)</th><th>MNanoBEIR</th>
+            <th>NanoRTEB</th><th>NanoCoIR</th><th>NanoLongEmbed</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">bekko-a25m</th><td class="num">24.9M</td>
+            <td class="num win">58.3</td><td class="num">57.5</td><td class="num win">54.9</td>
+            <td class="num win">59.4</td><td class="num win">78.6</td><td class="num win">70.6</td></tr>
+          <tr><th scope="row">granite-97m-multilingual</th><td class="num">28.3M</td>
+            <td class="num">51.9</td><td class="num win">60.3</td><td class="num">50.5</td>
+            <td class="num">56.7</td><td class="num">78.0</td><td class="num">65.9</td></tr>
+          <tr><th scope="row">bekko-a8m</th><td class="num">7.67M</td>
+            <td class="num">56.7</td><td class="num">56.2</td><td class="num">52.6</td>
+            <td class="num">55.0</td><td class="num">74.7</td><td class="num">68.2</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p><strong>bekko-a25m leads on five of the six entries; granite leads only on MMTEB's
+        retrieval task (60.3 against 57.5).</strong> a25m also has fewer active parameters
+        (24.9M against 28.3M).</p>
+
+      <p>Related-article recommendation deals in <strong>symmetric similarity between
+        articles</strong>, so MMTEB (ALL) — the average over all 131 tasks — is closer to it than
+        the query → document retrieval task. There the gap is 58.3 against 51.9, 6.4pt.
+        <strong>But this is not a per-language number</strong>, so it does not answer "which is
+        better in a specific language that has no dedicated model".</p>
+    </div>
+
+
+    <div class="col">
+      <div class="panel flag">
+        <p><strong>Thai, Serbian and Arabic are at the bottom.</strong> Having adopted it,
+          recommendations for articles written in those languages need to be discounted accordingly.</p>
+        <p class="note">bekko-a8m does not beat bge-m3 consistently — bge-m3 is ahead in Vietnamese, Serbian,
+          Thai, Korean and Swedish. a8m's selling point is efficiency, holding its own at 1/41 the
+          active parameters, not absolute quality. a25m beats bge-m3 in nearly every language.</p>
+      </div>
+      <p class="note">On the granite side, IBM itself writes that "pruned models show more pronounced
+        degradation on low-resource languages". The fallback is used mainly for low-resource
+        languages, so that lands squarely on the use case. Losing to a25m by 4–5pt even in Japanese
+        — a high-resource language — looks consistent with that note.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><p class="eyebrow">5 · Discussion</p><h2>Conclusion</h2></div>
+    <div class="col">
+      <p><strong>Consolidate onto one multilingual model, and change the input length too.</strong>
+        The verdict flipped twice during the investigation. Before the metric was repaired: "no
+        quality improvement large enough to justify replacing". After the repair: "quality is equal
+        or marginally better, but the difference does not cover the added cost". Then, after human
+        evaluation and measuring the cost for real: <strong>"quality is equal. The ranking cannot be
+        settled in principle, and switching per article is not supported. What is left is preference
+        and cost — and the cost turned out smaller than expected"</strong> — that is the final
+        form.</p>
+
+      <pre><code>ja   → bekko-embedding-v1-a25m    199 MB  changed (was ruri-v3 + "トピック: ")
+en   → bekko-embedding-v1-a25m    199 MB  changed (was granite-small-english)
+rest → runs on the same model
+
+max_content_chars   2,000 → 8,000         changed</code></pre>
+
+      <ul>
+        <li><strong>Quality dropped out of the decision.</strong> In the fixed pool, Japanese P@3 is
+          tied, a25m is +1.4pt at P@10, AUC +1.8pt (n.s.). Under human judgment the random 40 gives
+          +1.7pt [−9.2, +12.5], and per article 46 wins to 36 with 80 ties (p = 0.32).
+          All 19 changed English articles were judged and came out an <strong>exact tie</strong>
+          (40/57 against 40/57). <strong>a25m is non-negative in every stratum and the current model
+          leads in none</strong>, yet not one result reaches significance. And judging all 389 would
+          still not reach it (see "Human evaluation").
+          <strong>What cannot be measured cannot ground the decision</strong></li>
+        <li><strong>The deciding factor is a preference between habits.</strong> a25m picks up the
+          same entity — same artist, same author, sister event — while the current model keeps topic
+          purity. The case for switching per article was rejected by the tests (Result 3), so
+          <strong>it comes down to choosing one habit.</strong> For a personal blog, I judged that
+          entity connections — which appear in neither the tags nor the metric — matter more to a
+          reader</li>
+        <li><strong>The cost was measured and it was small.</strong> On the real GitHub Actions run,
+          <strong>3m29s on the first run</strong> (re-embedding all 452 articles, model download
+          included). That breaks down as 3m8s embedding and 17s download, so
+          <strong>199 MB matters less than the number suggests</strong> — with 25M active parameters
+          in a MoE, an article takes about 0.4s. Later runs only touch new articles, so the steady-
+          state cost is unchanged. I also confirmed that running the same weights twice produces
+          byte-identical recommendations</li>
+        <li><strong>A side benefit.</strong> Switching by detected language disappears and the
+          configuration gets simpler. The same model runs for languages other than Japanese and
+          English — the multilingual coverage that motivated this in the first place, obtained
+          without giving up quality</li>
+        <li><strong><code>max_content_chars</code> from 2,000 to 8,000.</strong>
+          This is the most solid result in the investigation. All eight fixed-pool and AUC cells have
+          a non-negative point estimate; none is negative. Both arms are the same model, so the old
+          metric's flaw does not touch it. It goes in on "a small gain, and no loss if it misses"</li>
+        <li><strong>The corpus length distribution should have been checked before touching the
+          input length.</strong> The input actually changed for 93 of 420 Japanese articles and 15 of
+          33 English ones. For the rest, raising the cap changes not one character.
+          <strong>What a setting can reach is decided by the corpus, not the model</strong></li>
+        <li><strong>Quality outside Japanese and English is adopted still unverified.</strong> What
+          was measured is Japanese and English, both languages that have a dedicated model. How a25m
+          behaves elsewhere is unknown — <strong>but this is still better than before.</strong> For a
+          language with no dedicated model the only option used to be reusing the English model, and
+          on the probes the separation margin outside its range all but vanished: 0.139 for French,
+          0.055 for Japanese. An unverified multilingual model is the better bet against a dedicated
+          model known to be out of range</li>
+        <li class="note">The rival, granite-97m-multilingual, was dropped. Only fp32 is usable (the int8 build
+          collapses in English, AUC 0.747 → 0.680), and even at fp32 its English AUC is below a25m's,
+          with a25m ahead on five of six public-benchmark entries</li>
+      </ul>
+
+      <div class="panel">
+        <p><strong>It is worth recording that three of the four experiments leading to this
+          conclusion misfired.</strong> Experiment 1 (model comparison) had its ranking inverted by a
+          flaw in the metric and did not reach significance after the repair either. Result 3
+          (per-article switching) was rejected. Human evaluation could not rank them either.
+          <strong>What decided it was not measurement but measured cost and preference.</strong></p>
+        <p class="note">Measuring was still worth it. Because an upper bound — "whatever the difference is, it is
+          within this range" — could be drawn, it became coherent to drop quality from the decision
+          and choose on preference.
+          <strong>Measurement could not pick a winner, but it showed that no winner had to be
+          picked.</strong></p>
+      </div>
+
+      <h3>On proxy metrics</h3>
+      <p>The first metric could answer a coarse question. Asked "should this be replaced", it
+        returned "no improvement large enough to justify replacing" — enough, if all you want is an
+        upper bound. It broke one step finer down, at the moment "which model is better" was to be
+        decided on a few points of difference: the design that <strong>lets the model choose what
+        gets scored</strong> surfaced, and the ranking inverted depending on how you read it.</p>
+
+      <p>The repair took two operations. <strong>Take the denominator away from the model</strong>
+        (fix candidates to tagged articles), and <strong>drop the cutoff and use the whole
+        ranking</strong> (pairwise AUC). Both are standard responses to incomplete relevance
+        judgments in information retrieval, not new inventions. After the repair the intervals shrank
+        from ±5pt to the 1–4pt range and, for the first time, a cell came out clear of zero.
+        <strong>Fixing a metric's design did as much for resolution as adding data would have.</strong></p>
+
+      <p><strong>And the flaw that remained was invisible from inside the metric.</strong>
+        The repaired metric had a fair denominator but still <strong>saw only 9% of
+        relatedness</strong> (see "Human evaluation"). Precision is a relatively high 0.755, so "a tag
+        hit means it is sound" holds — yet the difference between the models happens almost entirely
+        in untagged territory, outside what was being measured.
+        <strong>A correctly designed metric was correctly measuring a narrow slice</strong> — that is
+        the final diagnosis.</p>
+
+      <p>And <strong>not one of the errors found in this investigation was found by staring at the
+        metric.</strong></p>
+      <ul>
+        <li>The referee included TF-IDF-derived terms — found by <strong>swapping the referee</strong></li>
+        <li>Measurement ran on different text than production — found by <strong>checking the numbers
+          against the production run log</strong></li>
+        <li>The ratio was being dragged by the size of the denominator — found by <strong>reading
+          individual articles one at a time</strong></li>
+        <li>That denominator effect was manufacturing the apparent conclusion about input length —
+          found by <strong>decomposing the rate into hits and denominator</strong></li>
+        <li>A model-movable denominator was a flaw in the design itself — confirmed when
+          <strong>the same data under two readings inverted the ranking</strong></li>
+        <li>Even after the repair the metric saw only a fraction of relatedness — only revealed by
+          <strong>judging the recommendations themselves by hand</strong></li>
+      </ul>
+      <p>Every one came from outside the metric, or from setting metrics against each other.
+        <strong>A proxy metric cannot be validated on its own.</strong> A proxy breaks not only on
+        "what counts as correct" but <strong>on "who decides the denominator", and once fixed its
+        limit is set by "how much of the field it sees".</strong> Even after writing a note on the
+        third one saying "this has a side effect", it took a while to notice that my own conclusion
+        was built out of that side effect. A note is not absolution — the error sat in the conclusion
+        until the design was fixed.</p>
+
+      <p class="note">If you are building a proxy metric, <strong>take a sample of human judgments first, small
+        is fine, and evaluate the proxy as a predictor of it</strong> — cheap insurance. Doing that
+        last is why I carried the misreading "low metric = bad recommendations" for so long. In fact
+        76% of the recommendations were sound.</p>
+
+      <p class="note">The biggest finding here did not come from the metric either. The reason input length
+        matters in English and not in Japanese lies in <strong>the corpus length distribution</strong>
+        — 327 of 420 articles do not reach 2,000 characters. The metric only confirmed it; the
+        explanation was on the data side.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><p class="eyebrow">5 · Discussion</p><h2>Where this conclusion does not reach</h2></div>
+    <div class="col">
+      <p>What this investigation measured is <strong>two languages, Japanese and English</strong>,
+        both high-resource, both with a dedicated model available.
+        <strong>A fallback is needed precisely for languages that meet neither condition.</strong>
+        That asymmetry is why the conclusion calls a25m the "first choice" and stops short of
+        declaring it verified.</p>
+
+      <p>To go further, the inference would have to be assembled like this.</p>
+      <ol>
+        <li>Public benchmarks give a <strong>relative ordering</strong> across several languages
+          (third-party measurement)</li>
+        <li>This corpus confirms, <strong>at two points only</strong>, that the ordering also holds
+          for related-article recommendation</li>
+        <li>Extrapolate: for an unmeasured language, if its score in (1) is comparable to Japanese,
+          (2) should be comparable too</li>
+      </ol>
+
+      <p>(3) is the leap. The distance being crossed is not just "a different language" —
+        <strong>it crosses the resource-volume axis.</strong> Low-resource languages are where models
+        lean on cross-lingual transfer, and where every model degrades most. IBM's note about granite,
+        "pruned models show more pronounced degradation on low-resource languages", is about exactly
+        this territory.</p>
+
+      <div class="panel flag">
+        <p><strong>Where extrapolation might hold, and where it does not.</strong> On the public
+          benchmark Japanese sits mid-pack among the 14 languages (about 54.5, against a high of 61
+          and a low of 47.5), so bekko is not simply good at Japanese in particular. Extrapolating to
+          languages at a similar level — Italian, Portuguese, German, Vietnamese, French — is
+          reasonably plausible. Thai (47.5), Serbian (49) and Arabic (49.5), 5–7pt below Japanese,
+          are the opposite: <strong>two measurements support nothing about them</strong>.</p>
+      </div>
+
+      <p><strong>There is only one way to find out.</strong> Take a few dozen articles in the
+        target language and run the same procedure. Nothing in this toolchain is
+        language-specific, so the same metrics apply as soon as a corpus exists. With parallel
+        translations you could also see whether the recommendation set holds across languages.
+        chezo.uno has only Japanese and English, so that is not possible today.</p>
+
+      <p class="note">As for other limits: with hand-written tags as the referee, the writer's tagging habits
+        go straight into the metric. Depending on topk there are only 58–536 scorable pairs. And this
+        is two languages on one blog — every difference reported here is a difference within that
+        scope.</p>
+
+      <p class="note">Human evaluation has limits of the same kind. <strong>There is one judge, the author, and
+        no second judge to measure agreement against.</strong> Blinding (model names, tags and
+        tag-hit marks all hidden, left and right shuffled per article) cut off bias towards a model,
+        but the standard for "related" still rests on the author's sense of it.
+        162 of the 389 changed articles were judged: a sample in Japanese, the complete set in
+        English.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><p class="eyebrow">Appendix</p><h2>The effect of quantisation</h2></div>
+    <div class="col">
+      <p>ruri and granite were measured on int8 <code>model_quantized.onnx</code>, bekko on fp32
+        <code>model.onnx</code> (bekko's author does not recommend the quantised build). To check
+        whether that favoured bekko, all three models were run at both int8 and fp32.</p>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <caption>Quantisation seen through the repaired metric. The hit difference is fixed-pool fp32 −
+          int8 (positive means quantisation was losing hits). The two production models are measured
+          at the production 8,000 characters; the candidate granite-97m at 2,000, as in experiment 1</caption>
+        <thead>
+          <tr>
+            <th class="lbl">Model</th><th class="lbl">Corpus</th>
+            <th>AUC int8 → fp32</th>
+            <th>Hit diff k=3</th><th>k=5</th><th>k=10</th>
+            <th>Max recommended k=10</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">ruri-v3-30m<br><span class="note">production</span></th><td class="lbl">ja</td>
+            <td class="num">0.826 → 0.832</td>
+            <td class="num">+2</td><td class="num">−2</td><td class="num">±0</td>
+            <td class="num">35 → 35</td></tr>
+          <tr><th scope="row">granite-small-english<br><span class="note">production</span></th><td class="lbl">en</td>
+            <td class="num">0.767 → 0.763</td>
+            <td class="num">±0</td><td class="num">−1</td><td class="num">+2</td>
+            <td class="num">25 → 23</td></tr>
+          <tr><th scope="row" rowspan="2">granite-97m-multilingual<br><span class="note">candidate</span></th>
+            <td class="lbl">en</td>
+            <td class="num win">0.680 → 0.747</td>
+            <td class="num win">+3</td><td class="num win">+7</td><td class="num win">+11</td>
+            <td class="num">21 → 23</td></tr>
+          <tr><td class="lbl">ja</td>
+            <td class="num">0.809 → 0.813</td>
+            <td class="num">−5</td><td class="num">+2</td><td class="num">+12</td>
+            <td class="num win">47 → 39</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p><strong>Quantisation does not break the two production models.</strong> The AUC
+        differences are ruri +0.6pt [−0.2, +1.5] and granite −0.4pt [−3.2, +3.2], both spanning zero,
+        and the fixed-pool hit difference stays within ±2. <strong>int8 is fine as it is</strong> —
+        no reason emerged to take ruri to 120 MB or granite to fp32.</p>
+
+      <p><strong>The only thing that broke was the candidate, granite-97m-multilingual, and the
+        damage lands differently per language.</strong> In English the AUC collapses 6.7pt, 0.747 →
+        0.680, and in the fixed pool it produced the only cell in any model that falls significantly
+        short of the current model (experiment 1). In Japanese the AUC barely moves, yet hub
+        concentration is clearly worse at int8 (maximum times recommended 47 against 39).
+        The same quantisation shows up as ranking quality in English and as hub concentration in
+        Japanese.</p>
+
+      <p>This model is a pruned build of the 311m (22 layers → 12), and the natural reading is
+        that with the redundancy already cut there is nothing left to spend on quantisation.
+        <strong>Quantisation tolerance is a model-specific property; measuring it on one model does
+        not generalise to another.</strong> In this very investigation three models came through
+        untouched and one broke.</p>
+
+      <p class="note">So granite-97m-multilingual is compared using its fp32 numbers. Listing its int8 figures
+        as "this model's performance" would mistake quantisation damage for model quality.</p>
+
+      <p class="note">As a by-product, it also became visible that <strong>the tag referee is remarkably
+        insensitive to recommendations changing</strong>. Between ruri int8 and fp32 the
+        recommendations change for 319 of 420 Japanese articles, yet fixed-pool hits move by 2 and
+        AUC by 0.6pt. A largely different set of recommendations can be at the same level as far as
+        tags can measure.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><p class="eyebrow">Appendix</p><h2>Reproducing this</h2></div>
+    <div class="col">
+      <p>All of it lives in prelims-cli's <code>scripts/</code>.</p>
+      <ul>
+        <li><a href="https://github.com/chezou/prelims-cli/pull/11/changes#diff-22d8c619507c277eded3ef3ba611ff9692eaf30ffbe93632a4d037fd5e5830de"><code>check_onnx_model.py</code></a> — the ONNX inputs and outputs, whether the required
+          inputs are satisfied, the output rank, pooling pinned down against the model's own sentence
+          vectors, and the probe separation margin</li>
+        <li><a href="https://github.com/chezou/prelims-cli/pull/11/changes#diff-d5fab2804f6350ec2994ad5b91d24a38995e97bf7a753dd09e3bbd2c90f8049b"><code>compare_embedding_variants.py</code></a> — runs the corpus under two settings and reports
+          the diff and the metrics. Alongside tag agreement and hub concentration, it
+          <strong>reports fixed-pool precision@k and pairwise AUC with paired-bootstrap 95%
+          intervals</strong> (<code>--bootstrap</code>, default 1,000 resamples, fixed seed).
+          <code>--vary config</code> compares any two models, and <code>--cache-dir</code> reuses
+          embeddings so a topk sweep costs one run</li>
+        <li><code>rerun_all.sh</code> — re-runs every comparison in this report (models × 2 languages
+          × 3 topk levels, input length, quantisation, the referee swap, per-article diffs) in one
+          command and leaves the output in a file. Every number in this report comes from that
+          output</li>
+        <li><code>judgments/</code> — the human evaluation labels (162 articles, 827 pairs) and the
+          scoring script. The stratified precision@3, the bootstrap intervals and the confusion matrix
+          against the tag metric all reproduce from it</li>
+      </ul>
+      <pre><code>bash scripts/rerun_all.sh          # re-run every comparison (minutes, with a warm cache)
+
+# to run a single comparison:
+python scripts/compare_embedding_variants.py ../chezo.uno/content/post \
+    --language ja --permalink-base /post --topk 5 --vary config \
+    --tag-keys tags categories --cache-dir ~/.cache/prelims-compare \
+    --a "language=ja,prefix=トピック: " \
+    --b "model_name=hotchpotch/bekko-embedding-v1-a25m,\
+model_file=onnx/model.onnx,pooling=mean"</code></pre>
+      <p class="note">The embedding cache is keyed on article body text alone, so fixing front-matter tags
+        leaves the cache warm. That property is why re-measuring after fixing the referee (the tags)
+        takes minutes.</p>
+    </div>
+  </section>
+
+
+
+
+  <footer>
+    <p>The referee, the scripts and the corpus are all public.
+      Run the two scripts in <a href="https://github.com/chezou/prelims-cli">prelims-cli</a>'s
+      <code>scripts/</code> against an article directory and the same numbers come out.
+      Given articles in the target language, this investigation extends to other languages as-is.</p>
+    <p class="note">Multilingual NanoBEIR is a retrieval metric (query → document), while related-article
+      recommendation deals in symmetric similarity between articles. There is no guarantee the public
+      benchmark ordering carries over to this use. The per-language scores (Japanese ≈ 54.5 and so
+      on) are read off the published chart by eye; the paper's appendix was not reachable.</p>
+  </footer>
+
+</div>
