@@ -1,0 +1,1135 @@
+{
+ "/blog/2016-12-01_text-to-speech-based-on-deep-learning-for-web-site-using-amazon-polly-and-ruby-adc1923212cb/": {
+  "done": true,
+  "rel": [
+   "/blog/2019-04-24_ruby-for-data-science-and-machine-learning-9f03e99125e0/"
+  ]
+ },
+ "/blog/2017-07-24_simple-way-to-distribute-your-private-python-packages-within-your-organization-fb7af5dbd4c9/": {
+  "done": true,
+  "rel": [
+   "/blog/2017-08-30_python-basics--package-management-462918458f96/",
+   "/blog/2019-11-26_how-to-release-python-package-from-github-actions-d5a1d8edba6e/",
+   "/blog/2022-05-21_fastest-way-to-release-python-cli/"
+  ]
+ },
+ "/blog/2026-03-19-migrated-from-pages-cms-to-sveltia-cms/": {
+  "done": true,
+  "rel": [
+   "/blog/2025-08-24-configured-pages-cms/",
+   "/blog/2024-02-02-migrated-from-netlify-to-cloudflare-pages/",
+   "/blog/2022-01-25_hugo-content-based-recommendation/"
+  ]
+ },
+ "/blog/2026-03-29-embedding-workflow-templates-in-skills-shifting-the-llm-s-role-from-generation-to-rendering/": {
+  "done": true,
+  "rel": [
+   "/blog/2025-09-19-review-fatigue/",
+   "/blog/2020-03-05_py-operator-development-guide-for-python-users/"
+  ]
+ },
+ "/post/2005-03-03-sugoi/": {
+  "done": true,
+  "rel": [
+   "/post/2009-05-07-sayonarawillcom-sayonaraad-es/",
+   "/post/2009-05-04-ad-es-wojie-yue-surutameni/",
+   "/post/2005-07-11-w-sim/",
+   "/post/2009-06-09-xin-xing-iphone-3g-snojia-ge-nituite/",
+   "/post/2005-04-23-willcom/",
+   "/post/2007-05-29-zardnovocalgawang-kunararetanante-dot-dot-dot/"
+  ]
+ },
+ "/post/2005-03-27-u-urusai-dot-dot-dot/": {
+  "done": true,
+  "rel": [
+   "/post/2011-02-05-acer-aspire-1410wocrucial-realssd-c300niwai-fu-kedvdnasinihuan-zhuang-sita/",
+   "/post/2007-05-29-zardnovocalgawang-kunararetanante-dot-dot-dot/"
+  ]
+ },
+ "/post/2005-04-23-willcom/": {
+  "done": true,
+  "rel": [
+   "/post/2005-07-11-w-sim/",
+   "/post/2009-05-04-ad-es-wojie-yue-surutameni/",
+   "/post/2009-05-06-ad-es-vs-iphone-zhi-yin-kihe-zhan/",
+   "/post/2009-05-02-hobori-gaiphonewochi-tishang-geteru/"
+  ]
+ },
+ "/post/2005-05-19-vhsnei-zang-dvdpureya/": {
+  "done": true,
+  "rel": [
+   "/post/2010-06-26-canon-ivis-hf-m31gayatutekita-huruhdle-sii/",
+   "/post/2005-08-06-webkamera/",
+   "/post/2005-10-07-tuinikita/",
+   "/post/2009-11-18-jbl-reference-410woxiu-li-nichu-sukotonijue-meta/",
+   "/post/2007-05-29-zardnovocalgawang-kunararetanante-dot-dot-dot/"
+  ]
+ },
+ "/post/2005-07-11-w-sim/": {
+  "done": true,
+  "rel": [
+   "/post/2005-04-23-willcom/",
+   "/post/2005-03-03-sugoi/",
+   "/post/2009-05-12-konnitiha-iphone/",
+   "/post/2009-05-07-sayonarawillcom-sayonaraad-es/"
+  ]
+ },
+ "/post/2005-07-17-urayamasika/": {
+  "done": true,
+  "rel": [
+   "/post/2008-07-20-he-chang-tuan-ojiang-hu-korariazudi-7hui-yan-zou-hui/",
+   "/post/2008-11-08-liang-ishi-dai-ninatutanee/",
+   "/post/2012-09-24-sheng-yan-zou-henoqi-dai-tojia-zhi/",
+   "/post/2009-03-09-masafestanirajatonga/",
+   "/post/2008-07-19-ensemblenow-di-39hui-ding-qi-yan-zou-hui-at-sesionshan-bing/"
+  ]
+ },
+ "/post/2005-08-06-webkamera/": {
+  "done": true,
+  "rel": [
+   "/post/2009-10-18-vaio-xnixin-tokimeku/"
+  ]
+ },
+ "/post/2005-08-17-mazimena-dian-bo-xi-songs/": {
+  "done": true,
+  "rel": [
+   "/post/2009-07-09-steve-dobrogosznodong-hua-gatakusanarujian-nituite/",
+   "/post/2012-09-28-harmonia-ensemblegaxin-siicd-yi-wings-wo9-slash-29nifa-mai/",
+   "/post/2008-07-20-he-chang-tuan-ojiang-hu-korariazudi-7hui-yan-zou-hui/",
+   "/post/2005-07-17-urayamasika/"
+  ]
+ },
+ "/post/2005-08-21-nan-sheng-he-chang/": {
+  "done": true,
+  "rel": [
+   "/post/2008-07-20-he-chang-tuan-ojiang-hu-korariazudi-7hui-yan-zou-hui/",
+   "/post/2009-12-17-li-gu-qu-min-he-chang-tuan-no-tunoshi-xian-fang-fa-wang-xiang-number-tlros-wotong-zitesi-tutakoto/",
+   "/post/2011-04-09-eritukuuitekashi-yu-ding-tong-rilai-ri/",
+   "/post/2007-07-02-minnanohe-chang/"
+  ]
+ },
+ "/post/2005-08-24-hetudohon-hetudohon/": {
+  "done": true,
+  "rel": [
+   "/post/2008-09-14-hetudohonwu-se-sitahi/",
+   "/post/2008-01-18-souiebakokohawu-yu-burogudatuta/",
+   "/post/2007-05-29-zardnovocalgawang-kunararetanante-dot-dot-dot/"
+  ]
+ },
+ "/post/2005-09-09-notonogai-zao/": {
+  "done": true,
+  "rel": [
+   "/post/2009-10-18-vaio-xnixin-tokimeku/",
+   "/post/2006-03-17-uhi/"
+  ]
+ },
+ "/post/2005-09-18-gao-tian-san-lang-xing-tutekimasita/": {
+  "done": true,
+  "rel": [
+   "/post/2008-07-20-he-chang-tuan-ojiang-hu-korariazudi-7hui-yan-zou-hui/",
+   "/post/2005-08-21-nan-sheng-he-chang/",
+   "/post/2012-09-24-sheng-yan-zou-henoqi-dai-tojia-zhi/",
+   "/post/2008-10-28-sings-2008-with-steve-dobrogosz/"
+  ]
+ },
+ "/post/2005-09-27-willcomxin-ji-zhong-kita/": {
+  "done": true,
+  "rel": [
+   "/post/2005-04-23-willcom/",
+   "/post/2009-10-18-vaio-xnixin-tokimeku/",
+   "/post/2009-06-09-xin-xing-iphone-3g-snojia-ge-nituite/"
+  ]
+ },
+ "/post/2005-10-03-su-suge-pin-desuyo/": {
+  "done": true,
+  "rel": []
+ },
+ "/post/2005-10-07-tuinikita/": {
+  "done": true,
+  "rel": [
+   "/post/2007-05-10-usbdewen-kerufm-slash-amrazio/",
+   "/post/2009-10-26-logitecgaodeioniben-qi-chu-sitekita/",
+   "/post/2007-05-29-zardnovocalgawang-kunararetanante-dot-dot-dot/",
+   "/post/2020-04-03-microphone-for-remote-meeting/"
+  ]
+ },
+ "/post/2006-03-17-uhi/": {
+  "done": true,
+  "rel": [
+   "/post/2007-05-29-zardnovocalgawang-kunararetanante-dot-dot-dot/",
+   "/post/2009-10-18-vaio-xnixin-tokimeku/",
+   "/post/2005-09-09-notonogai-zao/",
+   "/post/2010-06-26-canon-ivis-hf-m31gayatutekita-huruhdle-sii/",
+   "/post/2006-05-01-dslite/"
+  ]
+ },
+ "/post/2006-05-01-dslite/": {
+  "done": true,
+  "rel": [
+   "/post/2006-05-19-ds-de-tv/",
+   "/post/2005-08-06-webkamera/",
+   "/post/2006-03-17-uhi/",
+   "/post/2009-05-30-x-zabadynosirikonkabawomai-tutesimatuta/"
+  ]
+ },
+ "/post/2006-05-19-ds-de-tv/": {
+  "done": true,
+  "rel": [
+   "/post/2007-05-29-zardnovocalgawang-kunararetanante-dot-dot-dot/",
+   "/post/2005-08-06-webkamera/",
+   "/post/2006-05-01-dslite/"
+  ]
+ },
+ "/post/2006-07-28-xia-nanode/": {
+  "done": true,
+  "rel": []
+ },
+ "/post/2006-08-26-nabinabi/": {
+  "done": true,
+  "rel": []
+ },
+ "/post/2007-05-10-usbdewen-kerufm-slash-amrazio/": {
+  "done": true,
+  "rel": [
+   "/post/2015-10-07-xi-pan-fu-kiofeng-lu-supikagapodcastwen-kunonisugoibian-li/",
+   "/post/2008-01-18-souiebakokohawu-yu-burogudatuta/",
+   "/post/2005-10-07-tuinikita/"
+  ]
+ },
+ "/post/2007-05-29-zardnovocalgawang-kunararetanante-dot-dot-dot/": {
+  "done": true,
+  "rel": [
+   "/post/2015-10-07-xi-pan-fu-kiofeng-lu-supikagapodcastwen-kunonisugoibian-li/",
+   "/post/2006-05-19-ds-de-tv/",
+   "/post/2005-03-03-sugoi/",
+   "/post/2006-03-17-uhi/",
+   "/post/2016-12-30-2016nian-mai-tuteyokatutamono-10xuan/"
+  ]
+ },
+ "/post/2007-07-02-minnanohe-chang/": {
+  "done": true,
+  "rel": [
+   "/post/2005-08-21-nan-sheng-he-chang/",
+   "/post/2009-12-17-li-gu-qu-min-he-chang-tuan-no-tunoshi-xian-fang-fa-wang-xiang-number-tlros-wotong-zitesi-tutakoto/",
+   "/post/2010-03-29-laula-kultani-european-folk-songs-for-mixed-voices-gautinikita/"
+  ]
+ },
+ "/post/2007-10-27-waidoye-jing-toye-jing-terebi/": {
+  "done": true,
+  "rel": [
+   "/post/2006-05-19-ds-de-tv/",
+   "/post/2005-03-03-sugoi/",
+   "/post/2005-04-23-willcom/",
+   "/post/2016-12-30-2016nian-mai-tuteyokatutamono-10xuan/",
+   "/post/2010-06-26-canon-ivis-hf-m31gayatutekita-huruhdle-sii/",
+   "/post/2007-05-29-zardnovocalgawang-kunararetanante-dot-dot-dot/"
+  ]
+ },
+ "/post/2008-01-18-souiebakokohawu-yu-burogudatuta/": {
+  "done": true,
+  "rel": [
+   "/post/2008-09-14-hetudohonwu-se-sitahi/",
+   "/post/2005-08-24-hetudohon-hetudohon/",
+   "/post/2008-10-05-hd53r-ver-dot-8wogou-ru/",
+   "/post/2007-05-10-usbdewen-kerufm-slash-amrazio/"
+  ]
+ },
+ "/post/2008-05-17-subetegafninaru-du-liao/": {
+  "done": true,
+  "rel": [
+   "/post/2008-10-02-pahuekutoburudu-liao/",
+   "/post/2008-07-20-gabaibaatiyan-zuo-he-karaguang-dao-he-mezasejia-zi-yuan/",
+   "/post/2008-07-30-narutaru/",
+   "/post/2008-06-22-bokurano-alternative/"
+  ]
+ },
+ "/post/2008-05-21-nantoiuocha-mu-san/": {
+  "done": true,
+  "rel": [
+   "/post/2011-10-09-jiu-siburinihe-chang-le-pu-womai-tuta/",
+   "/post/2009-07-09-steve-dobrogosznodong-hua-gatakusanarujian-nituite/",
+   "/post/2005-08-21-nan-sheng-he-chang/",
+   "/post/2005-07-17-urayamasika/"
+  ]
+ },
+ "/post/2008-06-01-nantoiunu-li-noren/": {
+  "done": true,
+  "rel": [
+   "/post/2009-04-13-it-dont-mean-a-thing/",
+   "/post/2008-08-31-zhi-ranakatuta-youtubegatie-rifu-kerarerunante/",
+   "/post/2006-07-28-xia-nanode/"
+  ]
+ },
+ "/post/2008-06-03-er-du-qin-qian/": {
+  "done": true,
+  "rel": [
+   "/post/2008-08-01-ono-lisa-best-2002-2006/",
+   "/post/2012-11-01-ola-gjeilono-sunrise-mass-gagemuyin-le-mitaidege-hao-ii/",
+   "/post/2011-10-09-jiu-siburinihe-chang-le-pu-womai-tuta/",
+   "/post/2011-04-08-peter-hollensno-firework-ren-akaperagage-hao-ii/",
+   "/post/2010-01-14-hueraranoziyosukan-vuokaruansanburu-kaperading-qi-gong-yan/",
+   "/post/2006-07-28-xia-nanode/"
+  ]
+ },
+ "/post/2008-06-03-gao-wu-nai-yue/": {
+  "done": true,
+  "rel": [
+   "/post/2008-07-06-nodamekantabire18-20/",
+   "/post/2008-07-15-kupidonoe-xi-hong-yu-oisiikohinoru-refang-meng-noatosaki/"
+  ]
+ },
+ "/post/2008-06-09-tuiniiphonedeng-chang/": {
+  "done": true,
+  "rel": [
+   "/post/2009-05-12-konnitiha-iphone/",
+   "/post/2009-05-04-ad-es-wojie-yue-surutameni/",
+   "/post/2009-06-09-xin-xing-iphone-3g-snojia-ge-nituite/"
+  ]
+ },
+ "/post/2008-06-15-gui-cai-xian-ru/": {
+  "done": true,
+  "rel": [
+   "/post/2008-08-26-akihabara-at-deep/",
+   "/post/2008-10-28-utukusiizi-domo/",
+   "/post/2008-11-18-ai-gainaibu-wu/"
+  ]
+ },
+ "/post/2008-06-15-ojin-nomian-qiang/": {
+  "done": true,
+  "rel": [
+   "/post/2008-10-05-sheng-jian-he-dai-nobizinesutou-wochuang-ru7tunohuremuwakuli-bizinesusi-kao-fa-noji-ben-toshi-jian/"
+  ]
+ },
+ "/post/2008-06-22-bokurano-alternative/": {
+  "done": true,
+  "rel": [
+   "/post/2008-07-30-narutaru/",
+   "/post/2008-07-19-can-shu-gui-tou-mo-hong/"
+  ]
+ },
+ "/post/2008-06-25-xin-meng-eruhetudohondu-ben/": {
+  "done": true,
+  "rel": [
+   "/post/2008-09-14-hetudohonwu-se-sitahi/",
+   "/post/2008-01-18-souiebakokohawu-yu-burogudatuta/",
+   "/post/2005-08-24-hetudohon-hetudohon/"
+  ]
+ },
+ "/post/2008-07-05-rajaton/": {
+  "done": true,
+  "rel": [
+   "/post/2009-03-09-masafestanirajatonga/",
+   "/post/2009-11-10-rajaton-best-of-1999-2009gautinikita/",
+   "/post/2009-03-01-shi-jie-zui-da-gui-mo-noakaperaji-gari-ben-de/",
+   "/post/2011-07-02-rajatonnole-pu-wori-ben-karamai-ufang-fa-sulasol-or-akaperacun-nocdwu-san/"
+  ]
+ },
+ "/post/2008-07-06-nodamekantabire18-20/": {
+  "done": true,
+  "rel": [
+   "/post/2008-08-11-nodame21juan/"
+  ]
+ },
+ "/post/2008-07-06-san-mao-mao-homuzunokong-bu-guan/": {
+  "done": true,
+  "rel": [
+   "/post/2008-07-20-gabaibaatiyan-zuo-he-karaguang-dao-he-mezasejia-zi-yuan/",
+   "/post/2008-09-06-feng-gaqiang-kuchui-iteiru/"
+  ]
+ },
+ "/post/2008-07-07-the-real-group-real-christmas-commonly-unique/": {
+  "done": true,
+  "rel": [
+   "/post/2008-07-05-rajaton/",
+   "/post/2012-11-01-ola-gjeilono-sunrise-mass-gagemuyin-le-mitaidege-hao-ii/",
+   "/post/2008-10-30-a-cappella-dot-comkarazhu-wen-nopin-gajie-ita/",
+   "/post/2009-11-10-rajaton-best-of-1999-2009gautinikita/",
+   "/post/2010-02-07-lian-ma-akaperakontesutonixing-tutekita/",
+   "/post/2008-08-31-zhi-ranakatuta-youtubegatie-rifu-kerarerunante/"
+  ]
+ },
+ "/post/2008-07-09-press-startdang-xuan-simasita/": {
+  "done": true,
+  "rel": [
+   "/post/2010-09-11-press-start-2010xing-tutekita/",
+   "/post/2010-09-11-press-start-2010degemuyin-le-yan-zou-hui-qing-bao-wogetutosita/",
+   "/post/2012-09-24-sheng-yan-zou-henoqi-dai-tojia-zhi/",
+   "/post/2008-11-08-liang-ishi-dai-ninatutanee/"
+  ]
+ },
+ "/post/2008-07-10-ris-a-la-malta/": {
+  "done": true,
+  "rel": [
+   "/post/2008-08-31-try-tonesupesiyaruraibu-akaperaxia-bai-2008/",
+   "/post/2008-07-07-the-real-group-real-christmas-commonly-unique/",
+   "/post/2008-08-31-zhi-ranakatuta-youtubegatie-rifu-kerarerunante/"
+  ]
+ },
+ "/post/2008-07-13-lang-toxiang-xin-liao-1/": {
+  "done": true,
+  "rel": []
+ },
+ "/post/2008-07-15-kupidonoe-xi-hong-yu-oisiikohinoru-refang-meng-noatosaki/": {
+  "done": true,
+  "rel": []
+ },
+ "/post/2008-07-16-rockapella-channel/": {
+  "done": true,
+  "rel": [
+   "/post/2009-11-10-rajaton-best-of-1999-2009gautinikita/",
+   "/post/2009-11-26-the-real-album/",
+   "/post/2010-04-21-eric-witacrenovirtual-choirgaqi-i-korehari-ben-noamatiyuademoguang-marubeki/",
+   "/post/2008-07-10-ris-a-la-malta/",
+   "/post/2011-07-19-akaperawowen-kinagaraying-yu-womian-qiang-dekiru-podcast-mouth-off/"
+  ]
+ },
+ "/post/2008-07-19-ensemblenow-di-39hui-ding-qi-yan-zou-hui-at-sesionshan-bing/": {
+  "done": true,
+  "rel": [
+   "/post/2009-07-09-steve-dobrogosznodong-hua-gatakusanarujian-nituite/",
+   "/post/2008-07-07-the-real-group-real-christmas-commonly-unique/",
+   "/post/2010-01-14-hueraranoziyosukan-vuokaruansanburu-kaperading-qi-gong-yan/",
+   "/post/2011-10-09-jiu-siburinihe-chang-le-pu-womai-tuta/",
+   "/post/2005-07-17-urayamasika/"
+  ]
+ },
+ "/post/2008-07-19-xi-nomo-nu-gasi-nda/": {
+  "done": true,
+  "rel": [
+   "/post/2008-07-20-gabaibaatiyan-zuo-he-karaguang-dao-he-mezasejia-zi-yuan/"
+  ]
+ },
+ "/post/2008-07-20-gabaibaatiyan-zuo-he-karaguang-dao-he-mezasejia-zi-yuan/": {
+  "done": true,
+  "rel": [
+   "/post/2010-01-01-12yue-nidu-ndaben/",
+   "/post/2008-08-24-sayonaraituka/",
+   "/post/2008-11-06-koredeiinoda/"
+  ]
+ },
+ "/post/2008-07-20-he-chang-tuan-ojiang-hu-korariazudi-7hui-yan-zou-hui/": {
+  "done": true,
+  "rel": [
+   "/post/2005-08-21-nan-sheng-he-chang/",
+   "/post/2005-09-18-gao-tian-san-lang-xing-tutekimasita/",
+   "/post/2010-01-14-hueraranoziyosukan-vuokaruansanburu-kaperading-qi-gong-yan/",
+   "/post/2009-07-09-steve-dobrogosznodong-hua-gatakusanarujian-nituite/"
+  ]
+ },
+ "/post/2008-08-01-ono-lisa-best-2002-2006/": {
+  "done": true,
+  "rel": [
+   "/post/2008-07-07-the-real-group-real-christmas-commonly-unique/"
+  ]
+ },
+ "/post/2008-08-11-mian-bai-ihodoyokufen-karuzhe-xue-si-xiang-nosubete/": {
+  "done": true,
+  "rel": []
+ },
+ "/post/2008-08-11-nodame21juan/": {
+  "done": true,
+  "rel": [
+   "/post/2008-07-06-nodamekantabire18-20/"
+  ]
+ },
+ "/post/2008-08-24-sayonaraituka/": {
+  "done": true,
+  "rel": [
+   "/post/2008-11-18-ai-gainaibu-wu/",
+   "/post/2008-06-15-gui-cai-xian-ru/"
+  ]
+ },
+ "/post/2008-08-31-try-tonesupesiyaruraibu-akaperaxia-bai-2008/": {
+  "done": true,
+  "rel": [
+   "/post/2008-07-10-ris-a-la-malta/",
+   "/post/2009-03-09-masafestanirajatonga/",
+   "/post/2010-02-07-lian-ma-akaperakontesutonixing-tutekita/",
+   "/post/2008-08-31-zhi-ranakatuta-youtubegatie-rifu-kerarerunante/"
+  ]
+ },
+ "/post/2008-08-31-zhi-ranakatuta-youtubegatie-rifu-kerarerunante/": {
+  "done": true,
+  "rel": [
+   "/post/2008-07-10-ris-a-la-malta/",
+   "/post/2009-03-01-shi-jie-zui-da-gui-mo-noakaperaji-gari-ben-de/",
+   "/post/2010-02-07-lian-ma-akaperakontesutonixing-tutekita/"
+  ]
+ },
+ "/post/2008-09-04-ji-dong-zhan-shi-gandamuthe-origin-16-17/": {
+  "done": true,
+  "rel": [
+   "/post/2009-04-26-tiyanneruhasonomama-vol-dot-1/",
+   "/post/2008-06-03-gao-wu-nai-yue/",
+   "/post/2008-09-10-enzieruhato-27/",
+   "/post/2008-06-22-bokurano-alternative/",
+   "/post/2008-07-15-kupidonoe-xi-hong-yu-oisiikohinoru-refang-meng-noatosaki/"
+  ]
+ },
+ "/post/2008-09-06-feng-gaqiang-kuchui-iteiru/": {
+  "done": true,
+  "rel": []
+ },
+ "/post/2008-09-07-chu-yin-mikunokaraokequ/": {
+  "done": true,
+  "rel": []
+ },
+ "/post/2008-09-08-can-ye-zeronoshi-shi-li-du-liao/": {
+  "done": true,
+  "rel": [
+   "/post/2008-10-28-3nian-deci-metaruo-zhe-hadokohexing-tutanoka/"
+  ]
+ },
+ "/post/2008-09-08-luck-stealer-2/": {
+  "done": true,
+  "rel": [
+   "/post/2008-08-11-nodame21juan/",
+   "/post/2008-07-06-nodamekantabire18-20/",
+   "/post/2008-07-19-can-shu-gui-tou-mo-hong/",
+   "/post/2008-06-03-gao-wu-nai-yue/"
+  ]
+ },
+ "/post/2008-09-10-enzieruhato-27/": {
+  "done": true,
+  "rel": [
+   "/post/2008-09-04-ji-dong-zhan-shi-gandamuthe-origin-16-17/",
+   "/post/2008-06-22-bokurano-alternative/",
+   "/post/2008-11-06-koredeiinoda/"
+  ]
+ },
+ "/post/2008-09-14-hetudohonwu-se-sitahi/": {
+  "done": true,
+  "rel": [
+   "/post/2008-10-05-hd53r-ver-dot-8wogou-ru/",
+   "/post/2007-05-29-zardnovocalgawang-kunararetanante-dot-dot-dot/",
+   "/post/2005-08-24-hetudohon-hetudohon/",
+   "/post/2008-10-28-mai-tutesimatuta/"
+  ]
+ },
+ "/post/2008-09-28-bznoultra-treasuregayabasugiru/": {
+  "done": true,
+  "rel": []
+ },
+ "/post/2008-09-28-huziyaebitukuxing-tutekimasita/": {
+  "done": true,
+  "rel": []
+ },
+ "/post/2008-10-02-pahuekutoburudu-liao/": {
+  "done": true,
+  "rel": [
+   "/post/2008-05-17-subetegafninaru-du-liao/",
+   "/post/2008-07-06-san-mao-mao-homuzunokong-bu-guan/"
+  ]
+ },
+ "/post/2008-10-05-sheng-jian-he-dai-nobizinesutou-wochuang-ru7tunohuremuwakuli-bizinesusi-kao-fa-noji-ben-toshi-jian/": {
+  "done": true,
+  "rel": [
+   "/post/2008-06-15-ojin-nomian-qiang/"
+  ]
+ },
+ "/post/2008-10-10-tiisanatiisanawang-yang/": {
+  "done": true,
+  "rel": []
+ },
+ "/post/2008-10-11-le-pu-gayu-sii/": {
+  "done": true,
+  "rel": [
+   "/post/2011-10-09-jiu-siburinihe-chang-le-pu-womai-tuta/",
+   "/post/2008-10-30-a-cappella-dot-comkarazhu-wen-nopin-gajie-ita/",
+   "/post/2013-08-23-the-idea-of-northnole-pu-womai-tuta/",
+   "/post/2013-01-09-akaperacun-nokiritukusangablogwozai-kai-saremasita-a-cappella-best-ofgasu-di/"
+  ]
+ },
+ "/post/2008-10-28-utukusiizi-domo/": {
+  "done": true,
+  "rel": [
+   "/post/2008-08-26-akihabara-at-deep/",
+   "/post/2008-06-15-gui-cai-xian-ru/",
+   "/post/2008-11-18-ai-gainaibu-wu/"
+  ]
+ },
+ "/post/2008-10-29-he-gu-kaitunes-storedemai-tutam4pgayin-gachu-nai/": {
+  "done": true,
+  "rel": [
+   "/post/2009-03-01-shi-jie-zui-da-gui-mo-noakaperaji-gari-ben-de/",
+   "/post/2011-02-08-take6ga2011-slash-05-slash-3031nilai-ri-gong-yan/",
+   "/post/2009-03-09-masafestanirajatonga/",
+   "/post/2009-11-10-rajaton-best-of-1999-2009gautinikita/",
+   "/post/2011-03-03-dropboxgahtmlgong-kai-wojian-dan-nisuru-at-acappella-eventguan-lian-matomesaitozuo-cheng-sitemita/",
+   "/post/2008-10-11-le-pu-gayu-sii/"
+  ]
+ },
+ "/post/2009-03-15-xin-ju-nihakurozetutoganai/": {
+  "done": true,
+  "rel": [
+   "/post/2019-03-10_business-trip-goods/",
+   "/post/2009-05-30-x-zabadynosirikonkabawomai-tutesimatuta/",
+   "/post/2016-12-30-2016nian-mai-tuteyokatutamono-10xuan/",
+   "/post/2005-05-19-vhsnei-zang-dvdpureya/"
+  ]
+ },
+ "/post/2009-04-26-tiyanneruhasonomama-vol-dot-1/": {
+  "done": true,
+  "rel": [
+   "/post/2008-07-06-nodamekantabire18-20/",
+   "/post/2008-09-04-ji-dong-zhan-shi-gandamuthe-origin-16-17/"
+  ]
+ },
+ "/post/2009-05-16-apple-storegawell-back-soonni-dot-dot-dot/": {
+  "done": true,
+  "rel": [
+   "/post/2009-05-10-ad-es-iphoneadoresuzhang-yi-xing-memo/",
+   "/post/2009-05-12-konnitiha-iphone/",
+   "/post/2009-05-31-linkstationnowebakusesutosimplify-music-2-at-iphone/",
+   "/post/2013-04-14-macnoitunesdeairplaygaxi-garanaishi-niyarubeki1tunokoto/"
+  ]
+ },
+ "/post/2009-05-18-iphonetono1zhou-jian/": {
+  "done": true,
+  "rel": [
+   "/post/2009-05-12-konnitiha-iphone/",
+   "/post/2009-05-07-sayonarawillcom-sayonaraad-es/",
+   "/post/2009-06-11-iphoneniwang-mukoto/"
+  ]
+ },
+ "/post/2009-05-30-x-zabadynosirikonkabawomai-tutesimatuta/": {
+  "done": true,
+  "rel": [
+   "/post/2009-05-27-ofeng-lu-deiphone-plus-nikodong-haliang-iyo/",
+   "/post/2008-01-18-souiebakokohawu-yu-burogudatuta/",
+   "/post/2008-09-14-hetudohonwu-se-sitahi/",
+   "/post/2007-05-29-zardnovocalgawang-kunararetanante-dot-dot-dot/"
+  ]
+ },
+ "/post/2009-05-31-linkstationnowebakusesutosimplify-music-2-at-iphone/": {
+  "done": true,
+  "rel": [
+   "/post/2009-11-11-nas-navigator2wowindows7-64bit-dedong-kasufang-fa/",
+   "/post/2009-05-18-iphonetono1zhou-jian/",
+   "/post/2009-05-27-ofeng-lu-deiphone-plus-nikodong-haliang-iyo/"
+  ]
+ },
+ "/post/2009-07-23-fujiyama/": {
+  "done": true,
+  "rel": [
+   "/post/2009-06-20-cheng-jiu-yuan-nozi-yang-hua/",
+   "/post/2026-03-28-montréalに10年以上ぶりに行った/",
+   "/post/2010-11-13-ye-novuenetuia/",
+   "/post/2009-07-07-qi-xi-kiyandorunaito/"
+  ]
+ },
+ "/post/2009-08-30-rent-burodouetuawojian-telai-ta/": {
+  "done": true,
+  "rel": [
+   "/post/2008-08-31-try-tonesupesiyaruraibu-akaperaxia-bai-2008/",
+   "/post/2011-04-07-soredemotake6halai-ri-suru/"
+  ]
+ },
+ "/post/2009-10-10-ceatecitutekita/": {
+  "done": true,
+  "rel": [
+   "/post/2007-10-27-waidoye-jing-toye-jing-terebi/"
+  ]
+ },
+ "/post/2009-11-18-jbl-reference-410woxiu-li-nichu-sukotonijue-meta/": {
+  "done": true,
+  "rel": [
+   "/post/2008-10-05-hd53r-ver-dot-8wogou-ru/",
+   "/post/2009-10-26-logitecgaodeioniben-qi-chu-sitekita/",
+   "/post/2020-04-03-microphone-for-remote-meeting/",
+   "/post/2007-05-29-zardnovocalgawang-kunararetanante-dot-dot-dot/"
+  ]
+ },
+ "/post/2009-12-13-hutagozuo-liu-xing-qun-hajin-wan-kara-14ri-am2shi-gapiku/": {
+  "done": true,
+  "rel": []
+ },
+ "/post/2009-12-17-li-gu-qu-min-he-chang-tuan-no-tunoshi-xian-fang-fa-wang-xiang-number-tlros-wotong-zitesi-tutakoto/": {
+  "done": true,
+  "rel": [
+   "/post/2005-08-21-nan-sheng-he-chang/",
+   "/post/2011-03-02-twitternohe-chang-da-xi-li-hale-sii/",
+   "/post/2010-02-21-akaperanoibentoqing-bao-tokawotubuyaku-at-acappella-eventnoshi-ifang/"
+  ]
+ },
+ "/post/2010-01-01-jin-geng-nagara2009nian-dedu-maretaji-shi/": {
+  "done": true,
+  "rel": [
+   "/post/2009-05-10-ad-es-iphoneadoresuzhang-yi-xing-memo/",
+   "/post/2009-05-07-sayonarawillcom-sayonaraad-es/"
+  ]
+ },
+ "/post/2010-02-07-lian-ma-akaperakontesutonixing-tutekita/": {
+  "done": true,
+  "rel": [
+   "/post/2008-08-31-try-tonesupesiyaruraibu-akaperaxia-bai-2008/",
+   "/post/2008-10-30-a-cappella-dot-comkarazhu-wen-nopin-gajie-ita/",
+   "/post/2008-07-05-rajaton/",
+   "/post/2009-11-10-rajaton-best-of-1999-2009gautinikita/",
+   "/post/2008-07-20-he-chang-tuan-ojiang-hu-korariazudi-7hui-yan-zou-hui/",
+   "/post/2008-08-31-zhi-ranakatuta-youtubegatie-rifu-kerarerunante/"
+  ]
+ },
+ "/post/2010-06-26-canon-ivis-hf-m31gayatutekita-huruhdle-sii/": {
+  "done": true,
+  "rel": [
+   "/post/2016-12-30-2016nian-mai-tuteyokatutamono-10xuan/",
+   "/post/2007-05-29-zardnovocalgawang-kunararetanante-dot-dot-dot/",
+   "/post/2015-12-29-2015nian-nimai-tuteyokatutawu-matome/"
+  ]
+ },
+ "/post/2010-09-11-press-start-2010xing-tutekita/": {
+  "done": true,
+  "rel": [
+   "/post/2010-09-11-press-start-2010degemuyin-le-yan-zou-hui-qing-bao-wogetutosita/",
+   "/post/2008-07-09-press-startdang-xuan-simasita/",
+   "/post/2012-09-24-sheng-yan-zou-henoqi-dai-tojia-zhi/",
+   "/post/2009-05-24-kuronotorigano-shi-nohui-lang-gaming-qu-sugiru/",
+   "/post/2008-11-08-liang-ishi-dai-ninatutanee/",
+   "/post/2009-07-05-guan-dong-hagame-musichoihoida/"
+  ]
+ },
+ "/post/2010-11-07-instagr-dot-amgamian-bai-i/": {
+  "done": true,
+  "rel": []
+ },
+ "/post/2011-02-08-take6ga2011-slash-05-slash-3031nilai-ri-gong-yan/": {
+  "done": true,
+  "rel": [
+   "/post/2009-03-01-shi-jie-zui-da-gui-mo-noakaperaji-gari-ben-de/",
+   "/post/2009-07-11-masa-festanotiketutogalai-ta/",
+   "/post/2008-10-29-he-gu-kaitunes-storedemai-tutam4pgayin-gachu-nai/",
+   "/post/2010-02-07-lian-ma-akaperakontesutonixing-tutekita/",
+   "/post/2008-08-31-try-tonesupesiyaruraibu-akaperaxia-bai-2008/",
+   "/post/2008-10-30-a-cappella-dot-comkarazhu-wen-nopin-gajie-ita/"
+  ]
+ },
+ "/post/2011-04-09-koredejun-mouitekaninareru-shui-demouiteka-hazimemasita-number-darewite/": {
+  "done": true,
+  "rel": [
+   "/post/2011-04-06-eric-whitacrenoteddenojiang-yan-gagong-kai/",
+   "/post/2010-04-21-eric-witacrenovirtual-choirgaqi-i-korehari-ben-noamatiyuademoguang-marubeki/",
+   "/post/2011-04-09-eritukuuitekashi-yu-ding-tong-rilai-ri/"
+  ]
+ },
+ "/post/2011-07-18-sinatradekyteawoburauzakarashi-sukytea-sinatrazuo-tutemita/": {
+  "done": true,
+  "rel": [
+   "/post/2011-09-23-kyteawota-yan-yu-deshi-uratupa-plus-amatome/",
+   "/post/2011-07-15-kytea-jing-du-tekisutojie-xi-turukituto-woruby-pythonkarashi-erumykyteawozuo-tutemita/",
+   "/post/2012-11-10-websocketwoshi-tuteriarutaimunixing-tai-su-jie-xi-wosurumorph-websocketwozuo-tutemita/",
+   "/post/2011-09-14-nltkkarakyteadekopasuwodu-miip-mujpkyteatokenizerzuo-rimasita/"
+  ]
+ },
+ "/post/2011-07-20-jkominoman-hua-biyuahaipaddemodu-meru/": {
+  "done": true,
+  "rel": [
+   "/post/2016-12-25-jin-nian-du-ndemian-bai-katutaman-hua-2016nian-bian/"
+  ]
+ },
+ "/post/2011-10-15-imessagewoipadtoiphonedeshi-ifen-kerufang-fa/": {
+  "done": true,
+  "rel": [
+   "/post/2009-05-10-ad-es-iphoneadoresuzhang-yi-xing-memo/",
+   "/post/2009-05-18-iphonetono1zhou-jian/",
+   "/post/2023-01-10-ios-notification-management/",
+   "/post/2023-08-06-rakuten-mobile-activation/",
+   "/post/2016-11-26-icloudnokarendanilai-ruibentosupamuwobi-kerutamenoshe-ding-bian-geng/"
+  ]
+ },
+ "/post/2012-01-07-mercurialtoqin-he-xing-nogao-iripozitoriburauzarhodecodewoinsutorusitemita/": {
+  "done": true,
+  "rel": []
+ },
+ "/post/2012-02-12-pficommonnopfi-text-jsondesiriaraizu-slash-desiriaraizusitemita/": {
+  "done": true,
+  "rel": []
+ },
+ "/post/2012-10-31-amazonno1gb-slash-1yuan-sutoreziglacierwokomandoraindeshi-uglacier-cmdnoshi-ifang/": {
+  "done": true,
+  "rel": [
+   "/post/2015-06-07-ri-ben-ren-xiang-kepodcastyarunaraidcfkuraudogaliang-sasou/",
+   "/post/2015-11-22-idcfkuraudono500yuan-sabadepodcast-serverwohazimete8keyue-gajing-timasita/"
+  ]
+ },
+ "/post/2012-11-17-11-slash-28nithe-real-groupnoniyuarubamugachu-ru/": {
+  "done": true,
+  "rel": [
+   "/post/2008-07-07-the-real-group-real-christmas-commonly-unique/",
+   "/post/2009-04-13-it-dont-mean-a-thing/",
+   "/post/2009-11-10-rajaton-best-of-1999-2009gautinikita/",
+   "/post/2009-03-03-sok-bao-masa-festa/",
+   "/post/2008-10-30-a-cappella-dot-comkarazhu-wen-nopin-gajie-ita/",
+   "/post/2011-04-06-eric-whitacrenoteddenojiang-yan-gagong-kai/"
+  ]
+ },
+ "/post/2013-08-25-llmaturinican-jia-simasita/": {
+  "done": true,
+  "rel": [
+   "/post/2016-08-23-chuan-qi-rubyhui-yi-01wokai-cui-simasita-number-kwsk01/",
+   "/post/2015-01-25-shen-nai-chuan-rubyhui-yi-wokai-cui-simasita-number-kana01/",
+   "/post/2022-06-18-kawasaki rb 9 years reflection/"
+  ]
+ },
+ "/post/2013-10-06-kawasaki-dot-rb-number-003wokai-cui-simasita-number-kwskrb/": {
+  "done": true,
+  "rel": [
+   "/post/2014-01-24-kawasaki-dot-rb-number-008-wokai-cui-simasita-number-kwskrb/",
+   "/post/2013-06-29-kawasaki-dot-rb-number-001-di-1hui-mitoatupuwokai-cui-simasita-number-kwskrb/",
+   "/post/2013-10-06-kawasaki-dot-rb-number-004wokai-cui-simasita-number-kwskrb/",
+   "/post/2014-01-24-kawasaki-dot-rb-number-007-wokai-cui-simasita-number-kwskrb/",
+   "/post/2016-08-23-chuan-qi-rubyhui-yi-01wokai-cui-simasita-number-kwsk01/",
+   "/post/2013-08-03-kawasaki-dot-rb-number-002-kai-cui-simasita-number-kwskrb/"
+  ]
+ },
+ "/post/2013-12-08-yu-gan-yarizumugale-siihatutosuruhui-ben-3ce/": {
+  "done": true,
+  "rel": [
+   "/post/2015-12-06-donnazi-gong-mohao-kininaru-uyan-woguang-merutatuta1tunofang-fa/",
+   "/post/2017-05-25_teach-what-i-dont-know/"
+  ]
+ },
+ "/post/2014-01-24-kawasaki-dot-rb-number-007-wokai-cui-simasita-number-kwskrb/": {
+  "done": true,
+  "rel": [
+   "/post/2014-01-24-kawasaki-dot-rb-number-006-wokai-cui-simasita-number-kwskrb/",
+   "/post/2022-06-18-kawasaki rb 9 years reflection/",
+   "/post/2014-04-26-kawasaki-dot-rb-number-011-wokai-cui-simasita-number-kwskrb/",
+   "/post/2014-03-01-kawasaki-dot-rb-number-009wokai-cui-simasita-number-kwskrb/",
+   "/post/2014-03-30-kawawaki-dot-rb-number-010-wokai-cui-simasita-number-kwskrb/"
+  ]
+ },
+ "/post/2014-03-23-4sutetupudedoorkeepernikomentolan-wozhui-jia-surufang-fa/": {
+  "done": true,
+  "rel": [
+   "/post/2022-01-14-prelims-recommend-hugo/"
+  ]
+ },
+ "/post/2014-04-03-tokyurubyhui-yi-07deltsitekimasita-number-tqrk07/": {
+  "done": true,
+  "rel": [
+   "/post/2015-08-23-yapc-asia-tokyo-2015can-jia-sitekita-number-yapcasia/",
+   "/post/2014-06-07-machine-learning-casual-talks-wokai-cui-simasita-number-mlct/"
+  ]
+ },
+ "/post/2014-05-06-julia-vs-python-bitutokoinopusiyonnomontekarurosimiyuresiyon/": {
+  "done": true,
+  "rel": [
+   "/post/2014-06-21-julia100ben-notuku/",
+   "/post/2014-12-24-juliadeword-countsiteqi-duitakoto-number-juliaac/",
+   "/post/2015-11-08-tinysegmenter-dot-jlwogotobi-jiao-sitefu-ketatosi-tutararuo-zhe-gazui-shi-hua-sitekureta/",
+   "/post/2014-12-06-japan-dot-rde-mecab-dot-jltukututemita-wofa-biao-sitekita-number-juliaac-number-japanr/"
+  ]
+ },
+ "/post/2014-09-21-rubykaigixing-tutekimasita-and-rubyhirobade-shen-nai-chuan-rubyhui-yi-01-gao-zhi-ltsitekimasita-number-rubykaigi-number-rubyhiroba-number-kana01/": {
+  "done": true,
+  "rel": [
+   "/post/2015-01-25-shen-nai-chuan-rubyhui-yi-wokai-cui-simasita-number-kana01/",
+   "/post/2016-08-23-chuan-qi-rubyhui-yi-01wokai-cui-simasita-number-kwsk01/",
+   "/post/2014-12-31-2014nian-wozhen-rifan-tute/",
+   "/post/2014-01-24-kawasaki-dot-rb-number-007-wokai-cui-simasita-number-kwskrb/"
+  ]
+ },
+ "/post/2014-12-01-wordpress-dot-comkarahatenaburogunioyin-tuyue-sisimasita/": {
+  "done": true,
+  "rel": []
+ },
+ "/post/2014-12-24-juliadeword-countsiteqi-duitakoto-number-juliaac/": {
+  "done": true,
+  "rel": [
+   "/post/2014-07-05-number-juliatokyo-01de-julia100ben-notuku-wofa-biao-sitekimasita/",
+   "/post/2014-12-03-juliahuan-jing-gou-zhu-2014-ver-number-julialang/",
+   "/post/2015-12-25-juliadede-raretamainayan-yu-wosheng-rishang-gerufang-fa-number-juliaac/",
+   "/post/2014-12-06-japan-dot-rde-mecab-dot-jltukututemita-wofa-biao-sitekita-number-juliaac-number-japanr/",
+   "/post/2015-11-08-tinysegmenter-dot-jlwogotobi-jiao-sitefu-ketatosi-tutararuo-zhe-gazui-shi-hua-sitekureta/",
+   "/post/2015-10-21-tinysegmenterwojuliayi-zhi-sitaramitnoxian-sheng-nizhi-dao-sitemoraetahua/"
+  ]
+ },
+ "/post/2014-12-29-she-nei-delean-analyticsdu-shu-hui-wozhong-emasita/": {
+  "done": true,
+  "rel": [
+   "/post/2014-08-29-detafen-xi-henoxiang-kihe-ifang-machine-learning-casual-talks-number-2wokai-cui-simasita-number-mlct/",
+   "/post/2015-12-30-2015nian-wozhen-rifan-tute/"
+  ]
+ },
+ "/post/2014-12-31-2014nian-wozhen-rifan-tute/": {
+  "done": true,
+  "rel": [
+   "/post/2015-12-30-2015nian-wozhen-rifan-tute/",
+   "/post/2016-12-31-2016nian-wozhen-rifan-tute/",
+   "/post/2023-12-30-2023-year-in-review/",
+   "/post/2017-12-31_2017--------c4901627b12d/"
+  ]
+ },
+ "/post/2015-03-04-googlehuomudezuo-tutashen-qing-huomukaraslacknitong-zhi-wosurufang-fa/": {
+  "done": true,
+  "rel": [
+   "/post/2015-01-16-fei-enzinianokomiyuniteinislackwodao-ru-sitahua-number-ingress/",
+   "/post/2023-08-20-removed-slack-from-mobile/",
+   "/post/2014-12-15-number-ingress-dehurutaimunopuroezientotochu-hui-tutahua/"
+  ]
+ },
+ "/post/2015-05-03-rubyist-dot-club-hazimetemasita-number-rubyistclub/": {
+  "done": true,
+  "rel": [
+   "/post/2015-02-20-number-ingress-nopodcast-shui-yaritong-xin-woshi-memasita-number-mizuyari/",
+   "/post/2015-06-07-ri-ben-ren-xiang-kepodcastyarunaraidcfkuraudogaliang-sasou/"
+  ]
+ },
+ "/post/2015-10-07-xi-pan-fu-kiofeng-lu-supikagapodcastwen-kunonisugoibian-li/": {
+  "done": true,
+  "rel": [
+   "/post/2009-05-27-ofeng-lu-deiphone-plus-nikodong-haliang-iyo/",
+   "/post/2020-04-03-microphone-for-remote-meeting/",
+   "/post/2007-05-10-usbdewen-kerufm-slash-amrazio/",
+   "/post/2007-05-29-zardnovocalgawang-kunararetanante-dot-dot-dot/",
+   "/post/2005-10-07-tuinikita/",
+   "/post/2015-12-29-2015nian-nimai-tuteyokatutawu-matome/"
+  ]
+ },
+ "/post/2015-10-19-batukibakininatuteitanexus5wo$40dexiu-li-sita/": {
+  "done": true,
+  "rel": [
+   "/post/2016-12-17-iphone-6snobatuterijiao-huan-nihadian-hua-sapoto-plus-ekusupuresujiao-huan-gaosusume/",
+   "/post/2009-11-18-jbl-reference-410woxiu-li-nichu-sukotonijue-meta/"
+  ]
+ },
+ "/post/2016-03-30-zhuan-zhi-simasita/": {
+  "done": true,
+  "rel": [
+   "/post/2018-06-19_goodbye-cloudera/",
+   "/post/2026-04-17-layerxで働き始めました/",
+   "/post/2026-03-31-treasure-dataを退職しました/"
+  ]
+ },
+ "/post/2016-05-09-ji-jie-xue-xi-nofen-lei-nohua-wosun-shi-guan-shu-tojue-ding-jing-jie-wozhong-xin-nizheng-li-sitemita/": {
+  "done": true,
+  "rel": [
+   "/post/2014-02-23-hazimetenopatanren-shi-du-shu-hui-nican-jia-simasita-number-hazipata/",
+   "/post/2016-05-29-sonomoderu-guo-xue-xi-siteruno-wei-xue-xi-nano-tokun-tutara/"
+  ]
+ },
+ "/post/2016-08-23-chuan-qi-rubyhui-yi-01wokai-cui-simasita-number-kwsk01/": {
+  "done": true,
+  "rel": [
+   "/post/2022-06-18-kawasaki rb 9 years reflection/",
+   "/post/2015-01-25-shen-nai-chuan-rubyhui-yi-wokai-cui-simasita-number-kana01/"
+  ]
+ },
+ "/post/2016-09-11-pdfnobiao-wopandasnodataframenidekiru-tabula-py-zuo-tuta/": {
+  "done": true,
+  "rel": [
+   "/post/2022-05-05-sqllineage-with-digdag-log/",
+   "/post/2011-07-18-sinatradekyteawoburauzakarashi-sukytea-sinatrazuo-tutemita/"
+  ]
+ },
+ "/post/2016-10-29_homebrew-----iruby---------------6a02e5194ff2/": {
+  "done": true,
+  "rel": [
+   "/post/2015-01-11-dockershang-ninbviewerwoli-teteiruby-plus-nyaplotdemiao-itagurahuwogong-you-dekiruyounisitemita/"
+  ]
+ },
+ "/post/2016-11-14-cloudera-world-tokyo-2016deji-jie-xue-xi-purodakutonozuo-rifang-wohua-simasita-number-cwt2016/": {
+  "done": true,
+  "rel": [
+   "/post/2016-07-26-xia-zhen-tusheng-ri-spark-plus-python-plus-data-scienceji-ri-wokai-cui-simasita-and-ibiswoshao-jie-simasita-number-summerds/",
+   "/post/2015-12-21-machine-learning-casual-talks-number-4-wokai-cui-simasita-number-mlct/",
+   "/post/2018-05-17_mlse-kickoff/"
+  ]
+ },
+ "/post/2017-01-30-indigogo-dehazimetebatukusitelai-ta-dot-woshi-tute3keyue-gatatuta/": {
+  "done": true,
+  "rel": [
+   "/post/2008-06-25-xin-meng-eruhetudohondu-ben/",
+   "/post/2008-09-14-hetudohonwu-se-sitahi/",
+   "/post/2015-10-07-xi-pan-fu-kiofeng-lu-supikagapodcastwen-kunonisugoibian-li/"
+  ]
+ },
+ "/post/2017-04-19-amazondemai-tutathinkpad-toratukupointo-kibodowoxiu-li-sita/": {
+  "done": true,
+  "rel": [
+   "/post/2017-07-08_mbp--thinkpad-x1-carbon-2017-------46c374167b79/",
+   "/post/2016-12-17-iphone-6snobatuterijiao-huan-nihadian-hua-sapoto-plus-ekusupuresujiao-huan-gaosusume/",
+   "/post/2009-11-18-jbl-reference-410woxiu-li-nichu-sukotonijue-meta/",
+   "/post/2018-10-28_thinkpad-x1-carbon-macbook-pro----------usb-type-c-------f6d8c8e77b36/"
+  ]
+ },
+ "/post/2017-05-26_public-dataset/": {
+  "done": true,
+  "rel": [
+   "/post/2014-08-29-detafen-xi-henoxiang-kihe-ifang-machine-learning-casual-talks-number-2wokai-cui-simasita-number-mlct/"
+  ]
+ },
+ "/post/2017-07-10_thinkpad-x1-carbon--2017--windows-10-ubuntu-17-04-----------9f73d89073c3/": {
+  "done": true,
+  "rel": [
+   "/post/2017-07-08_mbp--thinkpad-x1-carbon-2017-------46c374167b79/",
+   "/post/2014-12-03-juliahuan-jing-gou-zhu-2014-ver-number-julialang/",
+   "/post/2016-10-29_homebrew-----iruby---------------6a02e5194ff2/"
+  ]
+ },
+ "/post/2017-08-03_oss--------------48807bbbf13f/": {
+  "done": true,
+  "rel": [
+   "/post/2018-05-17_mlse-kickoff/",
+   "/post/2020-07-11-mlse-summer-workshop/",
+   "/post/2015-05-02-machine-learning-casual-talks-number-3-lue-cheng-mlct-yarimasita-number-mlct/",
+   "/post/2016-11-14-cloudera-world-tokyo-2016deji-jie-xue-xi-purodakutonozuo-rifang-wohua-simasita-number-cwt2016/"
+  ]
+ },
+ "/post/2017-12-31_2017--------c4901627b12d/": {
+  "done": true,
+  "rel": [
+   "/post/2016-12-31-2016nian-wozhen-rifan-tute/",
+   "/post/2015-12-30-2015nian-wozhen-rifan-tute/",
+   "/post/2016-12-21-number-eigo-tosi-aruihazi-chi-tinoye-wu-wai-huo-dong-nosok-kefang/",
+   "/post/2020-12-31-2020-review/"
+  ]
+ },
+ "/post/2018-01-03_google-home--------------------------17607a9cc2b8/": {
+  "done": true,
+  "rel": [
+   "/post/2013-01-09-windowsdeairplaywoshi-unarashairport4w/",
+   "/post/2015-11-02-amazon-fire-tv-stickwomai-tutaraapple-tv-plus-chromecast-tiyotutoninatuta/"
+  ]
+ },
+ "/post/2018-01-17_----------------b63a0763e904/": {
+  "done": true,
+  "rel": [
+   "/post/2017-10-20_oreilly-ml-for-business-cf835ff4c128/"
+  ]
+ },
+ "/post/2018-04-17_---pypi-markdown-----------14e40d90ff3f/": {
+  "done": true,
+  "rel": [
+   "/post/2017-01-22-shu-shi-ru-rinomarkdownwosphinxwoshi-tutehtml-slash-pdfnisuru/"
+  ]
+ },
+ "/post/2018-05-17_mlse-kickoff/": {
+  "done": true,
+  "rel": [
+   "/post/2019-12-05-ibis2019-mlse/",
+   "/post/2020-07-11-mlse-summer-workshop/",
+   "/post/2015-05-02-machine-learning-casual-talks-number-3-lue-cheng-mlct-yarimasita-number-mlct/",
+   "/post/2016-11-14-cloudera-world-tokyo-2016deji-jie-xue-xi-purodakutonozuo-rifang-wohua-simasita-number-cwt2016/"
+  ]
+ },
+ "/post/2018-06-27_internet-for-kids/": {
+  "done": true,
+  "rel": [
+   "/post/2017-05-25_teach-what-i-dont-know/",
+   "/post/2015-12-06-donnazi-gong-mohao-kininaru-uyan-woguang-merutatuta1tunofang-fa/"
+  ]
+ },
+ "/post/2019-03-10_business-trip-goods/": {
+  "done": true,
+  "rel": [
+   "/post/2016-12-30-2016nian-mai-tuteyokatutamono-10xuan/",
+   "/post/2017-12-30_2017------------bbf834e065c5/",
+   "/post/2019-11-26-pillow/"
+  ]
+ },
+ "/post/2019-11-29-mecab-python3/": {
+  "done": true,
+  "rel": [
+   "/post/2018-12-01_windows-64bit-mecab--kytea-------2018-b283b6c7b33c/",
+   "/post/2010-10-13-mecabworuby-1-dot-9-2-on-windows7-64bitban-deshi-ufang-fa/",
+   "/post/2011-07-18-sinatradekyteawoburauzakarashi-sukytea-sinatrazuo-tutemita/",
+   "/post/2019-11-17-spacy-ginza/"
+  ]
+ },
+ "/post/2020-01-05-2019-best-movie/": {
+  "done": true,
+  "rel": [
+   "/post/2009-08-30-rent-burodouetuawojian-telai-ta/"
+  ]
+ },
+ "/post/2020-05-29_google-meetとyoutube-liveでオンラインミートアップの配信をした/": {
+  "done": true,
+  "rel": [
+   "/post/2015-05-02-machine-learning-casual-talks-number-3-lue-cheng-mlct-yarimasita-number-mlct/",
+   "/post/2015-02-14-garagebanddeskypetomaikunoyin-wobie-toratukudelu-yin-surufang-fa/",
+   "/post/2015-05-03-rubyist-dot-club-hazimetemasita-number-rubyistclub/",
+   "/post/2020-07-11-mlse-summer-workshop/"
+  ]
+ },
+ "/post/2020-12-31-2020-review/": {
+  "done": true,
+  "rel": [
+   "/post/2021-12-31-2021-year-review/",
+   "/post/2017-12-31_2017--------c4901627b12d/",
+   "/post/2022-12-30-2022-year-in-review/",
+   "/post/2023-12-30-2023-year-in-review/",
+   "/post/2014-12-31-2014nian-wozhen-rifan-tute/"
+  ]
+ },
+ "/post/2021-11-09-tax-on-publication/": {
+  "done": true,
+  "rel": [
+   "/post/2022-11-28-cancel-japanese-service/",
+   "/post/2022-02-07-foregin-tax/",
+   "/post/2023-01-27-timeline for canadian pr/",
+   "/post/2024-06-20-nappan-book-review/"
+  ]
+ },
+ "/post/2025-05-02-ml-project-and-scrum/": {
+  "done": true,
+  "rel": [
+   "/post/2014-08-29-detafen-xi-henoxiang-kihe-ifang-machine-learning-casual-talks-number-2wokai-cui-simasita-number-mlct/",
+   "/post/2018-05-17_mlse-kickoff/",
+   "/post/2025-09-19-review-fatigue/",
+   "/post/2022-07-15-finished-mlse-infra-wg/",
+   "/post/2019-12-05-ibis2019-mlse/"
+  ]
+ },
+ "/post/2025-09-19-review-fatigue/": {
+  "done": true,
+  "rel": [
+   "/post/2025-12-09-2025-12-09-principal-engineer-in-the-gene-of-ai/",
+   "/post/2025-05-02-ml-project-and-scrum/"
+  ]
+ },
+ "/post/2025-11-25-staff-engineering-path/": {
+  "done": true,
+  "rel": [
+   "/post/2026-03-07-2026-03-08-between-principal-and-glue-work/",
+   "/post/2025-12-09-2025-12-09-principal-engineer-in-the-gene-of-ai/",
+   "/post/2024-12-31-2024-year-in-review/"
+  ]
+ },
+ "/post/2026-03-20-oh-my-zshを辞めた/": {
+  "done": true,
+  "rel": []
+ },
+ "/post/2026-03-26-ボランティアデーでwikipediaの太平洋時間（pacific-time）の改善をした/": {
+  "done": true,
+  "rel": []
+ },
+ "/post/2026-04-24-tiktokで勝手にアカウントが作られ続けるので、claudeでカナダのprivacy法に則って通/": {
+  "done": true,
+  "rel": [
+   "/post/2022-11-28-cancel-japanese-service/"
+  ]
+ },
+ "/post/2026-07-25-スウェーデン・デンマーク寝台列車の旅/": {
+  "done": true,
+  "rel": [
+   "/post/2026-03-28-montréalに10年以上ぶりに行った/",
+   "/post/2025-08-23-summer-vacation/"
+  ]
+ },
+ "/post/2026-07-30-slop-nuki-という日本語レビューskill/": {
+  "done": true,
+  "rel": [
+   "/post/2026-08-04-ブログの推薦用軽量embedding-modelをbekkoに変えようとして、変えれなかった/",
+   "/post/2025-12-09-2025-12-09-principal-engineer-in-the-gene-of-ai/"
+  ]
+ },
+ "/post/2026-08-04-ブログの推薦用軽量embedding-modelをbekkoに変えようとして、変えれなかった/": {
+  "done": true,
+  "rel": [
+   "/post/2022-01-14-prelims-recommend-hugo/",
+   "/post/2022-01-25-hugo-content-based-recommendation/"
+  ]
+ }
+}

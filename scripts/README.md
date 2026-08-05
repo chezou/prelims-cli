@@ -84,3 +84,12 @@ JA=../site/content/post EN=../site/content/blog \
 Embeddings are keyed on article text alone, so editing front matter tags does
 not invalidate them. With a warm `--cache-dir` the whole sweep returns in
 seconds, which makes it cheap to re-measure after fixing the referee.
+
+## Judging the tag metric itself
+
+Everything here scores recommendations against tags. To find out what that is
+worth, `../judgments/` holds human relevance labels for 147 articles and a
+script that scores them — including a confusion matrix of tag agreement against
+those labels. On this corpus tag agreement had precision 0.85 but recall 0.07,
+so a model comparison that comes out flat here is not evidence the models are
+equal. Read that README before drawing a conclusion from a small difference.
