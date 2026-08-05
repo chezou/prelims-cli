@@ -39,6 +39,20 @@ LANGUAGE_MODELS = {
         "revision": "1dc7835ba0cb9c76a3618d0bf0c427c97671b3c8",
         "pooling": "cls",
     },
+    # One model for every language, for sites that mix languages or write in
+    # something the two above do not cover. On a 453-article bilingual corpus it
+    # scored the same as the per-language pair — 162 blind human judgments came
+    # out +1.7pt [-9.2, +12.5], and English, judged exhaustively, tied exactly.
+    # It differs in temperament rather than quality: more inclined to link the
+    # same entity (artist, author, sibling event), less inclined to hold topic
+    # purity. Costs 199 MB of fp32 against 37-52 MB of int8, and about 0.4s per
+    # article on a CPU runner. The quantized build is not recommended upstream.
+    "multilingual": {
+        "model_name": "hotchpotch/bekko-embedding-v1-a25m",
+        "model_file": "onnx/model.onnx",
+        "revision": "44f0b8af0f487acd0ccf1a7cb7ae7a29a6dfc09c",
+        "pooling": "mean",
+    },
 }
 DEFAULT_LANGUAGE = "en"
 DEFAULT_MODEL_NAME = LANGUAGE_MODELS[DEFAULT_LANGUAGE]["model_name"]
