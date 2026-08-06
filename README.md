@@ -102,15 +102,7 @@ other two do not cover:
         cache_db: ".prelims_embedding_cache.db"
 ```
 
-On a 453-article Japanese/English corpus it scored the same as the per-language
-pair rather than better: 162 recommendations judged by hand, blind to the model,
-came out +1.7pt with a 95% interval of [-9.2, +12.5], and the English side —
-judged exhaustively — tied exactly. What differs is temperament. It leans toward
-linking the same entity (the same artist, author, sibling event); the
-per-language models lean toward topic purity. Pick on that, and on cost: 199 MB
-of fp32 weights against 37–52 MB of int8, and roughly 0.4s per article on a CPU
-runner. Switching re-embeds everything once, since the model is part of the
-cache key. The measurements are in [`judgments/`](judgments/).
+The detailed measurements are in [`judgments/`](judgments/) for your interests.
 
 Give each handler its own `cache_db` even when they share a model: `prune()`
 deletes rows for articles a handler does not see, so a shared file would have
