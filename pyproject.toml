@@ -38,6 +38,16 @@ build-backend = "hatchling.build"
 [tool.hatch.version]
 source = "vcs"
 
+# Without this, hatchling puts everything the repo tracks into the sdist. The
+# evaluation material — scripts/ and judgments/, the latter carrying two 150 KB
+# reports — belongs in the repo, not in a package anyone installs. Keep the
+# sdist to what it takes to build and test: the package and its tests.
+[tool.hatch.build.targets.sdist]
+include = ["prelims_cli", "tests", "README.md", "LICENSE"]
+# hatchling adds every README it finds back on top of `include`, so the two
+# directories have to be named again here.
+exclude = ["scripts", "judgments"]
+
 [dependency-groups]
 dev = [
   "pytest>=6.0",
